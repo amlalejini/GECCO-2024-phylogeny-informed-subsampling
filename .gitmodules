@@ -1,0 +1,6 @@
+[submodule "third-party/Catch2"]
+	path = third-party/Catch2
+	url = https://github.com/catchorg/Catch2.git
+[submodule "third-party/Empirical"]
+	path = third-party/Empirical
+	url = https://github.com/devosoft/Empirical.git
