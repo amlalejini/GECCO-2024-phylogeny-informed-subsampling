@@ -69,6 +69,8 @@ struct phenotype_info {
 // NOTE - Might want to make the datastruct (phenotype_info) more flexible down the line.
 // TODO - this might not need to be a class. Could just be functions.
 // TODO - test search ancestor / search relative funtions
+// TODO - could write search functions that take a function that returns true/false
+//        to determine if should return. (makes search generic, work beyond testing for eval)
 
 /// Behaves exactly like the base class but provides functions for searching for
 /// relatives/ancestors based on phenotype information.
