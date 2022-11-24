@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "Catch2/single_include/catch2/catch.hpp"
-#include "Phylogeny.hpp"
+#include "phylogeny/Phylogeny.hpp"
 
 TEST_CASE("Test phenotype_info::RecordPhenotype", "[Phylogeny]") {
   emp::vector<double> phenotype{0.0, 2.0, 0.0};
