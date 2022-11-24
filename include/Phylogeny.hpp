@@ -111,16 +111,16 @@ public:
     bool found_ancestor = false;
 
     // Keep searching unless we hit the root of the tree
-    while (cur_tax != nullptr) {
+    while (cur_tax != nullptr && dist <= max_dist) {
       // Localize relevant taxon information
-      const auto& taxon_info = cur_tax->GetInfo();
+      const auto& taxon_info = cur_tax->GetData();
       const auto& traits_evaluated = taxon_info.GetTraitsEvaluated();
       emp_assert(trait_id < traits_evaluated.size());
       // Has the focal trait been evaluted in this taxon?
       found_ancestor = traits_evaluated[trait_id];
       // If we found an ancestor with the requested trait evaluated OR we've
       // gone too far in the tree, break out of our search.
-      if (found_ancestor || dist > max_dist) {
+      if (found_ancestor) {
         break;
       }
       // Move up the tree, increase current search distance.
@@ -153,7 +153,7 @@ public:
       // Pop current taxon from front of search queue
       search_queue.pop_front();
       // Localize relevant taxon info
-      const auto& traits_evaluated = cur_tax->GetInfo().GetTraitsEvaluated();
+      const auto& traits_evaluated = cur_tax->GetData().GetTraitsEvaluated();
       emp_assert(trait_id < traits_evaluated.size());
 
       // Check if evaluated. If so, return current taxon.
