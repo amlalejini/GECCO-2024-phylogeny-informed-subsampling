@@ -61,3 +61,4 @@ clean:
 	rm -f *.gcov
 	rm -f ./Coverage*
 	rm -rf ./temp
+	rm -rf *.out.dSYM
