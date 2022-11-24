@@ -163,7 +163,7 @@ public:
 
       // Add next set of relatives if not too far away.
       // Stop searching further if cur_dist >= max_dist
-      if (cur_dist >= max_dist) {
+      if (cur_dist + 1 > max_dist) {
         continue;
       }
 
@@ -175,7 +175,7 @@ public:
       }
 
       // Add any descendants not already searched and not too far away
-      auto& descendants = cur_tax->GetOffspring();
+      std::set<emp::Ptr<taxon_t>> descendants(cur_tax->GetOffspring());
       for (emp::Ptr<taxon_t> descendant_tax : descendants) {
         emp_assert(descendant_tax != nullptr);
         if (!emp::Has(discovered_taxa, descendant_tax->GetID())) {
