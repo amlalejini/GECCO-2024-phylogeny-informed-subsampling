@@ -39,3 +39,7 @@
 
 # VSCode
 .vscode
+
+# Local run files
+/diagnostics.cfg
+/diagnostics
