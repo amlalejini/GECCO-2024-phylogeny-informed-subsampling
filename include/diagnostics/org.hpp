@@ -90,7 +90,6 @@ public:
     start_pos = M;
     streak = M;
     genome.resize(M, Org::START_DB);
-    optimal_genes.resize(M, false);
   }
 
   // every org after starting generation
@@ -102,7 +101,6 @@ public:
     streak = _g.size();
     genome.resize(M, 0.0);
     std::copy(_g.begin(), _g.end(), genome.begin());
-    optimal_genes.resize(M, false);
   }
 
   Org(const Org&) = default;
@@ -413,8 +411,6 @@ void Org::Clone(
   SetPhenotype(s);
   SetOptimal(o);
   SetOptimalGeneCount(c);
-  SetAggregate(a);
-  SetStart(st);
   SetStreak(sr);
 }
 
