@@ -43,3 +43,4 @@
 # Local run files
 /diagnostics.cfg
 /diagnostics
+/output/
