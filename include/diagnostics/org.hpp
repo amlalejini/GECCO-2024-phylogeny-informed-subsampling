@@ -206,6 +206,8 @@ public:
     emp_assert(M > 0);
     evaluated = true;
     phenotype = phen;
+    AggregateScore();
+    StartPosition();
   }
 
   // Set the optimal gene vector (recieved from problem.h in world.h or inherited from parent)

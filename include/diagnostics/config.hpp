@@ -14,7 +14,7 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   VALUE(POP_SIZE, size_t, 512, "Population size."),
   VALUE(MAX_GENS, size_t, 50000, "Maximum number of generations."),
   VALUE(SEED, int, 1, "Random number seed."),
-  VALUE(START, bool, true, "Do we start randomly (true) or from the lowest point (false)"),
+  VALUE(INIT_POP_RAND, bool, true, "Do we start randomly (true) or from the lowest point (false)"),
 
   GROUP(DIAGNOSTICS, "How are the diagnostics setup?"),
   VALUE(LOWER_BND, double, 0.0, "Lower bound for random starts."),
@@ -52,7 +52,7 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   VALUE(NOVELTY_GEN, size_t, 500, "Number of generations to lower pmin."),
   VALUE(NOVELTY_CAP, size_t, 512, "Cap on number of solutions allowed in the archive"),
   VALUE(NOVELTY_CQS, bool, false, "Do we cap solutions?"),
-
+  // TODO - make DS generic
   GROUP(LEXICASE, "Parameters for lexicase."),
   VALUE(LEX_EPS, double, 0.0, "Parameter estimate for lexicase epsilon."),
   VALUE(LEX_DS_RATE, double, 0.5, "Percent of test cases to sample for down-sampled lexicase?"),
