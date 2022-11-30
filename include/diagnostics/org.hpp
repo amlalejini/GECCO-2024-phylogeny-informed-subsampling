@@ -18,8 +18,8 @@ public:
   using genome_t = emp::vector<double>;     // genome vector type
   using phenotype_t = emp::vector<double>;  // score vector type
 
-  static const double START_DB = 0.0;    // Initial gene values
-  static const size_t START_ST = 0;
+  static constexpr double START_DB = 0.0;    // Initial gene values
+  static constexpr size_t START_ST = 0;
 
 protected:
   genome_t genome; // organism genome vector
