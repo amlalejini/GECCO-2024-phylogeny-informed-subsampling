@@ -21,7 +21,7 @@ namespace diag {
     { ; }
 
     BaseDiagnostic() = default;
-    ~BaseDiagnostic() = default;
+    virtual ~BaseDiagnostic() = default;
 
     double GetTarget() const { return target; }
     double GetMaxErrorCredit() const { return max_error_credit; }

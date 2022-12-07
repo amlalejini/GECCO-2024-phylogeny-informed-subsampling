@@ -12,6 +12,11 @@ struct ContradictoryObjectivesDiagnostic : public BaseDiagnostic {
   using phenotype_t = emp::vector<double>;
   using genotype_t = emp::vector<double>;
 
+  ContradictoryObjectivesDiagnostic(double targ, double err_cred)
+    : BaseDiagnostic(targ, err_cred)
+  { ; }
+  ContradictoryObjectivesDiagnostic() = default;
+
   phenotype_t Translate(const genotype_t& genome) const {
     phenotype_t phenotype(genome.size(), 0);
     Translate(genome, phenotype);

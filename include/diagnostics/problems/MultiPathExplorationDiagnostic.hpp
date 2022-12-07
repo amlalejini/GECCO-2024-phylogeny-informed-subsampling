@@ -12,6 +12,11 @@ struct MultiPathExplorationDiagnostic : public BaseDiagnostic {
   using phenotype_t = emp::vector<double>;
   using genotype_t = emp::vector<double>;
 
+  MultiPathExplorationDiagnostic(double targ, double err_cred)
+    : BaseDiagnostic(targ, err_cred)
+  { ; }
+  MultiPathExplorationDiagnostic() = default;
+
   phenotype_t Translate(const genotype_t& genome) const {
     phenotype_t phenotype(genome.size(), 0);
     Translate(genome, phenotype);
