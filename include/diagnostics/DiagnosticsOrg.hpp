@@ -144,7 +144,7 @@ public:
   }
 
   void TranslateGenome(
-    const std::function<void(const genome_t& g, phenotype_t& p)>& translate
+    const std::function<void(const genome_t&, phenotype_t&)>& translate
   ) {
     translate(genome, phenotype);
     // aggregate score
