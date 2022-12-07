@@ -10,7 +10,7 @@ namespace diag {
 
   struct BaseDiagnostic {
     using phenotype_t = emp::vector<double>;
-    using genotype_t = emp::vector<double>;
+    using genome_t = emp::vector<double>;
 
     double target = 0.0;           ///< Target trait value.
     double max_error_credit = 0.0; ///< Maximum credit allowed for error.
@@ -34,8 +34,8 @@ namespace diag {
       max_error_credit = c;
     }
 
-    virtual phenotype_t Translate(const genotype_t& genome) const = 0;
-    virtual void Translate(const genotype_t& genome, phenotype_t& phenotype) const = 0;
+    virtual phenotype_t Translate(const genome_t& genome) const = 0;
+    virtual void Translate(const genome_t& genome, phenotype_t& phenotype) const = 0;
 
   };
 

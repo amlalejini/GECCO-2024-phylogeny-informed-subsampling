@@ -7,9 +7,9 @@
 #include "emp/config/command_line.hpp"
 #include "emp/config/ArgManager.hpp"
 
-#include "diagnostics/config.hpp"
-#include "diagnostics/world.hpp"
-#include "diagnostics/org.hpp"
+#include "diagnostics/DiagnosticsConfig.hpp"
+#include "diagnostics/DiagnosticsWorld.hpp"
+#include "diagnostics/problems/DiagnosticsProblems.hpp"
 
 // Hello world
 
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
             << std::endl;
 
 
-  diag::DiagWorld world(config);
-  world.Run();
+  diag::DiagnosticsWorld world(config);
+  // world.Run();
 
 }

@@ -26,7 +26,7 @@ protected:
   size_t streak_size = 0;
 
   double aggregate_score = 0.0;
-  size_t max_gene_id = 0;
+  size_t max_trait_id = 0;
 
   // bool is_clone = false;
 
@@ -144,7 +144,7 @@ public:
   }
 
   void TranslateGenome(
-    const std::function<void(const genotype_t& g, phenotype_t& p)>& translate
+    const std::function<void(const genome_t& g, phenotype_t& p)>& translate
   ) {
     translate(genome, phenotype);
     // aggregate score
@@ -155,9 +155,9 @@ public:
     evaluated = true;
   }
 
-  void CalcOptimalGenes(double target, double accuracy) {
+  void CalcOptimalTraits(double target, double accuracy) {
     emp_assert(evaluated);
-    optimal_trait.resize(phenotype.size(), false);
+    optimal_traits.resize(phenotype.size(), false);
     // Identify traits within accuracy threshold of target
     emp_assert(target > 0, target);
     emp_assert(accuracy > 0 && accuracy <= 1.0, accuracy, "Accuracy must be between 0 and 1");
@@ -166,12 +166,10 @@ public:
       optimal_traits[i] = phenotype[i] >= threshold;
     }
     streak_size = FindStreakSize();
-    optimal_genes_calculated = true;
+    optimal_traits_calculated = true;
   }
 
-
-
-}
+};
 
 }
 
