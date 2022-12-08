@@ -24,17 +24,6 @@ public:
 
   using config_t = DiagnosticsConfig;
 
-  // using eval_org_fun_t = std::function<void(org_t&)>;
-  // using translate_genome_fun_t = std::function<void(const genome_t&, phenotype_t&)>;
-
-  // struct TestGroup {
-  //   emp::vector<size_t> test_ids;
-  // };
-
-  // struct PopGroup {
-  //   emp::vector<size_t> pop_ids;
-  // };
-
   struct Grouping {
     size_t group_id = 0;
     size_t group_size = 0;
@@ -61,7 +50,7 @@ protected:
   emp::vector<double> org_aggregate_scores;
   emp::vector< std::function<double(const org_t&)> > fit_fun_set; ///< One function for every possible test case.
 
-  emp::vector< emp::vector<double> > org_test_scores; ///< Test scores for each organism
+  emp::vector< emp::vector<double> > org_test_scores;   ///< Test scores for each organism
   emp::vector< emp::vector<bool> > org_test_evaluations; ///< Which test cases has each organism been evaluated on?
 
   emp::vector<size_t> possible_test_ids;
@@ -71,10 +60,10 @@ protected:
   emp::vector<Grouping> org_groupings;  ///< Groupings of organisms
   emp::vector<size_t> org_group_ids;    ///< Group ID for each organism
 
-  std::function<void()> assign_test_groupings;
-  std::function<void()> assign_org_groupings;
+  std::function<void(void)> assign_test_groupings;
+  std::function<void(void)> assign_org_groupings;
 
-  std::function<void()> do_sample_tests;
+  std::function<double(size_t, size_t)> estimate_test_score;
 
   // emp::Ptr<BaseSelect> selector;
   emp::vector<size_t> selected_parent_ids;
@@ -93,6 +82,8 @@ protected:
   void SetupEvaluation_Cohort();
   void SetupEvaluation_DownSample();
   void SetupEvaluation_Full();
+
+  void InitializePopulation();
 
   void DoEvaluation();
   void DoSelection();
@@ -123,11 +114,61 @@ public:
 
 };
 
+void DiagnosticsWorld::RunStep() {
+  DoEvaluation();
+  DoSelection();
+  DoUpdate();
+}
+
+void DiagnosticsWorld::Run() {
+  // TODO
+}
+
+void DiagnosticsWorld::DoEvaluation() {
+  // Assign test groupings (if any)
+  assign_test_groupings();
+  // Assign organism groupings (if any)
+  assign_org_groupings();
+  // Evaluate each organism
+  for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
+    // Evaluation signal actions will:
+    // - Translate organism genomes
+    // - Update test scores, update aggregate score
+    do_org_evaluation_sig.Trigger(org_id);
+  }
+}
+
+void DiagnosticsWorld::DoSelection() {
+  // TODO
+}
+
+void DiagnosticsWorld::DoUpdate() {
+  // TODO
+}
+
+
 void DiagnosticsWorld::Setup() {
   std::cout << "--- Setting up DiagnosticsWorld ---" << std::endl;
 
   // Reset the world
   Reset();
+
+  // Configure world to set organism ID on placement
+  OnPlacement(
+    [this](size_t pos) {
+      auto& org = GetOrg(pos);
+      org.SetPopID(pos);
+      emp_assert(org.GetPopID() == pos);
+    }
+  );
+
+  // TODO - Configure OnOffspringReady
+  // OnOffspringReady(
+  //   [this](org_t& org, size_t parent_pos) {
+  //     // TODO
+  //     // Mutate (make sure happens after systematics)
+  //   }
+  // );
 
   // Setup diagnostic problem
   SetupDiagnostic();
@@ -143,6 +184,11 @@ void DiagnosticsWorld::Setup() {
 
   // Setup population structure
   SetPopStruct_Mixed(true);
+
+  // TODO - disable (automatic?) mutations
+  // Initialize population
+  InitializePopulation();
+  // TODO - enable (automatic?) mutations
 
 }
 
@@ -196,17 +242,11 @@ void DiagnosticsWorld::SetupDiagnosticHelper() {
     };
   }
 
-  // // Configure organism evaluation
-  // evaluate_org_fun = [this](org_t& org) {
-  //   // Translate organism genome
-  //   org.TranslateGenome(translate_genome_fun);
-  //   // Calculate optimal traits
-  //   org.CalcOptimalTraits(config.TARGET(), config.ACCURACY());
-  // };
 }
 
 void DiagnosticsWorld::SetupMutator() {
   std::cout << "Configuring mutator" << std::endl;
+  // TODO - Need to set things up to automutate?
   SetMutFun(
     [this](org_t& org, emp::Random& random) {
       // number of mutations and solution genome
@@ -224,9 +264,9 @@ void DiagnosticsWorld::SetupMutator() {
           if ( config.TARGET() < (genome[i] + mut) ) {
             // Rebound
             genome[i] = config.TARGET() - (genome[i] + mut - config.TARGET());
-          } else if ( (genome[i] + mut) < config.LOWER_BND() ) {
+          } else if ( (genome[i] + mut) < config.GENE_LOWER_BND() ) {
             // Rebound
-            genome[i] = std::abs(genome[i] + mut) + config.LOWER_BND();
+            genome[i] = std::abs(genome[i] + mut) + config.GENE_LOWER_BND();
           } else {
             // Add mutation
             genome[i] = genome[i] + mut;
@@ -305,7 +345,30 @@ void DiagnosticsWorld::SetupEvaluation() {
     }
   );
 
-  // TODO - fit_fun_set
+  // Setup the default estimate_test_score functionality
+  // TODO - setup configurable fitness estimation
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    return org_test_scores[org_id][test_id];
+  };
+
+  // Configure the fitness functions
+  fit_fun_set.clear();
+  for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+    fit_fun_set.emplace_back(
+      [this, test_id](const org_t& org) {
+        const size_t org_id = org.GetPopID();
+        emp_assert(org_id < org_test_evaluations.size());
+        emp_assert(org_id < org_test_scores.size());
+        emp_assert(test_id < org_test_evaluations[org_id].size());
+        emp_assert(test_id < org_test_scores[org_id].size());
+        if (org_test_evaluations[org_id][test_id]) {
+          return org_test_scores[org_id][test_id];
+        } else {
+          return estimate_test_score(org_id, test_id);
+        }
+      }
+    );
+  }
 
   // full vs cohort vs down-sample
   if (config.EVAL_MODE() == "full") {
@@ -318,10 +381,6 @@ void DiagnosticsWorld::SetupEvaluation() {
     std::cout << "Unknown EVAL_MODE: " << config.EVAL_MODE() << std::endl;
     exit(-1);
   }
-
-  // fit_fun_set
-  // test_groupings
-  // org_groupings
 
 }
 
@@ -402,7 +461,9 @@ void DiagnosticsWorld::SetupEvaluation_Cohort() {
       auto& cohort = org_groupings[cohort_id];
       emp_assert(cohort.member_ids.size() == cohort.group_size);
       for (size_t member_i = 0; member_i < cohort.group_size; ++member_i) {
-        cohort.member_ids[member_i] = possible_pop_ids[cur_pos];
+        const size_t pop_id = possible_pop_ids[cur_pos];
+        emp_assert(GetOrg(pop_id).GetPopID() == pop_id);
+        cohort.member_ids[member_i] = pop_id;
         org_group_ids[cur_pos] = cohort.group_id;
         ++cur_pos;
       }
@@ -451,6 +512,29 @@ void DiagnosticsWorld::SetupEvaluation_Full() {
 
 void DiagnosticsWorld::SetupSelection() {
   std::cout << "Configuring parent selection routine" << std::endl;
+
+}
+
+void DiagnosticsWorld::InitializePopulation() {
+
+  std::cout << "Initializing population" << std::endl;
+
+  if (config.INIT_POP_RAND()) {
+    for (size_t i = 0; i < config.POP_SIZE(); ++i) {
+      Inject(
+        emp::RandomDoubleVector(
+          *random_ptr,
+          config.DIAGNOSTIC_DIMENSIONALITY(),
+          config.GENE_LOWER_BND(),
+          config.GENE_UPPER_BND()
+        ),
+        1
+      );
+    }
+  } else {
+    org_t default_org(config.DIAGNOSTIC_DIMENSIONALITY(), 0.0);
+    Inject(default_org.GetGenome(), config.POP_SIZE());
+  }
 
 }
 

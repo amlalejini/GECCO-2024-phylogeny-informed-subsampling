@@ -28,6 +28,8 @@ protected:
   double aggregate_score = 0.0;
   size_t max_trait_id = 0;
 
+  size_t pop_id = 0;
+
   // bool is_clone = false;
 
   void AggregatePhenotype() {
@@ -67,8 +69,8 @@ protected:
 
 public:
 
-  DiagnosticsOrg(size_t num_genes) {
-    genome.resize(num_genes, 0);
+  DiagnosticsOrg(size_t num_genes, double init_gene_val=0.0) {
+    genome.resize(num_genes, init_gene_val);
     phenotype.resize(num_genes, 0);
     optimal_traits.resize(num_genes, false);
   }
@@ -98,6 +100,9 @@ public:
   const phenotype_t& GetPhenotype() const {
     return phenotype;
   }
+
+  size_t GetPopID() const { return pop_id; }
+  void SetPopID(size_t id) { pop_id = id; }
 
   bool IsEvaluated() const { return evaluated; }
 
