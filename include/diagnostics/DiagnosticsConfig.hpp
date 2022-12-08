@@ -35,6 +35,9 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   GROUP(EVALUATION_COHORT, "Cohort evaluation settings"),
   VALUE(NUM_COHORTS, size_t, 2, "How many cohorts should we divide the tests and organisms into?"),
 
+  GROUP(EVALUATION_DOWNSAMPLE, "Down-sample evaluation settings"),
+  VALUE(TEST_DOWNSAMPLE_RATE, double, 0.5, "Proportion of tests to use in test down-sample"),
+
   GROUP(SELECTION, "Selection scheme"),
   VALUE(SELECTION, std::string, "truncation", "Which selection are we doing? Options: \ntruncation \ntournament \nfitness-sharing \nlexicase \nlexicase-eps lexicase-even-lead \nnondominated-sorting \nnovelty"),
 

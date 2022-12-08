@@ -385,6 +385,7 @@ void DiagnosticsWorld::SetupEvaluation() {
 }
 
 void DiagnosticsWorld::SetupEvaluation_Cohort() {
+  std::cout << "Configuring evaluation mode: cohort" << std::endl;
   emp_assert(config.NUM_COHORTS() > 0);
   emp_assert(total_tests > 0);
   emp_assert(config.POP_SIZE() > 0);
@@ -503,7 +504,84 @@ void DiagnosticsWorld::SetupEvaluation_Cohort() {
 }
 
 void DiagnosticsWorld::SetupEvaluation_DownSample() {
-  // TODO
+  std::cout << "Configuring Evaluation mode: down-sample" << std::endl;
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() > 0);
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() <= 1.0);
+  emp_assert(total_tests > 0);
+
+  size_t sample_size = (size_t)(config.TEST_DOWNSAMPLE_RATE() * (double)total_tests);
+  sample_size = (sample_size == 0) ? sample_size + 1 : sample_size;
+  emp_assert(sample_size > 0);
+  emp_assert(sample_size <= total_tests);
+
+  std::cout << "sample_size = " << sample_size << std::endl;
+
+  // Initialize test groupings to one group that will contain random sample
+  test_groupings.resize(1);
+  auto& test_group = test_groupings.back();
+  test_group.group_id = 0;
+  test_group.Resize(sample_size, 0);
+  emp_assert(test_group.member_ids.size() == sample_size);
+
+  // Setup function to assign random test cases to test group
+  assign_test_groupings = [this, sample_size]() {
+    emp_assert(test_groupings.size() == 1);
+    // Suffle all possible test ids
+    emp::Shuffle(*random_ptr, possible_test_ids);
+    // NOTE - if wanted to allow over sampling (> num tests), could modify this code to support
+    auto& test_group = test_groupings.back();
+    emp_assert(test_group.member_ids.size() == sample_size);
+    for (size_t i = 0; i < sample_size; ++i) {
+      const size_t test_id = possible_test_ids[i];
+      test_group.member_ids[i] = test_id;
+    }
+  };
+
+  // Initialize org groupings to one group that will contain entire population
+  org_groupings.resize(1);
+  auto& org_group = org_groupings.back();
+  org_group.group_id = 0;
+  org_group.Resize(config.POP_SIZE(), 0);
+  // Go ahead and initialize organism grouping to contain all organism ids
+  std::iota(
+    org_group.member_ids.begin(),
+    org_group.member_ids.end(),
+    0
+  );
+  // Setup function to assign organism groupings (should do nothing, no need to modify current grouping)
+  assign_org_groupings = [this]() {
+    emp_assert(org_groupings.size() == 1);
+    emp_assert(org_groupings.back().member_ids.size() == config.POP_SIZE());
+    /* Do nothing */
+  };
+
+  // Configure organism evaluation
+  do_org_evaluation_sig.AddAction(
+    [this, sample_size](size_t org_id) {
+      emp_assert(org_id < GetSize());
+      emp_assert(test_groupings.size() == 1);
+      auto& org = GetOrg(org_id);
+      auto& test_group = test_groupings.back();
+      emp_assert(org.IsEvaluated());
+      emp_assert(test_group.member_ids.size() == sample_size);
+      double aggregate_score = 0.0;
+      for (size_t i = 0; i < sample_size; ++i) {
+        const size_t test_id = test_group.member_ids[i];
+        emp_assert(test_id < org.GetPhenotype().size());
+        const double test_score = org.GetPhenotype()[test_id];
+        // Update test score, aggregate score
+        org_test_scores[org_id][test_id] = test_score;
+        aggregate_score += test_score;
+        // Update evaluated
+        org_test_evaluations[org_id][test_id] = true;
+      }
+      // Update aggregate score
+      org_aggregate_scores[org_id] = aggregate_score;
+    }
+  );
+
+  // TODO - print out assigned down sample, test to make sure it works
+
 }
 
 void DiagnosticsWorld::SetupEvaluation_Full() {
