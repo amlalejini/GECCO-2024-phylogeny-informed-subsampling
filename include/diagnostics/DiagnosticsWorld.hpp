@@ -585,7 +585,70 @@ void DiagnosticsWorld::SetupEvaluation_DownSample() {
 }
 
 void DiagnosticsWorld::SetupEvaluation_Full() {
-  // TODO
+  std::cout << "Configuring evaluation mode: full" << std::endl;
+  emp_assert(total_tests > 0);
+
+  // Initialize the test groupings with one group that holds all tests
+  test_groupings.resize(1);
+  auto& test_group = test_groupings.back();
+  test_group.group_id = 0;
+  test_group.Resize(total_tests, 0);
+  std::iota(
+    test_group.member_ids.begin(),
+    test_group.member_ids.end(),
+    0
+  );
+  // Setup function to assign test cases to test group (should do nothing to change test group)
+  assign_test_groupings = [this]() {
+    emp_assert(test_groupings.size() == 1);
+    emp_assert(test_groupings.back().member_ids.size() == total_tests);
+    /* Do nothing */
+  };
+
+  // Initialize org groupings to one group containing all organisms
+  org_groupings.resize(1);
+  auto& org_group = org_groupings.back();
+  org_group.group_id = 0;
+  org_group.Resize(config.POP_SIZE(), 0);
+  // Go ahead and initialize organism grouping to contain all organism ids
+  std::iota(
+    org_group.member_ids.begin(),
+    org_group.member_ids.end(),
+    0
+  );
+  // Setup function to assign organism groupings (should do nothing, no need to modify current grouping)
+  assign_org_groupings = [this]() {
+    emp_assert(org_groupings.size() == 1);
+    emp_assert(org_groupings.back().member_ids.size() == config.POP_SIZE());
+    /* Do nothing */
+  };
+
+  // Configure organism evaluation
+  do_org_evaluation_sig.AddAction(
+    [this](size_t org_id) {
+      emp_assert(org_id < GetSize());
+      emp_assert(test_groupings.size() == 1);
+      auto& org = GetOrg(org_id);
+      auto& test_group = test_groupings.back();
+      emp_assert(org.IsEvaluated());
+      emp_assert(test_group.member_ids.size() == total_tests);
+      double aggregate_score = 0.0;
+      for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+        emp_assert(test_id < org.GetPhenotype().size());
+        const double test_score = org.GetPhenotype()[test_id];
+        // Update test score, aggregate score
+        org_test_scores[org_id][test_id] = test_score;
+        aggregate_score += test_score;
+        // Update evaluated
+        org_test_evaluations[org_id][test_id] = true;
+      }
+      // Update aggregate score
+      org_aggregate_scores[org_id] = aggregate_score;
+    }
+  );
+
+  // TODO - test full evaluation to make sure it works
+
 }
 
 void DiagnosticsWorld::SetupSelection() {
