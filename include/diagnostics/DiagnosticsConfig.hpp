@@ -22,12 +22,18 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   VALUE(ACCURACY, double, 0.99, "Accuracy percentage needed to be considered an optimal trait"),
   VALUE(TARGET, double, 100.0, "Upper bound for random starts."),
   VALUE(CREDIT, double, 0.00, "Maximum credit a solution can get on an objective if applicable"),
-  VALUE(DIMENSIONALITY, size_t, 100, "Number of traits an organism has (i.e., genome/phenotype dimensionality"),
+  VALUE(DIAGNOSTIC_DIMENSIONALITY, size_t, 100, "Number of traits an organism has (i.e., genome/phenotype dimensionality"),
 
   GROUP(MUTATIONS, "Mutation rates for organisms."),
   VALUE(MUTATE_PER_SITE_RATE, double, 0.007, "Probability of instructions being mutated"),
   VALUE(MUTATE_MEAN, double, 0.0, "Mean of Gaussian Distribution for mutations"),
   VALUE(MUTATE_STD, double, 1.0, "Standard Deviation of Gaussian Distribution for mutations"),
+
+  GROUP(EVALUTION, "How are organisms evaluated?"),
+  VALUE(EVAL_MODE, std::string, "full", "Evaluation mode. Options:\nfull\ncohort\ndown-sample"),
+
+  GROUP(EVALUATION_COHORT, "Cohort evaluation settings"),
+  VALUE(NUM_COHORTS, size_t, 2, "How many cohorts should we divide the tests and organisms into?"),
 
   GROUP(SELECTION, "Selection scheme"),
   VALUE(SELECTION, std::string, "truncation", "Which selection are we doing? Options: \ntruncation \ntournament \nfitness-sharing \nlexicase \nlexicase-eps lexicase-even-lead \nnondominated-sorting \nnovelty"),
@@ -52,7 +58,7 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   VALUE(NOVELTY_GEN, size_t, 500, "Number of generations to lower pmin."),
   VALUE(NOVELTY_CAP, size_t, 512, "Cap on number of solutions allowed in the archive"),
   VALUE(NOVELTY_CQS, bool, false, "Do we cap solutions?"),
-  // TODO - make DS generic
+
   GROUP(LEXICASE, "Parameters for lexicase."),
   VALUE(LEX_EPS, double, 0.0, "Parameter estimate for lexicase epsilon."),
   VALUE(LEX_DS_RATE, double, 0.5, "Percent of test cases to sample for down-sampled lexicase?"),
@@ -69,4 +75,4 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   VALUE(OUTPUT_DIR, std::string, "./output/", "What directory are we dumping all this data")
 )
 
-} // namespace diag
+}
