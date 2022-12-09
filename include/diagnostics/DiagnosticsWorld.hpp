@@ -8,6 +8,7 @@
 #include "emp/Evolve/World.hpp"
 
 #include "phylogeny/Phylogeny.hpp"
+#include "selection/SelectionSchemes.hpp"
 
 #include "DiagnosticsConfig.hpp"
 #include "DiagnosticsOrg.hpp"
@@ -33,6 +34,8 @@ public:
       group_size = size;
       member_ids.resize(group_size, value);
     }
+
+    size_t GetSize() const { return member_ids.size(); }
   };
 
 protected:
@@ -48,7 +51,8 @@ protected:
   // TODO - create a class/struct that manages all of this?
   size_t total_tests=0;
   emp::vector<double> org_aggregate_scores;
-  emp::vector< std::function<double(const org_t&)> > fit_fun_set; ///< One function for every possible test case.
+  // emp::vector< std::function<double(const org_t&)> > fit_fun_set; ///< One function for every possible test case.
+  emp::vector< emp::vector< std::function<double(void)> > > fit_fun_set; ///< Per-organism, per-test
 
   emp::vector< emp::vector<double> > org_test_scores;   ///< Test scores for each organism
   emp::vector< emp::vector<bool> > org_test_evaluations; ///< Which test cases has each organism been evaluated on?
@@ -56,8 +60,8 @@ protected:
   emp::vector<size_t> possible_test_ids;
   emp::vector<size_t> possible_pop_ids;
 
-  emp::vector<Grouping> test_groupings; ///< Groupings of tests
-  emp::vector<Grouping> org_groupings;  ///< Groupings of organisms
+  emp::vector<Grouping> test_groupings; ///< Groupings of tests (needs to be same size as org_groupings)
+  emp::vector<Grouping> org_groupings;  ///< Groupings of organisms (needs to be same size as test_groupings)
   emp::vector<size_t> org_group_ids;    ///< Group ID for each organism
 
   std::function<void(void)> assign_test_groupings;
@@ -65,9 +69,11 @@ protected:
 
   std::function<double(size_t, size_t)> estimate_test_score;
 
-  // emp::Ptr<BaseSelect> selector;
+  emp::Ptr<selection::BaseSelect> selector;
   emp::vector<size_t> selected_parent_ids;
+  std::function<void(void)> run_selection_routine;
 
+  size_t total_test_evaluations = 0;  ///< Tracks total number of "test case" evaluations (across all organisms since beginning of run)
 
   void Setup();
   void SetupDiagnostic();
@@ -82,6 +88,12 @@ protected:
   void SetupEvaluation_Cohort();
   void SetupEvaluation_DownSample();
   void SetupEvaluation_Full();
+
+  void SetupSelection_Lexicase();
+  void SetupSelection_Tournament();
+  void SetupSelection_Truncation();
+  void SetupSelection_None();
+  void SetupSelection_Random();
 
   void InitializePopulation();
 
@@ -107,6 +119,7 @@ public:
   ~DiagnosticsWorld() {
     // TODO - delete pointers!
     if (base_diagnostic != nullptr) base_diagnostic.Delete();
+    if (selector != nullptr) selector.Delete();
   }
 
   void RunStep();
@@ -125,6 +138,10 @@ void DiagnosticsWorld::Run() {
 }
 
 void DiagnosticsWorld::DoEvaluation() {
+  emp_assert(org_aggregate_scores.size() == config.POP_SIZE());
+  emp_assert(fit_fun_set.size() == config.POP_SIZE());
+  emp_assert(org_test_scores.size() == config.POP_SIZE());
+  emp_assert(org_test_evaluations.size() == config.POP_SIZE());
   // Assign test groupings (if any)
   assign_test_groupings();
   // Assign organism groupings (if any)
@@ -139,11 +156,19 @@ void DiagnosticsWorld::DoEvaluation() {
 }
 
 void DiagnosticsWorld::DoSelection() {
-  // TODO
+  // Run selection-specific routine
+  run_selection_routine();
+  emp_assert(selected_parent_ids.size() == config.POP_SIZE());
+  // each selected parent id reproduces
+  for (size_t id : selected_parent_ids) {
+    DoBirth(GetGenomeAt(id), id);
+  }
+
 }
 
 void DiagnosticsWorld::DoUpdate() {
   // TODO
+  // (1) Compute any per-generation statistics?
 }
 
 
@@ -152,6 +177,7 @@ void DiagnosticsWorld::Setup() {
 
   // Reset the world
   Reset();
+  total_test_evaluations = 0;
 
   // Configure world to set organism ID on placement
   OnPlacement(
@@ -188,7 +214,9 @@ void DiagnosticsWorld::Setup() {
   // TODO - disable (automatic?) mutations
   // Initialize population
   InitializePopulation();
+  // TODO - print population check if what expected
   // TODO - enable (automatic?) mutations
+  SetAutoMutate();
 
 }
 
@@ -351,24 +379,45 @@ void DiagnosticsWorld::SetupEvaluation() {
     return org_test_scores[org_id][test_id];
   };
 
-  // Configure the fitness functions
+  // Configure the fitness functions (per-organism, per-test)
   fit_fun_set.clear();
-  for (size_t test_id = 0; test_id < total_tests; ++test_id) {
-    fit_fun_set.emplace_back(
-      [this, test_id](const org_t& org) {
-        const size_t org_id = org.GetPopID();
-        emp_assert(org_id < org_test_evaluations.size());
-        emp_assert(org_id < org_test_scores.size());
-        emp_assert(test_id < org_test_evaluations[org_id].size());
-        emp_assert(test_id < org_test_scores[org_id].size());
-        if (org_test_evaluations[org_id][test_id]) {
-          return org_test_scores[org_id][test_id];
-        } else {
-          return estimate_test_score(org_id, test_id);
+  fit_fun_set.resize(config.POP_SIZE(), emp::vector<std::function<double(void)>>(0));
+  for (size_t org_id = 0; org_id < config.POP_SIZE(); ++org_id) {
+    for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+      fit_fun_set[org_id].emplace_back(
+        [this, org_id, test_id]() {
+          emp_assert(org_id < org_test_evaluations.size());
+          emp_assert(org_id < org_test_scores.size());
+          emp_assert(test_id < org_test_evaluations[org_id].size());
+          emp_assert(test_id < org_test_scores[org_id].size());
+          if (org_test_evaluations[org_id][test_id]) {
+            return org_test_scores[org_id][test_id];
+          } else {
+            return estimate_test_score(org_id, test_id);
+          }
         }
-      }
-    );
+      );
+    }
+
   }
+
+  // OLD way of configuring fit_fun_set
+  // for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+  //   fit_fun_set.emplace_back(
+  //     [this, test_id](const org_t& org) {
+  //       const size_t org_id = org.GetPopID();
+  //       emp_assert(org_id < org_test_evaluations.size());
+  //       emp_assert(org_id < org_test_scores.size());
+  //       emp_assert(test_id < org_test_evaluations[org_id].size());
+  //       emp_assert(test_id < org_test_scores[org_id].size());
+  //       if (org_test_evaluations[org_id][test_id]) {
+  //         return org_test_scores[org_id][test_id];
+  //       } else {
+  //         return estimate_test_score(org_id, test_id);
+  //       }
+  //     }
+  //   );
+  // }
 
   // full vs cohort vs down-sample
   if (config.EVAL_MODE() == "full") {
@@ -492,6 +541,7 @@ void DiagnosticsWorld::SetupEvaluation_Cohort() {
         aggregate_score += org.GetPhenotype()[test_id];
         // Update evaluated
         org_test_evaluations[org_id][test_id] = true;
+        ++total_test_evaluations;
       }
       // Update aggregate score
       org_aggregate_scores[org_id] = aggregate_score;
@@ -574,6 +624,7 @@ void DiagnosticsWorld::SetupEvaluation_DownSample() {
         aggregate_score += test_score;
         // Update evaluated
         org_test_evaluations[org_id][test_id] = true;
+        ++total_test_evaluations;
       }
       // Update aggregate score
       org_aggregate_scores[org_id] = aggregate_score;
@@ -641,6 +692,7 @@ void DiagnosticsWorld::SetupEvaluation_Full() {
         aggregate_score += test_score;
         // Update evaluated
         org_test_evaluations[org_id][test_id] = true;
+        ++total_test_evaluations;
       }
       // Update aggregate score
       org_aggregate_scores[org_id] = aggregate_score;
@@ -653,8 +705,87 @@ void DiagnosticsWorld::SetupEvaluation_Full() {
 
 void DiagnosticsWorld::SetupSelection() {
   std::cout << "Configuring parent selection routine" << std::endl;
+  emp_assert(selector == nullptr);
+
+  if (config.SELECTION() == "lexicase" ) {
+    SetupSelection_Lexicase();
+  } else if (config.SELECTION() == "tournament" ) {
+    SetupSelection_Tournament();
+  } else if (config.SELECTION() == "truncation" ) {
+    SetupSelection_Truncation();
+  } else if (config.SELECTION() == "none" ) {
+    SetupSelection_None();
+  } else if (config.SELECTION() == "random" ) {
+    SetupSelection_Random();
+  } else {
+    std::cout << "Unknown selection scheme: " << config.SELECTION() << std::endl;
+    exit(-1);
+  }
+
 
 }
+
+void DiagnosticsWorld::SetupSelection_Lexicase() {
+  // TODO - setup lexicase
+  selector = emp::NewPtr<selection::LexicaseSelect>(
+    fit_fun_set,
+    *random_ptr
+  );
+
+  // Configure selection routine
+  // TODO - move some of this logic outside of the run_selection_routine if repeated across selection algorithms?
+  run_selection_routine = [this]() {
+    // Cast selector to lexicase selection
+    auto& sel = *(selector.Cast<selection::LexicaseSelect>());
+    // Resize parent ids to hold pop_size parents
+    selected_parent_ids.resize(config.POP_SIZE(), 0);
+    emp_assert(test_groupings.size() == org_groupings.size());
+    const size_t num_groups = org_groupings.size();
+    // For each grouping, select a number of parents equal to group size
+    size_t num_selected = 0;
+    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+      auto& org_group = org_groupings[group_id];
+      auto& test_group = test_groupings[group_id];
+      const size_t n = org_group.GetSize();
+      auto& selected = sel(
+        n,
+        org_group.member_ids,
+        test_group.member_ids
+      );
+      emp_assert(selected.size() == n);
+      emp_assert(n + num_selected <= selected_parent_ids.size());
+      std::copy(
+        selected.begin(),
+        selected.end(),
+        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
+      );
+      num_selected += n;
+    }
+    // TODO - check that sets of selected ids correctly stored in selected_parent_ids
+  };
+
+}
+
+void DiagnosticsWorld::SetupSelection_Tournament() {
+  // TODO - setup tournament
+  emp_assert(false);
+}
+
+void DiagnosticsWorld::SetupSelection_Truncation() {
+  // TODO - setup truncation
+  emp_assert(false);
+}
+
+void DiagnosticsWorld::SetupSelection_None() {
+  // TODO - setup lexicase
+  emp_assert(false);
+}
+
+void DiagnosticsWorld::SetupSelection_Random() {
+  // TODO - setup lexicase
+  emp_assert(false);
+}
+
 
 void DiagnosticsWorld::InitializePopulation() {
 
