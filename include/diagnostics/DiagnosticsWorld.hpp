@@ -93,6 +93,10 @@ protected:
 
   size_t true_max_fit_org_id = 0;     ///< Tracks max fit organism (based on 'true' aggregate fitness)
 
+  // -- data files --
+  emp::Ptr<emp::DataFile> summary_file_ptr;
+  emp::Ptr<emp::DataFile> phylodiversity_file_ptr;
+
   void Setup();
   void SetupDiagnostic();
   void SetupSelection();
@@ -136,9 +140,10 @@ public:
   }
 
   ~DiagnosticsWorld() {
-    // TODO - delete pointers!
     if (base_diagnostic != nullptr) base_diagnostic.Delete();
     if (selector != nullptr) selector.Delete();
+    if (summary_file_ptr != nullptr) summary_file_ptr.Delete();
+    if (phylodiversity_file_ptr != nullptr) phylodiversity_file_ptr.Delete();
   }
 
   void RunStep();
@@ -197,11 +202,27 @@ void DiagnosticsWorld::DoSelection() {
 void DiagnosticsWorld::DoUpdate() {
   // (1) Compute any per-generation statistics?
   emp_assert(config.PRINT_INTERVAL() > 0);
-  if ( !(GetUpdate() % config.PRINT_INTERVAL()) ) {
+  const size_t cur_update = GetUpdate();
+  const bool final_update = cur_update == config.MAX_GENS();
+  const bool print_interval = !(cur_update % config.PRINT_INTERVAL()) || final_update;
+  const bool phylo_data_interval = !(cur_update % config.OUTPUT_PHYLO_DATA_INTERVAL()) || final_update;
+  const bool summary_data_interval = !(cur_update % config.OUTPUT_SUMMARY_DATA_INTERVAL()) || final_update;
+  // TODO - snapshot interval
+  // Output to phylo data file?
+  if (phylo_data_interval) {
+    phylodiversity_file_ptr->Update();
+  }
+  // Output to summary data file?
+  if (summary_data_interval) {
+    summary_file_ptr->Update();
+  }
+  // Print status?
+  if ( print_interval ) {
     std::cout << "update: " << GetUpdate() << "; ";
     std::cout << "best score (" << true_max_fit_org_id << "): " << GetOrg(true_max_fit_org_id).GetAggregateScore();
     std::cout << std::endl;
   }
+
   Update();
 }
 
@@ -244,9 +265,6 @@ void DiagnosticsWorld::Setup() {
 
   // Setup data collection
   SetupDataCollection();
-
-  // Setup phylogeny tracking
-  SetupPhylogenyTracking();
 
   // Setup population structure
   SetPopStruct_Mixed(true);
@@ -348,12 +366,31 @@ void DiagnosticsWorld::SetupMutator() {
 
 void DiagnosticsWorld::SetupDataCollection() {
   std::cout << "Configure data tracking" << std::endl;
-
+  // Configure output directory path, create directory
   output_dir = config.OUTPUT_DIR();
   mkdir(output_dir.c_str(), ACCESSPERMS);
   if(output_dir.back() != '/') {
       output_dir += '/';
   }
+
+  // Configure phylogeny tracking
+  SetupPhylogenyTracking();
+  emp_assert(systematics_ptr != nullptr);
+  // Create phylodiversity file
+  phylodiversity_file_ptr = emp::NewPtr<emp::DataFile>(
+    output_dir + "phylodiversity.csv"
+  );
+  // Create summary file
+  summary_file_ptr = emp::NewPtr<emp::DataFile>(
+    output_dir + "summary.csv"
+  );
+
+  phylodiversity_file_ptr->AddVar(update, "generation", "Generation");
+  phylodiversity_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
+  phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("evolutionary_distinctiveness") , "genotype_evolutionary_distinctiveness", "evolutionary distinctiveness for a single update", true, true);
+  phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("pairwise_distance"), "genotype_pairwise_distance", "pairwise distance for a single update", true, true);
+  phylodiversity_file_ptr->AddCurrent(*systematics_ptr->GetDataNode("phylogenetic_diversity"), "genotype_current_phylogenetic_diversity", "current phylogenetic_diversity", true, true);
+  phylodiversity_file_ptr->PrintHeaderKeys();
 
 
 }
@@ -379,7 +416,7 @@ void DiagnosticsWorld::SetupPhylogenyTracking() {
   AddSystematics(systematics_ptr, "genotype");
   SetupSystematicsFile(
     "genotype",
-    output_dir + "phylodiversity.csv"
+    output_dir + "systematics.csv"
   ).SetTimingRepeat(config.OUTPUT_PHYLO_DATA_INTERVAL());
 
 
@@ -755,9 +792,8 @@ void DiagnosticsWorld::SetupEvaluation_Full() {
       emp_assert(org_id < GetSize());
       emp_assert(test_groupings.size() == 1);
       auto& org = GetOrg(org_id);
-      // auto& test_group = test_groupings.back();
       emp_assert(org.IsEvaluated());
-      emp_assert(test_group.member_ids.size() == total_tests);
+      emp_assert(test_groupings.back().member_ids.size() == total_tests);
       double aggregate_score = 0.0;
       for (size_t test_id = 0; test_id < total_tests; ++test_id) {
         emp_assert(test_id < org.GetPhenotype().size());
