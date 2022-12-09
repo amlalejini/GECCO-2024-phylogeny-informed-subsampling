@@ -148,12 +148,17 @@ protected:
   void SetupDiagnostic();
   void SetupSelection();
   void SetupEvaluation();
+  void SetupFitFunEstimator();
   void SetupMutator();
   void SetupPhylogenyTracking();
   void SetupDataCollection();
 
   template<typename DIAG_PROB>
   void SetupDiagnosticHelper();
+
+  void SetupFitFunEstimator_None();
+  void SetupFitFunEstimator_Ancestor();
+  void SetupFitFunEstimator_Relative();
 
   void SetupEvaluation_Cohort();
   void SetupEvaluation_DownSample();
@@ -232,22 +237,26 @@ void DiagnosticsWorld::DoEvaluation() {
   // Evaluate each organism
   for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
     // Evaluation signal actions will:
+    // - Reset relevant phenotype tracking info
     // - Translate organism genomes
-    // - Update test scores, update aggregate score
+    // - Update test scores
+    // - Record taxon information
+    // - Update aggregate scores (using estimators)
     do_org_evaluation_sig.Trigger(org_id);
-
-    auto& org = GetOrg(org_id);
-    emp::Ptr<taxon_t> taxon = systematics_ptr->GetTaxonAt(org_id);
-    taxon->GetData().RecordFitness(org.GetAggregateScore());
-    // NOTE - recording true phenotype (not 'evaluated' phenotype)
-    taxon->GetData().RecordPhenotype(
-      org.GetPhenotype(),
-      org_test_evaluations[org_id]
-    );
     // std::cout << "--" << std::endl;
     // std::cout << org_test_evaluations[org_id] << std::endl;
     // std::cout << org_test_scores[org_id] << std::endl;
     // std::cout << org.GetPhenotype() << std::endl;
+  }
+  // Estimate aggregate fitness for each organism
+  // Need to do this separately to ensure all possible descendants of current taxa have been evaluated
+  // Otherwise, estimation can crash
+  for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
+    double est_agg_score = 0.0;
+    for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+      est_agg_score += fit_fun_set[org_id][test_id]();
+    }
+    org_aggregate_scores[org_id] = est_agg_score;
   }
 }
 
@@ -307,14 +316,6 @@ void DiagnosticsWorld::Setup() {
     }
   );
 
-  // TODO - Configure OnOffspringReady
-  // OnOffspringReady(
-  //   [this](org_t& org, size_t parent_pos) {
-  //     // TODO
-  //     // Mutate (make sure happens after systematics)
-  //   }
-  // );
-
   // Setup diagnostic problem
   SetupDiagnostic();
 
@@ -323,6 +324,9 @@ void DiagnosticsWorld::Setup() {
 
   // Configure selection
   SetupSelection();
+
+  // Setup fitness function estimator
+  SetupFitFunEstimator();
 
   // Setup mutation function
   SetupMutator();
@@ -333,7 +337,6 @@ void DiagnosticsWorld::Setup() {
   // Setup population structure
   SetPopStruct_Mixed(true);
 
-  // TODO - disable (automatic?) mutations
   // Initialize population
   InitializePopulation();
   // TODO - print population check if what expected
@@ -521,10 +524,20 @@ void DiagnosticsWorld::SetupDataCollection() {
 
   summary_file_ptr->PrintHeaderKeys();
 
+  // TODO - more statistics:
+  // - avg dist of trait estimation
+  // - max dist of trait estimation
+  // - failed to find trait estimation
+
   // Configure elite file
   elite_file_ptr->AddVar(update, "generation", "Generation");
   elite_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
-
+  // true phenotype
+  // true agg score
+  // evaluated
+  // estimated phenotype
+  // estimated agg score
+  // estimated - true agg
   elite_file_ptr->PrintHeaderKeys();
 
 }
@@ -635,12 +648,6 @@ void DiagnosticsWorld::SetupEvaluation() {
     }
   );
 
-  // Setup the default estimate_test_score functionality
-  // TODO - setup configurable fitness estimation
-  estimate_test_score = [this](size_t org_id, size_t test_id) {
-    return org_test_scores[org_id][test_id];
-  };
-
   // Configure the aggregate score functions
   agg_score_fun_set.clear();
   for (size_t org_id = 0; org_id < config.POP_SIZE(); ++org_id) {
@@ -684,6 +691,33 @@ void DiagnosticsWorld::SetupEvaluation() {
     std::cout << "Unknown EVAL_MODE: " << config.EVAL_MODE() << std::endl;
     exit(-1);
   }
+
+  // Record taxon info after evaluation, but before summing aggregate scores
+  do_org_evaluation_sig.AddAction(
+    [this](size_t org_id) {
+      auto& org = GetOrg(org_id);
+      emp::Ptr<taxon_t> taxon = systematics_ptr->GetTaxonAt(org_id);
+      // NOTE - recording true phenotype (not 'evaluated' phenotype)
+      taxon->GetData().RecordFitness(org.GetAggregateScore());
+      taxon->GetData().RecordPhenotype(
+        org.GetPhenotype(),
+        org_test_evaluations[org_id]
+      );
+    }
+  );
+
+  // Add signal to calculate aggregate score (using fit funs to incorporate estimator)
+  // Need to do this separately to use estimated trait scores
+  // NOTE - Cannot use estimator until all organisms have been evaluated and recorded
+  // do_org_evaluation_sig.AddAction(
+  //   [this](size_t org_id) {
+  //     double est_agg_score = 0.0;
+  //     for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+  //       est_agg_score += fit_fun_set[org_id][test_id]();
+  //     }
+  //     org_aggregate_scores[org_id] = est_agg_score;
+  //   }
+  // );
 
 }
 
@@ -785,20 +819,16 @@ void DiagnosticsWorld::SetupEvaluation_Cohort() {
       emp_assert(group_id < test_groupings.size());
       auto& test_grouping = test_groupings[group_id];
       auto& cohort_test_ids = test_grouping.member_ids;
-      double aggregate_score = 0.0;
       for (size_t i = 0; i < cohort_test_ids.size(); ++i) {
         const size_t test_id = cohort_test_ids[i];
         emp_assert(org.IsEvaluated());
         emp_assert(test_id < org.GetPhenotype().size());
         // Update test score
         org_test_scores[org_id][test_id] = org.GetPhenotype()[test_id];
-        aggregate_score += org.GetPhenotype()[test_id];
         // Update evaluated
         org_test_evaluations[org_id][test_id] = true;
         ++total_test_evaluations;
       }
-      // Update aggregate score
-      org_aggregate_scores[org_id] = aggregate_score;
     }
   );
 
@@ -868,20 +898,16 @@ void DiagnosticsWorld::SetupEvaluation_DownSample() {
       auto& test_group = test_groupings.back();
       emp_assert(org.IsEvaluated());
       emp_assert(test_group.member_ids.size() == sample_size);
-      double aggregate_score = 0.0;
       for (size_t i = 0; i < sample_size; ++i) {
         const size_t test_id = test_group.member_ids[i];
         emp_assert(test_id < org.GetPhenotype().size());
         const double test_score = org.GetPhenotype()[test_id];
         // Update test score, aggregate score
         org_test_scores[org_id][test_id] = test_score;
-        aggregate_score += test_score;
         // Update evaluated
         org_test_evaluations[org_id][test_id] = true;
         ++total_test_evaluations;
       }
-      // Update aggregate score
-      org_aggregate_scores[org_id] = aggregate_score;
     }
   );
 
@@ -936,19 +962,15 @@ void DiagnosticsWorld::SetupEvaluation_Full() {
       auto& org = GetOrg(org_id);
       emp_assert(org.IsEvaluated());
       emp_assert(test_groupings.back().member_ids.size() == total_tests);
-      double aggregate_score = 0.0;
       for (size_t test_id = 0; test_id < total_tests; ++test_id) {
         emp_assert(test_id < org.GetPhenotype().size());
         const double test_score = org.GetPhenotype()[test_id];
         // Update test score, aggregate score
         org_test_scores[org_id][test_id] = test_score;
-        aggregate_score += test_score;
         // Update evaluated
         org_test_evaluations[org_id][test_id] = true;
         ++total_test_evaluations;
       }
-      // Update aggregate score
-      org_aggregate_scores[org_id] = aggregate_score;
     }
   );
 
@@ -956,11 +978,37 @@ void DiagnosticsWorld::SetupEvaluation_Full() {
 
 }
 
-void DiagnosticsWorld::SetupSelection() {
-  std::cout << "Configuring parent selection routine" << std::endl;
-  emp_assert(selector == nullptr);
+void DiagnosticsWorld::SetupFitFunEstimator() {
+  // Setup the default estimate_test_score functionality
+  // TODO - setup configurable fitness estimation
+  std::cout << "Configuring fitness function estimator (mode: " << config.EVAL_FIT_EST_MODE() << ")" << std::endl;
+
+  if (config.EVAL_FIT_EST_MODE() == "none") {
+    SetupFitFunEstimator_None();
+  }
+  else if (config.EVAL_FIT_EST_MODE() == "ancestor") {
+    SetupFitFunEstimator_Ancestor();
+  }
+  else if (config.EVAL_FIT_EST_MODE() == "relative") {
+    SetupFitFunEstimator_Relative();
+  } else {
+    std::cout << "Unrecognized EVAL_FIT_EST_MODE: " << config.EVAL_FIT_EST_MODE() << std::endl;
+    exit(-1);
+  }
+
+  // TODO - add all tests to all test groups if in estimation mode
+}
+
+void DiagnosticsWorld::SetupFitFunEstimator_None() {
+  // TODO - implement
+
+  // Don't estimate anything
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    return org_test_scores[org_id][test_id];
+  };
 
   // Configure selection routine
+  // No estimation, so only use evaluated tests in selection routine
   run_selection_routine = [this]() {
     // Resize parent ids to hold pop_size parents
     selected_parent_ids.resize(config.POP_SIZE(), 0);
@@ -988,6 +1036,109 @@ void DiagnosticsWorld::SetupSelection() {
     }
     // TODO - check that sets of selected ids correctly stored in selected_parent_ids
   };
+}
+
+void DiagnosticsWorld::SetupFitFunEstimator_Ancestor() {
+  // estimate_test_score
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
+
+    auto ancestor = phylo::NearestAncestorWithTraitEval(
+      taxon_ptr,
+      test_id
+    );
+
+    if (ancestor) {
+      auto found_tax = ancestor.value();
+      emp_assert(found_tax->GetData().GetTraitsEvaluated()[test_id]);
+      return found_tax->GetData().GetPhenotype()[test_id];
+    } else {
+      return org_test_scores[org_id][test_id];
+    }
+  };
+
+
+  // run_selection_routine
+  run_selection_routine = [this]() {
+    // Resize parent ids to hold pop_size parents
+    selected_parent_ids.resize(config.POP_SIZE(), 0);
+    emp_assert(test_groupings.size() == org_groupings.size());
+    const size_t num_groups = org_groupings.size();
+    // For each grouping, select a number of parents equal to group size
+    size_t num_selected = 0;
+    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+      auto& org_group = org_groupings[group_id];
+      const size_t n = org_group.GetSize();
+      // Run selection, but use all possible test ids
+      auto& selected = selection_fun(
+        n,
+        org_group.member_ids,
+        possible_test_ids
+      );
+      emp_assert(selected.size() == n);
+      emp_assert(n + num_selected <= selected_parent_ids.size());
+      std::copy(
+        selected.begin(),
+        selected.end(),
+        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
+      );
+      num_selected += n;
+    }
+  };
+
+}
+
+void DiagnosticsWorld::SetupFitFunEstimator_Relative() {
+  // estimate_test_score
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
+
+    auto ancestor = phylo::NearestRelativeWithTraitEval(
+      taxon_ptr,
+      test_id
+    );
+
+    if (ancestor) {
+      auto found_tax = ancestor.value();
+      emp_assert(found_tax->GetData().GetTraitsEvaluated()[test_id]);
+      return found_tax->GetData().GetPhenotype()[test_id];
+    } else {
+      return org_test_scores[org_id][test_id];
+    }
+  };
+
+  // run_selection_routine
+  run_selection_routine = [this]() {
+    // Resize parent ids to hold pop_size parents
+    selected_parent_ids.resize(config.POP_SIZE(), 0);
+    emp_assert(test_groupings.size() == org_groupings.size());
+    const size_t num_groups = org_groupings.size();
+    // For each grouping, select a number of parents equal to group size
+    size_t num_selected = 0;
+    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+      auto& org_group = org_groupings[group_id];
+      const size_t n = org_group.GetSize();
+      // Run selection, but use all possible test ids
+      auto& selected = selection_fun(
+        n,
+        org_group.member_ids,
+        possible_test_ids
+      );
+      emp_assert(selected.size() == n);
+      emp_assert(n + num_selected <= selected_parent_ids.size());
+      std::copy(
+        selected.begin(),
+        selected.end(),
+        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
+      );
+      num_selected += n;
+    }
+  };
+}
+
+void DiagnosticsWorld::SetupSelection() {
+  std::cout << "Configuring parent selection routine" << std::endl;
+  emp_assert(selector == nullptr);
 
   if (config.SELECTION() == "lexicase" ) {
     SetupSelection_Lexicase();

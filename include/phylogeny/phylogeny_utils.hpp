@@ -125,7 +125,7 @@ std::optional<emp::Ptr<TAXON>> NearestRelativeWithTraitEval(
     search_queue.pop_front();
     // Localize relevant taxon info
     const auto& traits_evaluated = cur_tax->GetData().GetTraitsEvaluated();
-    emp_assert(trait_id < traits_evaluated.size());
+    emp_assert(trait_id < traits_evaluated.size(), trait_id, traits_evaluated.size());
 
     // Check if evaluated. If so, return current taxon.
     if (traits_evaluated[trait_id]) {
