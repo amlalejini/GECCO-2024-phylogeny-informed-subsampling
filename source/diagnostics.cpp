@@ -30,6 +30,6 @@ int main(int argc, char* argv[])
 
 
   diag::DiagnosticsWorld world(config);
-  // world.Run();
+  world.Run();
 
 }
