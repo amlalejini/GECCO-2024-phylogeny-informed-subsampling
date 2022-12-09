@@ -75,7 +75,8 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   VALUE(NDS_SIG, double, 0.1, "Sigma value for Pareto fitness sharing."),
 
   GROUP(OUTPUT, "Output rates for OpenWorld"),
-  VALUE(OUTPUT_DIR, std::string, "./output/", "What directory are we dumping all this data")
+  VALUE(OUTPUT_DIR, std::string, "./output/", "What directory are we dumping all this data"),
+  VALUE(OUTPUT_PHYLO_DATA_INTERVAL, size_t, 10, "How often should we output data?"),
 )
 
 }

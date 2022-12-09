@@ -4,7 +4,12 @@
 #pragma once
 
 #include <iostream>
+#include <algorithm>
+#include <functional>
+#include <sys/stat.h>
 
+#include "emp/base/vector.hpp"
+#include "emp/base/Ptr.hpp"
 #include "emp/Evolve/World.hpp"
 
 #include "phylogeny/Phylogeny.hpp"
@@ -22,6 +27,9 @@ public:
   using org_t = DiagnosticsOrg;
   using genome_t = typename org_t::genome_t;
   using phenotype_t = typename org_t::phenotype_t;
+
+  using systematics_t = Phylogeny<org_t, genome_t>;
+  using taxon_t = typename systematics_t::taxon_t;
 
   using config_t = DiagnosticsConfig;
   using selection_fun_t = std::function< emp::vector<size_t>&(size_t, const emp::vector<size_t>&, const emp::vector<size_t>&) >;
@@ -77,13 +85,17 @@ protected:
   std::function<void(void)> run_selection_routine;
   selection_fun_t selection_fun;
 
+  emp::Ptr<systematics_t> systematics_ptr;
+
   size_t total_test_evaluations = 0;  ///< Tracks total number of "test case" evaluations (across all organisms since beginning of run)
+  std::string output_dir;
 
   void Setup();
   void SetupDiagnostic();
   void SetupSelection();
   void SetupEvaluation();
   void SetupMutator();
+  void SetupPhylogenyTracking();
   void SetupDataCollection();
 
   template<typename DIAG_PROB>
@@ -158,6 +170,11 @@ void DiagnosticsWorld::DoEvaluation() {
     // - Translate organism genomes
     // - Update test scores, update aggregate score
     do_org_evaluation_sig.Trigger(org_id);
+
+    // TODO - Record phenotype information for taxon
+    // emp::Ptr<taxon_t> taxon = sys_ptr->GetTaxonAt(i);
+    // taxon->GetData().RecordFitness();
+    // taxon->GetData().RecordPhenotype();
   }
 }
 
@@ -174,6 +191,8 @@ void DiagnosticsWorld::DoSelection() {
 void DiagnosticsWorld::DoUpdate() {
   // TODO
   // (1) Compute any per-generation statistics?
+
+  Update();
 }
 
 
@@ -212,6 +231,12 @@ void DiagnosticsWorld::Setup() {
 
   // Setup mutation function
   SetupMutator();
+
+  // Setup data collection
+  SetupDataCollection();
+
+  // Setup phylogeny tracking
+  SetupPhylogenyTracking();
 
   // Setup population structure
   SetPopStruct_Mixed(true);
@@ -310,6 +335,45 @@ void DiagnosticsWorld::SetupMutator() {
       return mcnt;
     }
   );
+}
+
+void DiagnosticsWorld::SetupDataCollection() {
+  std::cout << "Configure data tracking" << std::endl;
+
+  output_dir = config.OUTPUT_DIR();
+  mkdir(output_dir.c_str(), ACCESSPERMS);
+  if(output_dir.back() != '/') {
+      output_dir += '/';
+  }
+
+
+}
+
+void DiagnosticsWorld::SetupPhylogenyTracking() {
+  std::cout << "Configure phylogeny tracking" << std::endl;
+  emp_assert(systematics_ptr == nullptr);
+
+  // Create new systematics tracker
+  systematics_ptr = emp::NewPtr<systematics_t>(
+    [](const org_t& org) { return org.GetGenome(); }
+  );
+
+  // TODO - add phylo snapshot functions, info nodes
+
+  systematics_ptr->AddEvolutionaryDistinctivenessDataNode();
+  systematics_ptr->AddPairwiseDistanceDataNode();
+  systematics_ptr->AddPhylogeneticDiversityDataNode();
+
+  // Note, base class takes ownership of this pointer
+  // TODO - shift away from using derived phylogeny class, change search functions
+  //        to be just functions (phylo namespace)
+  AddSystematics(systematics_ptr, "genotype");
+  SetupSystematicsFile(
+    "genotype",
+    output_dir + "phylodiversity.csv"
+  ).SetTimingRepeat(config.OUTPUT_PHYLO_DATA_INTERVAL());
+
+
 }
 
 void DiagnosticsWorld::SetupEvaluation() {
@@ -414,26 +478,7 @@ void DiagnosticsWorld::SetupEvaluation() {
         }
       );
     }
-
   }
-
-  // OLD way of configuring fit_fun_set
-  // for (size_t test_id = 0; test_id < total_tests; ++test_id) {
-  //   fit_fun_set.emplace_back(
-  //     [this, test_id](const org_t& org) {
-  //       const size_t org_id = org.GetPopID();
-  //       emp_assert(org_id < org_test_evaluations.size());
-  //       emp_assert(org_id < org_test_scores.size());
-  //       emp_assert(test_id < org_test_evaluations[org_id].size());
-  //       emp_assert(test_id < org_test_scores[org_id].size());
-  //       if (org_test_evaluations[org_id][test_id]) {
-  //         return org_test_scores[org_id][test_id];
-  //       } else {
-  //         return estimate_test_score(org_id, test_id);
-  //       }
-  //     }
-  //   );
-  // }
 
   // full vs cohort vs down-sample
   if (config.EVAL_MODE() == "full") {
@@ -826,6 +871,8 @@ void DiagnosticsWorld::SetupSelection_Random() {
 void DiagnosticsWorld::InitializePopulation() {
 
   std::cout << "Initializing population" << std::endl;
+
+  // TODO - root the phylogenetic tree
 
   if (config.INIT_POP_RAND()) {
     for (size_t i = 0; i < config.POP_SIZE(); ++i) {
