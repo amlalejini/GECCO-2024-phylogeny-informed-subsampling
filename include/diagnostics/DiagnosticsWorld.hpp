@@ -17,7 +17,7 @@
 
 #include "DiagnosticsConfig.hpp"
 #include "DiagnosticsOrg.hpp"
-#include "problems/DiagnosticsProblems.hpp"
+#include "DiagnosticsProblems.hpp"
 
 namespace diag {
 

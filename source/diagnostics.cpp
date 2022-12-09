@@ -9,7 +9,7 @@
 
 #include "diagnostics/DiagnosticsConfig.hpp"
 #include "diagnostics/DiagnosticsWorld.hpp"
-#include "diagnostics/problems/DiagnosticsProblems.hpp"
+#include "diagnostics/DiagnosticsProblems.hpp"
 
 // Hello world
 
