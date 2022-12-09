@@ -24,6 +24,7 @@ public:
   using phenotype_t = typename org_t::phenotype_t;
 
   using config_t = DiagnosticsConfig;
+  using selection_fun_t = std::function< emp::vector<size_t>&(size_t, const emp::vector<size_t>&, const emp::vector<size_t>&) >;
 
   struct Grouping {
     size_t group_id = 0;
@@ -71,7 +72,9 @@ protected:
 
   emp::Ptr<selection::BaseSelect> selector;
   emp::vector<size_t> selected_parent_ids;
+
   std::function<void(void)> run_selection_routine;
+  selection_fun_t selection_fun;
 
   size_t total_test_evaluations = 0;  ///< Tracks total number of "test case" evaluations (across all organisms since beginning of run)
 
@@ -134,7 +137,9 @@ void DiagnosticsWorld::RunStep() {
 }
 
 void DiagnosticsWorld::Run() {
-  // TODO
+  for (size_t u = 0; u <= config.MAX_GENS(); ++u) {
+    RunStep();
+  }
 }
 
 void DiagnosticsWorld::DoEvaluation() {
@@ -163,7 +168,6 @@ void DiagnosticsWorld::DoSelection() {
   for (size_t id : selected_parent_ids) {
     DoBirth(GetGenomeAt(id), id);
   }
-
 }
 
 void DiagnosticsWorld::DoUpdate() {
@@ -707,6 +711,35 @@ void DiagnosticsWorld::SetupSelection() {
   std::cout << "Configuring parent selection routine" << std::endl;
   emp_assert(selector == nullptr);
 
+  // Configure selection routine
+  run_selection_routine = [this]() {
+    // Resize parent ids to hold pop_size parents
+    selected_parent_ids.resize(config.POP_SIZE(), 0);
+    emp_assert(test_groupings.size() == org_groupings.size());
+    const size_t num_groups = org_groupings.size();
+    // For each grouping, select a number of parents equal to group size
+    size_t num_selected = 0;
+    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+      auto& org_group = org_groupings[group_id];
+      auto& test_group = test_groupings[group_id];
+      const size_t n = org_group.GetSize();
+      auto& selected = selection_fun(
+        n,
+        org_group.member_ids,
+        test_group.member_ids
+      );
+      emp_assert(selected.size() == n);
+      emp_assert(n + num_selected <= selected_parent_ids.size());
+      std::copy(
+        selected.begin(),
+        selected.end(),
+        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
+      );
+      num_selected += n;
+    }
+    // TODO - check that sets of selected ids correctly stored in selected_parent_ids
+  };
+
   if (config.SELECTION() == "lexicase" ) {
     SetupSelection_Lexicase();
   } else if (config.SELECTION() == "tournament" ) {
@@ -732,37 +765,47 @@ void DiagnosticsWorld::SetupSelection_Lexicase() {
     *random_ptr
   );
 
-  // Configure selection routine
-  // TODO - move some of this logic outside of the run_selection_routine if repeated across selection algorithms?
-  run_selection_routine = [this]() {
+  selection_fun = [this](
+    size_t n,
+    const emp::vector<size_t>& org_group,
+    const emp::vector<size_t>& test_group
+  ) -> emp::vector<size_t>& {
     // Cast selector to lexicase selection
     auto& sel = *(selector.Cast<selection::LexicaseSelect>());
-    // Resize parent ids to hold pop_size parents
-    selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings.size() == org_groupings.size());
-    const size_t num_groups = org_groupings.size();
-    // For each grouping, select a number of parents equal to group size
-    size_t num_selected = 0;
-    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-      auto& org_group = org_groupings[group_id];
-      auto& test_group = test_groupings[group_id];
-      const size_t n = org_group.GetSize();
-      auto& selected = sel(
-        n,
-        org_group.member_ids,
-        test_group.member_ids
-      );
-      emp_assert(selected.size() == n);
-      emp_assert(n + num_selected <= selected_parent_ids.size());
-      std::copy(
-        selected.begin(),
-        selected.end(),
-        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
-      );
-      num_selected += n;
-    }
-    // TODO - check that sets of selected ids correctly stored in selected_parent_ids
+    return sel(n, org_group, test_group);
   };
+
+  // // Configure selection routine
+  // // TODO - move some of this logic outside of the run_selection_routine if repeated across selection algorithms?
+  // run_selection_routine = [this]() {
+  //   // Cast selector to lexicase selection
+  //   auto& sel = *(selector.Cast<selection::LexicaseSelect>());
+  //   // Resize parent ids to hold pop_size parents
+  //   selected_parent_ids.resize(config.POP_SIZE(), 0);
+  //   emp_assert(test_groupings.size() == org_groupings.size());
+  //   const size_t num_groups = org_groupings.size();
+  //   // For each grouping, select a number of parents equal to group size
+  //   size_t num_selected = 0;
+  //   for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+  //     auto& org_group = org_groupings[group_id];
+  //     auto& test_group = test_groupings[group_id];
+  //     const size_t n = org_group.GetSize();
+  //     auto& selected = sel(
+  //       n,
+  //       org_group.member_ids,
+  //       test_group.member_ids
+  //     );
+  //     emp_assert(selected.size() == n);
+  //     emp_assert(n + num_selected <= selected_parent_ids.size());
+  //     std::copy(
+  //       selected.begin(),
+  //       selected.end(),
+  //       selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
+  //     );
+  //     num_selected += n;
+  //   }
+  //   // TODO - check that sets of selected ids correctly stored in selected_parent_ids
+  // };
 
 }
 
