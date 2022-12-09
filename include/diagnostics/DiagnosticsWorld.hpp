@@ -54,6 +54,7 @@ protected:
   emp::vector<double> org_aggregate_scores;
   // emp::vector< std::function<double(const org_t&)> > fit_fun_set; ///< One function for every possible test case.
   emp::vector< emp::vector< std::function<double(void)> > > fit_fun_set; ///< Per-organism, per-test
+  emp::vector< std::function<double(void)> > agg_score_fun_set; ///< Per-organism, aggregate score
 
   emp::vector< emp::vector<double> > org_test_scores;   ///< Test scores for each organism
   emp::vector< emp::vector<bool> > org_test_evaluations; ///< Which test cases has each organism been evaluated on?
@@ -382,6 +383,17 @@ void DiagnosticsWorld::SetupEvaluation() {
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     return org_test_scores[org_id][test_id];
   };
+
+  // Configure the aggregate score functions
+  agg_score_fun_set.clear();
+  for (size_t org_id = 0; org_id < config.POP_SIZE(); ++org_id) {
+    agg_score_fun_set.emplace_back(
+      [this, org_id]() {
+        emp_assert(org_id < org_aggregate_scores.size());
+        return org_aggregate_scores[org_id];
+      }
+    );
+  }
 
   // Configure the fitness functions (per-organism, per-test)
   fit_fun_set.clear();
@@ -759,7 +771,7 @@ void DiagnosticsWorld::SetupSelection() {
 }
 
 void DiagnosticsWorld::SetupSelection_Lexicase() {
-  // TODO - setup lexicase
+  // TODO - test lexicase
   selector = emp::NewPtr<selection::LexicaseSelect>(
     fit_fun_set,
     *random_ptr
@@ -775,43 +787,24 @@ void DiagnosticsWorld::SetupSelection_Lexicase() {
     return sel(n, org_group, test_group);
   };
 
-  // // Configure selection routine
-  // // TODO - move some of this logic outside of the run_selection_routine if repeated across selection algorithms?
-  // run_selection_routine = [this]() {
-  //   // Cast selector to lexicase selection
-  //   auto& sel = *(selector.Cast<selection::LexicaseSelect>());
-  //   // Resize parent ids to hold pop_size parents
-  //   selected_parent_ids.resize(config.POP_SIZE(), 0);
-  //   emp_assert(test_groupings.size() == org_groupings.size());
-  //   const size_t num_groups = org_groupings.size();
-  //   // For each grouping, select a number of parents equal to group size
-  //   size_t num_selected = 0;
-  //   for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-  //     auto& org_group = org_groupings[group_id];
-  //     auto& test_group = test_groupings[group_id];
-  //     const size_t n = org_group.GetSize();
-  //     auto& selected = sel(
-  //       n,
-  //       org_group.member_ids,
-  //       test_group.member_ids
-  //     );
-  //     emp_assert(selected.size() == n);
-  //     emp_assert(n + num_selected <= selected_parent_ids.size());
-  //     std::copy(
-  //       selected.begin(),
-  //       selected.end(),
-  //       selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
-  //     );
-  //     num_selected += n;
-  //   }
-  //   // TODO - check that sets of selected ids correctly stored in selected_parent_ids
-  // };
-
 }
 
 void DiagnosticsWorld::SetupSelection_Tournament() {
-  // TODO - setup tournament
-  emp_assert(false);
+  selector = emp::NewPtr<selection::TournamentSelect>(
+    agg_score_fun_set,
+    *random_ptr,
+    config.TOURNAMENT_SIZE()
+  );
+
+  selection_fun = [this](
+    size_t n,
+    const emp::vector<size_t>& org_group,
+    const emp::vector<size_t>& test_group
+  ) -> emp::vector<size_t>& {
+    // Cast selector to lexicase selection
+    auto& sel = *(selector.Cast<selection::TournamentSelect>());
+    return sel(n, org_group);
+  };
 }
 
 void DiagnosticsWorld::SetupSelection_Truncation() {

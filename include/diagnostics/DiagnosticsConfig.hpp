@@ -45,7 +45,7 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   VALUE(TRUNC_SIZE, size_t, 8, "Parameter estimate for truncation size t."),
 
   GROUP(TOURNAMENT, "Parameters for tournament."),
-  VALUE(TOUR_SIZE, size_t, 8, "Parameter estimate for tournament size."),
+  VALUE(TOURNAMENT_SIZE, size_t, 8, "Parameter estimate for tournament size."),
 
   GROUP(FITSHARING, "Parameters for fitness sharing."),
   VALUE(FITNESS_SHARING_SIGMA, double, 1.0, "Parameter estimate for proportion of similarity threshold sigma (based on maximum distance between solutions)."),

@@ -4,4 +4,4 @@
 #include "Lexicase.hpp"
 // #include "NoSelect.hpp"
 // #include "Random.hpp"
-// #include "Tournament.hpp"
+#include "Tournament.hpp"
