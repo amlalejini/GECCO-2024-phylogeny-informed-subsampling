@@ -236,10 +236,15 @@ void DiagnosticsWorld::DoEvaluation() {
     // - Update test scores, update aggregate score
     do_org_evaluation_sig.Trigger(org_id);
 
-    // TODO - Record phenotype information for taxon
-    // emp::Ptr<taxon_t> taxon = sys_ptr->GetTaxonAt(i);
-    // taxon->GetData().RecordFitness();
-    // taxon->GetData().RecordPhenotype();
+    auto& org = GetOrg(org_id);
+    emp::Ptr<taxon_t> taxon = systematics_ptr->GetTaxonAt(org_id);
+    taxon->GetData().RecordFitness(org.GetAggregateScore());
+    // NOTE - recording true phenotype (not 'evaluated' phenotype)
+    taxon->GetData().RecordPhenotype(
+      org.GetPhenotype(),
+      org_test_evaluations[org_id]
+    );
+    std::cout << org_test_evaluations[org_id] << std::endl;
   }
 }
 
@@ -758,7 +763,7 @@ void DiagnosticsWorld::SetupEvaluation_Cohort() {
         const size_t pop_id = possible_pop_ids[cur_pos];
         emp_assert(GetOrg(pop_id).GetPopID() == pop_id);
         cohort.member_ids[member_i] = pop_id;
-        org_group_ids[cur_pos] = cohort.group_id;
+        org_group_ids[pop_id] = cohort.group_id;
         ++cur_pos;
       }
     }
