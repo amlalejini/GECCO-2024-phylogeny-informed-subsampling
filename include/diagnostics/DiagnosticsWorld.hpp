@@ -244,7 +244,10 @@ void DiagnosticsWorld::DoEvaluation() {
       org.GetPhenotype(),
       org_test_evaluations[org_id]
     );
-    std::cout << org_test_evaluations[org_id] << std::endl;
+    // std::cout << "--" << std::endl;
+    // std::cout << org_test_evaluations[org_id] << std::endl;
+    // std::cout << org_test_scores[org_id] << std::endl;
+    // std::cout << org.GetPhenotype() << std::endl;
   }
 }
 
@@ -372,8 +375,10 @@ void DiagnosticsWorld::SetupDiagnosticHelper() {
       auto& diag = *(base_diagnostic.Cast<DIAG_PROB>());
       // Translate according to base diagnostic
       diag.Translate(genome, phen);
+      // std::cout << " 0-> " << phen << std::endl;
       // Apply valley crossing over phenotype
-      phenotype_t valley_phen(valley_diagnostic.Translate(phen));
+      phenotype_t valley_phen = valley_diagnostic.Translate(phen);
+      // std::cout << " 1-> " << valley_phen << std::endl;
       emp_assert(valley_phen.size() == phen.size());
       std::copy(
         valley_phen.begin(),

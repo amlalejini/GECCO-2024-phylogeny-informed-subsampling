@@ -15,6 +15,7 @@ struct MultiValleyCrossingDiagnostic : public BaseDiagnostic {
   // Defaults used by Hernandez et al
   double dips_start = 8.0;
   double dips_end = 99.9;
+  // TODO - make peak generation generic
   emp::vector<double> peaks = {
     -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,  8.0,  9.0,
     9.0, 11.0, 11.0, 11.0, 14.0, 14.0, 14.0, 14.0, 18.0, 18.0,
@@ -51,7 +52,7 @@ struct MultiValleyCrossingDiagnostic : public BaseDiagnostic {
   MultiValleyCrossingDiagnostic() = default;
 
   phenotype_t Translate(const genotype_t& genome) const {
-    emp_assert(genome.size() == peaks.size(), "Genome size must match configured peaks size.");
+    emp_assert(genome.size() == peaks.size(), "Genome size must match configured peaks size.", genome.size(), peaks.size());
     phenotype_t phenotype(genome.size(), 0);
     Translate(genome, phenotype);
     return phenotype;
@@ -70,9 +71,9 @@ struct MultiValleyCrossingDiagnostic : public BaseDiagnostic {
     );
 
     for (size_t i = 0; i < phenotype.size(); ++i) {
-      phenotype[i] = (phenotype[i] <= dips_start || phenotype[i] >= dips_end)
-        ? phenotype[i]
-        : 2.0 * peaks[static_cast<size_t>(phenotype[i])] - phenotype[i];
+      phenotype[i] = (genome[i] <= dips_start || genome[i] >= dips_end)
+        ? genome[i]
+        : 2.0 * peaks[static_cast<size_t>(genome[i])] - genome[i];
     }
   }
 
