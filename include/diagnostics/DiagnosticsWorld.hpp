@@ -99,7 +99,6 @@ protected:
   emp::Ptr<BaseDiagnostic> base_diagnostic=nullptr; ///< Base-layer diagnostic to use to translate genomes to phenotypes
   MultiValleyCrossingDiagnostic valley_diagnostic;  ///< If in use, it's layered on top of another diagnostic (base_diagnostic).
 
-  // std::function<void(org_t&)> evaluate_org_fun;
   emp::Signal<void(size_t)> do_org_evaluation_sig;
   std::function<void(const genome_t&, phenotype_t&)> translate_genome_fun;
 
@@ -311,6 +310,9 @@ void DiagnosticsWorld::Setup() {
   Reset();
   total_test_evaluations = 0;
 
+  // Setup population structure
+  SetPopStruct_Mixed(true);
+
   // Configure world to set organism ID on placement
   OnPlacement(
     [this](size_t pos) {
@@ -338,13 +340,9 @@ void DiagnosticsWorld::Setup() {
   // Setup data collection
   SetupDataCollection();
 
-  // Setup population structure
-  SetPopStruct_Mixed(true);
-
   // Initialize population
   InitializePopulation();
-  // TODO - print population check if what expected
-  // TODO - enable (automatic?) mutations
+
   SetAutoMutate();
 }
 
