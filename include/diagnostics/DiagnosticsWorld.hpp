@@ -91,6 +91,8 @@ protected:
   size_t total_test_evaluations = 0;  ///< Tracks total number of "test case" evaluations (across all organisms since beginning of run)
   std::string output_dir;
 
+  size_t true_max_fit_org_id = 0;     ///< Tracks max fit organism (based on 'true' aggregate fitness)
+
   void Setup();
   void SetupDiagnostic();
   void SetupSelection();
@@ -161,6 +163,9 @@ void DiagnosticsWorld::DoEvaluation() {
   emp_assert(fit_fun_set.size() == config.POP_SIZE());
   emp_assert(org_test_scores.size() == config.POP_SIZE());
   emp_assert(org_test_evaluations.size() == config.POP_SIZE());
+
+  // Reset current true max fitness organism
+  true_max_fit_org_id = 0;
   // Assign test groupings (if any)
   assign_test_groupings();
   // Assign organism groupings (if any)
@@ -190,9 +195,13 @@ void DiagnosticsWorld::DoSelection() {
 }
 
 void DiagnosticsWorld::DoUpdate() {
-  // TODO
   // (1) Compute any per-generation statistics?
-
+  emp_assert(config.PRINT_INTERVAL() > 0);
+  if ( !(GetUpdate() % config.PRINT_INTERVAL()) ) {
+    std::cout << "update: " << GetUpdate() << "; ";
+    std::cout << "best score (" << true_max_fit_org_id << "): " << GetOrg(true_max_fit_org_id).GetAggregateScore();
+    std::cout << std::endl;
+  }
   Update();
 }
 
@@ -248,7 +257,6 @@ void DiagnosticsWorld::Setup() {
   // TODO - print population check if what expected
   // TODO - enable (automatic?) mutations
   SetAutoMutate();
-
 }
 
 void DiagnosticsWorld::SetupDiagnostic() {
@@ -419,10 +427,15 @@ void DiagnosticsWorld::SetupEvaluation() {
   // First: translate the organism's genome, compute trait info
   do_org_evaluation_sig.AddAction(
     [this](size_t org_id) {
-      emp_assert(org_id < this->GetSize());
-      auto& org = this->GetOrg(org_id);
+      emp_assert(org_id < GetSize());
+      auto& org = GetOrg(org_id);
+      // Translate organism genome into phenotype, compute gene optimality
       org.TranslateGenome(translate_genome_fun);
       org.CalcOptimalTraits(config.TARGET(), config.ACCURACY());
+      // Is this better than the current max org fitness seen so far?
+      emp_assert(true_max_fit_org_id < GetSize());
+      const double max_score = GetOrg(true_max_fit_org_id).GetAggregateScore();
+      true_max_fit_org_id = (org.GetAggregateScore() > max_score) ? org_id : true_max_fit_org_id;
     }
   );
   // Next: reset world organism info
@@ -742,7 +755,7 @@ void DiagnosticsWorld::SetupEvaluation_Full() {
       emp_assert(org_id < GetSize());
       emp_assert(test_groupings.size() == 1);
       auto& org = GetOrg(org_id);
-      auto& test_group = test_groupings.back();
+      // auto& test_group = test_groupings.back();
       emp_assert(org.IsEvaluated());
       emp_assert(test_group.member_ids.size() == total_tests);
       double aggregate_score = 0.0;

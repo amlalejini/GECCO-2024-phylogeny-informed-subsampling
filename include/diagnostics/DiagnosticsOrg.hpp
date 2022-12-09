@@ -73,6 +73,7 @@ public:
     genome.resize(num_genes, init_gene_val);
     phenotype.resize(num_genes, 0);
     optimal_traits.resize(num_genes, false);
+    evaluated = false;
   }
 
   DiagnosticsOrg(const genome_t& g)
@@ -80,6 +81,7 @@ public:
   {
     phenotype.resize(genome.size(), 0);
     optimal_traits.resize(genome.size(), false);
+    evaluated = false;
   }
 
   DiagnosticsOrg(const DiagnosticsOrg&) = default;
