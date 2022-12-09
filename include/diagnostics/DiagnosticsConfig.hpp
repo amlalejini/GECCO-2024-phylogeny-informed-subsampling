@@ -58,9 +58,9 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
 
   GROUP(OUTPUT, "Output rates for OpenWorld"),
   VALUE(OUTPUT_DIR, std::string, "./output/", "What directory are we dumping all this data"),
-  VALUE(OUTPUT_PHYLO_DATA_INTERVAL, size_t, 10, "How often should we output data?"),
   VALUE(OUTPUT_SUMMARY_DATA_INTERVAL, size_t, 10, "How often should we output summary data?"),
-  VALUE(PRINT_INTERVAL, size_t, 1, "How often do we print run status information?")
+  VALUE(PRINT_INTERVAL, size_t, 1, "How often do we print run status information?"),
+  VALUE(SNAPSHOT_INTERVAL, size_t, 100, "How often should we snapshot?")
 )
 
 }

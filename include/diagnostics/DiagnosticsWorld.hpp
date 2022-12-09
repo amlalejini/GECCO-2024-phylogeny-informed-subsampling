@@ -14,6 +14,7 @@
 
 #include "phylogeny/phylogeny_utils.hpp"
 #include "selection/SelectionSchemes.hpp"
+#include "utility/printing.hpp"
 
 #include "DiagnosticsConfig.hpp"
 #include "DiagnosticsOrg.hpp"
@@ -276,19 +277,22 @@ void DiagnosticsWorld::DoUpdate() {
   const size_t cur_update = GetUpdate();
   const bool final_update = cur_update == config.MAX_GENS();
   const bool print_interval = !(cur_update % config.PRINT_INTERVAL()) || final_update;
-  const bool phylo_data_interval = !(cur_update % config.OUTPUT_PHYLO_DATA_INTERVAL()) || final_update;
   const bool summary_data_interval = !(cur_update % config.OUTPUT_SUMMARY_DATA_INTERVAL()) || final_update;
-  // TODO - snapshot interval
-  // Output to phylo data file?
-  if (phylo_data_interval) {
-    phylodiversity_file_ptr->Update();
-  }
+  const bool snapshot_interval = !(cur_update % config.SNAPSHOT_INTERVAL()) || final_update;
+
   // Output to summary data file?
   if (summary_data_interval) {
     // Update selection statistics
     selection_stats.Calculate(selected_parent_ids, *this);
     summary_file_ptr->Update();
+    elite_file_ptr->Update();
+    phylodiversity_file_ptr->Update();
   }
+
+  if (snapshot_interval) {
+    systematics_ptr->Snapshot(output_dir + "phylo_" + emp::to_string(GetUpdate()) + ".csv");
+  }
+
   // Print status?
   if ( print_interval ) {
     std::cout << "update: " << GetUpdate() << "; ";
@@ -532,14 +536,85 @@ void DiagnosticsWorld::SetupDataCollection() {
   // Configure elite file
   elite_file_ptr->AddVar(update, "generation", "Generation");
   elite_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
-  // true phenotype
-  // true agg score
-  // evaluated
-  // estimated phenotype
-  // estimated agg score
-  // estimated - true agg
-  elite_file_ptr->PrintHeaderKeys();
+  // genome
+  elite_file_ptr->AddFun<std::string>(
+    [this]() -> std::string {
+      std::stringstream ss;
+      auto& org = GetOrg(true_max_fit_org_id);
+      ss << "\"";
+      utils::PrintVector(ss, org.GetGenome());
+      ss << "\"";
+      return ss.str();
+    },
+    "genome",
+    "elite organism genome"
+  );
 
+  // true phenotype
+  elite_file_ptr->AddFun<std::string>(
+    [this]() -> std::string {
+      std::stringstream ss;
+      auto& org = GetOrg(true_max_fit_org_id);
+      ss << "\"";
+      utils::PrintVector(ss, org.GetPhenotype());
+      ss << "\"";
+      return ss.str();
+    },
+    "true_phenotype",
+    "elite organism true phenotype"
+  );
+  // true agg score
+  elite_file_ptr->AddFun<double>(
+    [this]() -> double {
+      auto& org = GetOrg(true_max_fit_org_id);
+      return org.GetAggregateScore();
+    },
+    "true_agg_score",
+    "elite organism true aggregate score"
+  );
+  // evaluated
+//   org_aggregate_scores
+  elite_file_ptr->AddFun<std::string>(
+    [this]() -> std::string {
+      std::stringstream ss;
+      ss << "\"";
+      utils::PrintVector(ss, org_test_evaluations[true_max_fit_org_id]);
+      ss << "\"";
+      return ss.str();
+    },
+    "evaluated_tests",
+    "test evaluations for elite organism"
+  );
+  // estimated phenotype
+  elite_file_ptr->AddFun<std::string>(
+    [this]() -> std::string {
+      std::stringstream ss;
+      ss << "\"";
+      utils::PrintVector(ss, org_test_scores[true_max_fit_org_id]);
+      ss << "\"";
+      return ss.str();
+    },
+    "evaluated_phenotype",
+    "evaluated phenotype for elite organism"
+  );
+  // estimated agg score
+  elite_file_ptr->AddFun<double>(
+    [this]() -> double {
+      return org_aggregate_scores[true_max_fit_org_id];
+    },
+    "evaluated_agg_score",
+    "elite organism evaluated aggregate score"
+  );
+  // estimated - true agg
+  elite_file_ptr->AddFun<double>(
+    [this]() -> double {
+      auto& org = GetOrg(true_max_fit_org_id);
+      return org_aggregate_scores[true_max_fit_org_id] - org.GetAggregateScore();
+    },
+    "eval_true_agg_score_diff",
+    "evaluated aggregate score - true aggregate score"
+  );
+  elite_file_ptr->PrintHeaderKeys();
 }
 
 void DiagnosticsWorld::SetupPhylogenyTracking() {
@@ -551,20 +626,47 @@ void DiagnosticsWorld::SetupPhylogenyTracking() {
     [](const org_t& org) { return org.GetGenome(); }
   );
 
-  // TODO - add phylo snapshot functions, info nodes
+  // Add phylo snapshot functions
+  systematics_ptr->AddSnapshotFun(
+    [](const taxon_t& taxon) {
+      std::stringstream ss;
+      ss << taxon.GetData().GetFitness();
+      return ss.str();
+      // return emp::to_string(taxon.GetData().GetFitness());
+    },
+    "fitness"
+  );
+  systematics_ptr->AddSnapshotFun(
+    [](const taxon_t& taxon) {
+      std::stringstream ss;
+      ss << "\"";
+      utils::PrintVector(ss, taxon.GetData().GetPhenotype());
+      ss << "\"";
+      return ss.str();
+    },
+    "phenotype"
+  );
+  systematics_ptr->AddSnapshotFun(
+    [](const taxon_t& taxon) {
+      std::stringstream ss;
+      ss << "\"";
+      utils::PrintVector(ss, taxon.GetInfo());
+      ss << "\"";
+      return ss.str();
+    },
+    "genome"
+  );
 
   systematics_ptr->AddEvolutionaryDistinctivenessDataNode();
   systematics_ptr->AddPairwiseDistanceDataNode();
   systematics_ptr->AddPhylogeneticDiversityDataNode();
 
   // Note, base class takes ownership of this pointer
-  // TODO - shift away from using derived phylogeny class, change search functions
-  //        to be just functions (phylo namespace)
   AddSystematics(systematics_ptr, "genotype");
   SetupSystematicsFile(
     "genotype",
     output_dir + "systematics.csv"
-  ).SetTimingRepeat(config.OUTPUT_PHYLO_DATA_INTERVAL());
+  ).SetTimingRepeat(config.OUTPUT_SUMMARY_DATA_INTERVAL());
 
 
 }
