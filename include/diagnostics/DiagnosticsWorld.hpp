@@ -12,7 +12,7 @@
 #include "emp/base/Ptr.hpp"
 #include "emp/Evolve/World.hpp"
 
-#include "phylogeny/Phylogeny.hpp"
+#include "phylogeny/phylogeny_utils.hpp"
 #include "selection/SelectionSchemes.hpp"
 
 #include "DiagnosticsConfig.hpp"
@@ -28,7 +28,8 @@ public:
   using genome_t = typename org_t::genome_t;
   using phenotype_t = typename org_t::phenotype_t;
 
-  using systematics_t = Phylogeny<org_t, genome_t>;
+  using systematics_t = emp::Systematics<org_t, genome_t, phylo::phenotype_info>;
+  using taxon_info_t = phylo::phenotype_info;
   using taxon_t = typename systematics_t::taxon_t;
 
   using config_t = DiagnosticsConfig;
