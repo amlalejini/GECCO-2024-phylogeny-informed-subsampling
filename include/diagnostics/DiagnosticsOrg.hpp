@@ -113,7 +113,7 @@ public:
     return optimal_traits;
   }
 
-  bool GetOptimalGene(size_t id) const {
+  bool IsGeneOptimal(size_t id) const {
     emp_assert(evaluated);
     emp_assert(id < optimal_traits.size());
     return optimal_traits[id];

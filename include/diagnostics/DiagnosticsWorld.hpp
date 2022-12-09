@@ -48,6 +48,50 @@ public:
     size_t GetSize() const { return member_ids.size(); }
   };
 
+  // TODO - setup statistics info struct that gets computed when it needs to
+  struct SelectedStatistics {
+
+    size_t num_unique_cand_selected;
+    double entropy_cand_selected;
+    size_t parents_num_tests_covered;
+    emp::vector<bool> parent_test_coverage;
+    // true pop coverage vs selected coverage
+
+    void Reset() {
+      parent_test_coverage.clear();
+      parents_num_tests_covered = 0;
+      num_unique_cand_selected = 0;
+      entropy_cand_selected = 0;
+    }
+
+    void Calculate(
+      const emp::vector<size_t>& selected,
+      DiagnosticsWorld& world
+    ) {
+      Reset();
+      num_unique_cand_selected = emp::UniqueCount(selected);
+      entropy_cand_selected = emp::ShannonEntropy(selected);
+
+      // Note, this is not the cleanest way to track this... should think about better implementations
+      size_t num_tests = world.GetConfig().DIAGNOSTIC_DIMENSIONALITY();
+      emp::vector<bool> parent_test_coverage(num_tests, false);
+      for (size_t test_id = 0; test_id < num_tests; ++test_id) {
+        for (size_t s_i = 0; (s_i < selected.size()) && !parent_test_coverage[test_id]; ++s_i) {
+          const size_t org_id = selected[s_i];
+          auto& org = world.GetOrg(org_id);
+          parent_test_coverage[test_id] = parent_test_coverage[test_id] || org.IsGeneOptimal(test_id);
+        }
+      }
+
+      parents_num_tests_covered = std::accumulate(
+        parent_test_coverage.begin(),
+        parent_test_coverage.end(),
+        0
+      );
+    }
+
+  };
+
 protected:
   const config_t& config;
 
@@ -61,7 +105,8 @@ protected:
   // TODO - create a class/struct that manages all of this?
   size_t total_tests=0;
   emp::vector<double> org_aggregate_scores;
-  // emp::vector< std::function<double(const org_t&)> > fit_fun_set; ///< One function for every possible test case.
+  emp::vector<bool> pop_test_coverage;
+
   emp::vector< emp::vector< std::function<double(void)> > > fit_fun_set; ///< Per-organism, per-test
   emp::vector< std::function<double(void)> > agg_score_fun_set; ///< Per-organism, aggregate score
 
@@ -92,10 +137,12 @@ protected:
   std::string output_dir;
 
   size_t true_max_fit_org_id = 0;     ///< Tracks max fit organism (based on 'true' aggregate fitness)
+  SelectedStatistics selection_stats;
 
   // -- data files --
   emp::Ptr<emp::DataFile> summary_file_ptr;
   emp::Ptr<emp::DataFile> phylodiversity_file_ptr;
+  emp::Ptr<emp::DataFile> elite_file_ptr;
 
   void Setup();
   void SetupDiagnostic();
@@ -143,12 +190,14 @@ public:
     if (base_diagnostic != nullptr) base_diagnostic.Delete();
     if (selector != nullptr) selector.Delete();
     if (summary_file_ptr != nullptr) summary_file_ptr.Delete();
+    if (elite_file_ptr != nullptr) elite_file_ptr.Delete();
     if (phylodiversity_file_ptr != nullptr) phylodiversity_file_ptr.Delete();
   }
 
   void RunStep();
   void Run();
 
+  const config_t& GetConfig() const { return config; }
 };
 
 void DiagnosticsWorld::RunStep() {
@@ -171,6 +220,11 @@ void DiagnosticsWorld::DoEvaluation() {
 
   // Reset current true max fitness organism
   true_max_fit_org_id = 0;
+  std::fill(
+    pop_test_coverage.begin(),
+    pop_test_coverage.end(),
+    false
+  );
   // Assign test groupings (if any)
   assign_test_groupings();
   // Assign organism groupings (if any)
@@ -214,6 +268,8 @@ void DiagnosticsWorld::DoUpdate() {
   }
   // Output to summary data file?
   if (summary_data_interval) {
+    // Update selection statistics
+    selection_stats.Calculate(selected_parent_ids, *this);
     summary_file_ptr->Update();
   }
   // Print status?
@@ -384,7 +440,12 @@ void DiagnosticsWorld::SetupDataCollection() {
   summary_file_ptr = emp::NewPtr<emp::DataFile>(
     output_dir + "summary.csv"
   );
+  // Create elite file
+  elite_file_ptr = emp::NewPtr<emp::DataFile>(
+    output_dir + "elite.csv"
+  );
 
+  // Configure phylodiversity file
   phylodiversity_file_ptr->AddVar(update, "generation", "Generation");
   phylodiversity_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
   phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("evolutionary_distinctiveness") , "genotype_evolutionary_distinctiveness", "evolutionary distinctiveness for a single update", true, true);
@@ -392,6 +453,69 @@ void DiagnosticsWorld::SetupDataCollection() {
   phylodiversity_file_ptr->AddCurrent(*systematics_ptr->GetDataNode("phylogenetic_diversity"), "genotype_current_phylogenetic_diversity", "current phylogenetic_diversity", true, true);
   phylodiversity_file_ptr->PrintHeaderKeys();
 
+  // Configure summary file
+  summary_file_ptr->AddVar(update, "generation", "Generation");
+  summary_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
+  // population-wide trait coverage
+  summary_file_ptr->AddFun<size_t>(
+    [this]() -> size_t {
+      return std::accumulate(
+        pop_test_coverage.begin(),
+        pop_test_coverage.end(),
+        0
+      );
+    },
+    "pop_optimal_trait_coverage",
+    "True population-wide optimal trait coverage"
+  );
+  summary_file_ptr->AddFun<double>(
+    [this]() -> double {
+      return GetOrg(true_max_fit_org_id).GetAggregateScore();
+    },
+    "max_agg_score",
+    "True maximum aggregate score"
+  );
+
+  // Selection statistics
+  // num_unique_cand_selected
+  summary_file_ptr->AddVar(
+    selection_stats.num_unique_cand_selected,
+    "num_unique_selected",
+    "Number of unique candidates selected to be parents"
+  );
+  // entropy_cand_selected
+  summary_file_ptr->AddVar(
+    selection_stats.entropy_cand_selected,
+    "entropy_selected_ids",
+    "Entropy of candidate IDs selected"
+  );
+  // parents_num_tests_covered -- parents_optimal_trait_coverage
+  summary_file_ptr->AddVar(
+    selection_stats.parents_num_tests_covered,
+    "parents_optimal_trait_coverage",
+    "Number of optimal traits across all parents selected"
+  );
+  // optimal_trait_coverage_loss
+  summary_file_ptr->AddFun<size_t>(
+    [this]() {
+      const size_t pop_cov = std::accumulate(
+        pop_test_coverage.begin(),
+        pop_test_coverage.end(),
+        0
+      );
+      return pop_cov - selection_stats.parents_num_tests_covered;
+    },
+    "optimal_trait_coverage_loss",
+    "(true) Pop test coverage - (true) parent test coverage"
+  );
+
+  summary_file_ptr->PrintHeaderKeys();
+
+  // Configure elite file
+  elite_file_ptr->AddVar(update, "generation", "Generation");
+  elite_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
+
+  elite_file_ptr->PrintHeaderKeys();
 
 }
 
@@ -429,6 +553,9 @@ void DiagnosticsWorld::SetupEvaluation() {
   // Allocate space for tracking organism aggregate scores
   org_aggregate_scores.clear();
   org_aggregate_scores.resize(config.POP_SIZE(), 0.0);
+  // Allocate space for tracking population-wide test coverage
+  pop_test_coverage.clear();
+  pop_test_coverage.resize(config.DIAGNOSTIC_DIMENSIONALITY(), false);
   // Allocate space for tracking organism test scores
   org_test_scores.clear();
   org_test_scores.resize(
@@ -473,6 +600,11 @@ void DiagnosticsWorld::SetupEvaluation() {
       emp_assert(true_max_fit_org_id < GetSize());
       const double max_score = GetOrg(true_max_fit_org_id).GetAggregateScore();
       true_max_fit_org_id = (org.GetAggregateScore() > max_score) ? org_id : true_max_fit_org_id;
+      // Update pop-wide trait coverage
+      emp_assert(total_tests == org.GetOptimalTraits().size());
+      for (size_t i = 0; i < total_tests; ++i) {
+        pop_test_coverage[i] = pop_test_coverage[i] || org.IsGeneOptimal(i);
+      }
     }
   );
   // Next: reset world organism info
