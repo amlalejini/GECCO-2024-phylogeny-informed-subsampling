@@ -102,6 +102,8 @@ protected:
   emp::Signal<void(size_t)> do_org_evaluation_sig;
   std::function<void(const genome_t&, phenotype_t&)> translate_genome_fun;
 
+  std::function<bool(void)> stop_run;
+
   // TODO - create a class/struct that manages all of this?
   size_t total_tests=0;
   emp::vector<double> org_aggregate_scores;
@@ -152,6 +154,7 @@ protected:
   void SetupMutator();
   void SetupPhylogenyTracking();
   void SetupDataCollection();
+  void SetupStoppingCondition();
 
   template<typename DIAG_PROB>
   void SetupDiagnosticHelper();
@@ -169,6 +172,9 @@ protected:
   void SetupSelection_Truncation();
   void SetupSelection_None();
   void SetupSelection_Random();
+
+  void SetupStoppingCondition_Generations();
+  void SetupStoppingCondition_Evaluations();
 
   void InitializePopulation();
 
@@ -212,7 +218,7 @@ void DiagnosticsWorld::RunStep() {
 }
 
 void DiagnosticsWorld::Run() {
-  for (size_t u = 0; u <= config.MAX_GENS(); ++u) {
+  while (!stop_run()) {
     RunStep();
   }
 }
@@ -336,6 +342,9 @@ void DiagnosticsWorld::Setup() {
 
   // Setup mutation function
   SetupMutator();
+
+  // Setup stopping condition
+  SetupStoppingCondition();
 
   // Setup data collection
   SetupDataCollection();
@@ -667,6 +676,32 @@ void DiagnosticsWorld::SetupPhylogenyTracking() {
   ).SetTimingRepeat(config.OUTPUT_SUMMARY_DATA_INTERVAL());
 
 
+}
+
+void DiagnosticsWorld::SetupStoppingCondition() {
+  std::cout << "Configurint stopping condition" << std::endl;
+
+  if (config.STOP_MODE() == "generations") {
+    SetupStoppingCondition_Generations();
+  } else if (config.STOP_MODE() == "evaluations") {
+    SetupStoppingCondition_Evaluations();
+  } else {
+    std::cout << "Unknown STOP_MODE: " << config.STOP_MODE() << std::endl;
+    exit(-1);
+  }
+
+}
+
+void DiagnosticsWorld::SetupStoppingCondition_Generations() {
+  stop_run = [this]() {
+    return GetUpdate() > config.MAX_GENS();
+  };
+}
+
+void DiagnosticsWorld::SetupStoppingCondition_Evaluations() {
+  stop_run = [this]() {
+    return total_test_evaluations > config.MAX_EVALS();
+  };
 }
 
 void DiagnosticsWorld::SetupEvaluation() {

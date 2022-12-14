@@ -11,6 +11,8 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   GROUP(WORLD, "How should the world be setup?"),
   VALUE(POP_SIZE, size_t, 512, "Population size."),
   VALUE(MAX_GENS, size_t, 50000, "Maximum number of generations."),
+  VALUE(MAX_EVALS, size_t, 2560000000, "Maximum number of trait evaluations."),
+  VALUE(STOP_MODE, std::string, "generations", "How do we know when to stop? Options: generations\nevaluations"),
   VALUE(SEED, int, 1, "Random number seed."),
   VALUE(INIT_POP_RAND, bool, true, "Do we start randomly (true) or from the lowest point (false)"),
 
