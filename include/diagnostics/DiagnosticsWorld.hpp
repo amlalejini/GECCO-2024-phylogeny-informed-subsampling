@@ -20,6 +20,7 @@
 #include "DiagnosticsOrg.hpp"
 #include "DiagnosticsProblems.hpp"
 
+// TODO - snapshot config
 namespace diag {
 
 class DiagnosticsWorld : public emp::World<DiagnosticsOrg> {
@@ -182,8 +183,8 @@ protected:
   void DoSelection();
   void DoUpdate();
 
-  void DoConfigSnapshot();
-  void DoPopSnapshot();
+  void SnapshotConfig();
+  // void DoPopSnapshot();
 
 public:
 
@@ -352,7 +353,11 @@ void DiagnosticsWorld::Setup() {
   // Initialize population
   InitializePopulation();
 
+  // Configure world to automatically handle mutations
   SetAutoMutate();
+
+  // Output snapshot of run configuration
+  SnapshotConfig();
 }
 
 void DiagnosticsWorld::SetupDiagnostic() {
@@ -1369,6 +1374,27 @@ void DiagnosticsWorld::InitializePopulation() {
     Inject(default_org.GetGenome(), config.POP_SIZE());
   }
 
+}
+
+void DiagnosticsWorld::SnapshotConfig() {
+  emp::DataFile snapshot_file(output_dir + "run_config.csv");
+  std::function<std::string(void)> get_param;
+  std::function<std::string(void)> get_value;
+  snapshot_file.AddFun<std::string>(
+    [&get_param]() { return get_param(); },
+    "parameter"
+  );
+  snapshot_file.AddFun<std::string>(
+    [&get_value]() { return get_value(); },
+    "value"
+  );
+  snapshot_file.PrintHeaderKeys();
+
+  for (const auto& entry : config) {
+    get_param = [&entry]() { return entry.first; };
+    get_value = [&entry]() { return emp::to_string(entry.second->GetValue()); };
+    snapshot_file.Update();
+  }
 }
 
 
