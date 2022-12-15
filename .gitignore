@@ -46,6 +46,7 @@
 /output/
 scratch.cpp
 log.txt
+pat.txt
 
 # python environment
 pyenv/
