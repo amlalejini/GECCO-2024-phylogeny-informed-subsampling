@@ -6,7 +6,7 @@ ACCOUNT=devolab
 SEED_OFFSET=1000
 JOB_TIME=48:00:00
 JOB_MEM=16G
-PROJECT_NAME=pylogeny-informed-evaluation
+PROJECT_NAME=phylogeny-informed-evaluation
 
 SCRATCH_EXP_DIR=/mnt/scratch/lalejini/data/${PROJECT_NAME}
 REPO_DIR=/mnt/home/lalejini/devo_ws/${PROJECT_NAME}
