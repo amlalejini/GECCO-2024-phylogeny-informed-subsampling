@@ -187,26 +187,26 @@ def main():
             summary_info[f"{field}"] = final_data[field]
 
         # Process time series
-        filtered_ts_data = utils.filter_ordered_data(
-            run_data,
-            time_series_units,
-            time_series_resolution
-        )
-        ts_gens_included = [int(line["generation"]) for line in filtered_ts_data]
-        ts_gens_included.sort()
-        gen_to_ts_step = {ts_gens_included[i]:i for i in range(0, len(ts_gens_included))}
-        time_series_info = {gen:{} for gen in ts_gens_included}
+        # filtered_ts_data = utils.filter_ordered_data(
+        #     run_data,
+        #     time_series_units,
+        #     time_series_resolution
+        # )
+        # ts_gens_included = [int(line["generation"]) for line in filtered_ts_data]
+        # ts_gens_included.sort()
+        # gen_to_ts_step = {ts_gens_included[i]:i for i in range(0, len(ts_gens_included))}
+        # time_series_info = {gen:{} for gen in ts_gens_included}
 
-        for line in filtered_ts_data:
-            gen = int(line["generation"])
-            time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
-            for field in time_series_summary_fields:
-                time_series_info[gen][field] = line[field]
+        # for line in filtered_ts_data:
+        #     gen = int(line["generation"])
+        #     time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
+        #     for field in time_series_summary_fields:
+        #         time_series_info[gen][field] = line[field]
 
-        # Add config info to time series entries
-        for gen in time_series_info:
-            for field in time_series_cfg_fields:
-                time_series_info[gen][field] = summary_info[field]
+        # # Add config info to time series entries
+        # for gen in time_series_info:
+        #     for field in time_series_cfg_fields:
+        #         time_series_info[gen][field] = summary_info[field]
         ############################################################
 
 
@@ -252,17 +252,17 @@ def main():
             summary_info[f"elite_{field}"] = final_data[field]
 
         # Process time series
-        filtered_ts_data = utils.filter_ordered_data(
-            elite_data,
-            time_series_units,
-            time_series_resolution
-        )
+        # filtered_ts_data = utils.filter_ordered_data(
+        #     elite_data,
+        #     time_series_units,
+        #     time_series_resolution
+        # )
 
-        for line in filtered_ts_data:
-            gen = int(line["generation"])
-            time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
-            for field in time_series_elite_fields:
-                time_series_info[gen][field] = line[field]
+        # for line in filtered_ts_data:
+        #     gen = int(line["generation"])
+        #     time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
+        #     for field in time_series_elite_fields:
+        #         time_series_info[gen][field] = line[field]
         ############################################################
 
 
@@ -290,17 +290,17 @@ def main():
             summary_info[f"phylo_{field}"] = final_data[field]
 
         # Process time series
-        filtered_ts_data = utils.filter_ordered_data(
-            phylo_data,
-            time_series_units,
-            time_series_resolution
-        )
+        # filtered_ts_data = utils.filter_ordered_data(
+        #     phylo_data,
+        #     time_series_units,
+        #     time_series_resolution
+        # )
 
-        for line in filtered_ts_data:
-            gen = int(line["generation"])
-            time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
-            for field in time_series_phylo_fields:
-                time_series_info[gen][field] = line[field]
+        # for line in filtered_ts_data:
+        #     gen = int(line["generation"])
+        #     time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
+        #     for field in time_series_phylo_fields:
+        #         time_series_info[gen][field] = line[field]
 
         ############################################################
         # Extract sys data
@@ -329,36 +329,36 @@ def main():
             time_series_resolution
         )
 
-        for line in filtered_ts_data:
-            gen = int(line["update"])
-            time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
-            for field in time_series_sys_fields:
-                time_series_info[gen][field] = line[field]
+        # for line in filtered_ts_data:
+        #     gen = int(line["update"])
+        #     time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
+        #     for field in time_series_sys_fields:
+        #         time_series_info[gen][field] = line[field]
         ############################################################
 
         ############################################################
         # Output time series data for this run
         # Compute time series header from time_series_info
-        time_series_fields = list(time_series_info[ts_gens_included[0]].keys())
-        time_series_fields.sort()
-        # If we haven't written the header, write it.
-        write_header = False
-        if time_series_header == None:
-            write_header = True
-            time_series_header = ",".join(time_series_fields)
-        elif time_series_header != ",".join(time_series_fields):
-            print("Time series header mismatch!")
-            exit(-1)
+        # time_series_fields = list(time_series_info[ts_gens_included[0]].keys())
+        # time_series_fields.sort()
+        # # If we haven't written the header, write it.
+        # write_header = False
+        # if time_series_header == None:
+        #     write_header = True
+        #     time_series_header = ",".join(time_series_fields)
+        # elif time_series_header != ",".join(time_series_fields):
+        #     print("Time series header mismatch!")
+        #     exit(-1)
 
-        # Write time series content line-by-line
-        time_series_content = []
-        for u in ts_gens_included:
-            time_series_content.append(",".join([str(time_series_info[u][field]) for field in time_series_fields]))
-        with open(time_series_fpath, "a") as fp:
-            if write_header: fp.write(time_series_header)
-            fp.write("\n")
-            fp.write("\n".join(time_series_content))
-        time_series_content = []
+        # # Write time series content line-by-line
+        # time_series_content = []
+        # for u in ts_gens_included:
+        #     time_series_content.append(",".join([str(time_series_info[u][field]) for field in time_series_fields]))
+        # with open(time_series_fpath, "a") as fp:
+        #     if write_header: fp.write(time_series_header)
+        #     fp.write("\n")
+        #     fp.write("\n".join(time_series_content))
+        # time_series_content = []
         ############################################################
 
         ############################################################
