@@ -47,6 +47,7 @@
 scratch.cpp
 log.txt
 pat.txt
+data/
 
 # python environment
 pyenv/
