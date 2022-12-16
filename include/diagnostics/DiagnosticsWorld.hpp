@@ -475,7 +475,7 @@ void DiagnosticsWorld::SetupDataCollection() {
   );
 
   // Configure phylodiversity file
-  phylodiversity_file_ptr->AddVar(update, "generation", "Generation");
+  phylodiversity_file_ptr->AddVar(update, "update", "Generation");
   phylodiversity_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
   phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("evolutionary_distinctiveness") , "genotype_evolutionary_distinctiveness", "evolutionary distinctiveness for a single update", true, true);
   phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("pairwise_distance"), "genotype_pairwise_distance", "pairwise distance for a single update", true, true);
@@ -483,7 +483,7 @@ void DiagnosticsWorld::SetupDataCollection() {
   phylodiversity_file_ptr->PrintHeaderKeys();
 
   // Configure summary file
-  summary_file_ptr->AddVar(update, "generation", "Generation");
+  summary_file_ptr->AddVar(update, "update", "Generation");
   summary_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
   // population-wide trait coverage
   summary_file_ptr->AddFun<size_t>(
@@ -546,7 +546,7 @@ void DiagnosticsWorld::SetupDataCollection() {
   // - failed to find trait estimation
 
   // Configure elite file
-  elite_file_ptr->AddVar(update, "generation", "Generation");
+  elite_file_ptr->AddVar(update, "update", "Generation");
   elite_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
   // genome
   elite_file_ptr->AddFun<std::string>(
