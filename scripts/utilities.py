@@ -11,7 +11,7 @@ def mkdir_p(path):
             pass
         else: raise
 
-def extract_params_cmd_log(path, exec_name="diagnostics-suite"):
+def extract_params_cmd_log(path, exec_name):
     """
     Extract Avida parameters from log of command used to run Avida.
     The log should contain only the text used to run Avida.
