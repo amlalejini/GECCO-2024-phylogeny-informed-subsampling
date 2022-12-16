@@ -8,6 +8,39 @@ import utilities as utils
 
 run_identifier = "RUN_"
 
+run_cfg_fields = [
+    "SEED",
+    "POP_SIZE",
+    "STOP_MODE",
+    "MAX_GENS",
+    "MAX_EVALS",
+    "INIT_POP_RAND",
+    "GENE_LOWER_BND",
+    "GENE_UPPER_BND",
+    "ACCURACY",
+    "TARGET",
+    "CREDIT",
+    "DIAGNOSTIC_DIMENSIONALITY",
+    "MUTATE_PER_SITE_RATE",
+    "MUTATE_MEAN",
+    "MUTATE_STD",
+    "TOURNAMENT_SIZE",
+    "EVAL_MODE",
+    "TEST_DOWNSAMPLE_RATE",
+    "EVAL_FIT_EST_MODE",
+    "NUM_COHORTS",
+    "DIAGNOSTIC",
+    "SELECTION"
+]
+
+agg_exclude_fields = [
+    "update",
+    "genome",
+    "true_phenotype",
+    "evaluated_tests",
+    "evaluated_phenotype"
+]
+
 time_series_summary_fields = [
     "generation",
     "evaluations",
@@ -96,8 +129,11 @@ def main():
 
         # Skip over (but make note of) incomplete runs.
         required_files = [
-            os.path.join("output", "data.csv"),
+            os.path.join("output", "summary.csv"),
             os.path.join("output", "elite.csv"),
+            os.path.join("output", "phylodiversity.csv"),
+            os.path.join("output", "systematics.csv"),
+            os.path.join("output", "run_config.csv"),
             os.path.join("cmd.log")
         ]
         incomplete = any([not os.path.exists(os.path.join(run_path, req)) for req in required_files])
@@ -108,12 +144,23 @@ def main():
 
         ############################################################
         # Extract commandline configuration settings (from cmd.log file)
-        cmd_log_path = os.path.join(run_path, "cmd.log")
-        cmd_params = utils.extract_params_cmd_log(cmd_log_path)
-        print(cmd_params)
+        # cmd_log_path = os.path.join(run_path, "cmd.log")
+        # cmd_params = utils.extract_params_cmd_log(cmd_log_path, "diagnostics")
+        # print(cmd_params)
+        # for field in cmd_params:
+        #     summary_info[field] = cmd_params[field]
 
-        for field in cmd_params:
-            summary_info[field] = cmd_params[field]
+        # Extract configs from run_config.csv file
+        cfg_path = os.path.join(run_path, "output", "run_config.csv")
+        cfg_data = utils.read_csv(cfg_path)
+        cmd_params = {}
+        for line in cfg_data:
+            param = line["parameter"]
+            value = line["value"]
+            cmd_params[param] = value
+            if param in run_cfg_fields:
+                summary_info[param] = value
+        print("Run configuration:", summary_info)
         ############################################################
 
         ############################################################
@@ -135,7 +182,9 @@ def main():
 
         # Add final data to run summary info
         for field in final_data:
-            summary_info[field] = final_data[field]
+            if field in agg_exclude_fields or field in summary_info:
+                continue
+            summary_info[f"{field}"] = final_data[field]
 
         # Process time series
         filtered_ts_data = utils.filter_ordered_data(
@@ -143,13 +192,13 @@ def main():
             time_series_units,
             time_series_resolution
         )
-        ts_gens_included = [int(line["gen"]) for line in filtered_ts_data]
+        ts_gens_included = [int(line["generation"]) for line in filtered_ts_data]
         ts_gens_included.sort()
         gen_to_ts_step = {ts_gens_included[i]:i for i in range(0, len(ts_gens_included))}
         time_series_info = {gen:{} for gen in ts_gens_included}
 
         for line in filtered_ts_data:
-            gen = int(line["gen"])
+            gen = int(line["generation"])
             time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
             for field in time_series_summary_fields:
                 time_series_info[gen][field] = line[field]
@@ -167,9 +216,9 @@ def main():
 
         completed = False
         if stop_condition == "generations":
-            completed = cmd_params["MAX_GENS"] <= max_gen
+            completed = int(cmd_params["MAX_GENS"]) <= max_gen
         elif stop_condition == "evaluations":
-            completed = cmd_params["MAX_EVALS"] <= max_evals
+            completed = int(cmd_params["MAX_EVALS"]) <= max_evals
         else:
             print("Unrecognized stop mode")
 
@@ -182,21 +231,110 @@ def main():
         ############################################################
         # Extract elite data
         ############################################################
-        # TODO
         elite_data_path = os.path.join(run_path, "output", "elite.csv")
         elite_data = utils.read_csv(elite_data_path)
+        # Identify final generation
+        generations = [int(line["generation"]) for line in elite_data]
+        max_gen = max(generations)
+        # Identify evaluations
+        evaluations = [int(line["evaluations"]) for line in elite_data]
+        max_evals = max(evaluations)
 
+        # Isolate data from final generation
+        final_data = [line for line in elite_data if int(line["generation"]) == max_gen]
+        assert len(final_data) == 1
+        final_data = final_data[0]
+
+        # Add final data to run summary info
+        for field in final_data:
+            if field in agg_exclude_fields or field in summary_info:
+                continue
+            summary_info[f"elite_{field}"] = final_data[field]
+
+        # Process time series
+        filtered_ts_data = utils.filter_ordered_data(
+            elite_data,
+            time_series_units,
+            time_series_resolution
+        )
+
+        for line in filtered_ts_data:
+            gen = int(line["generation"])
+            time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
+            for field in time_series_elite_fields:
+                time_series_info[gen][field] = line[field]
+        ############################################################
 
 
         ############################################################
         # Extract phylo  data
         ############################################################
-        # TODO
+        phylo_data_path = os.path.join(run_path, "output", "phylodiversity.csv")
+        phylo_data = utils.read_csv(phylo_data_path)
+        # Identify final generation
+        generations = [int(line["generation"]) for line in phylo_data]
+        max_gen = max(generations)
+        # Identify evaluations
+        evaluations = [int(line["evaluations"]) for line in phylo_data]
+        max_evals = max(evaluations)
+
+        # Isolate data from final generation
+        final_data = [line for line in phylo_data if int(line["generation"]) == max_gen]
+        assert len(final_data) == 1
+        final_data = final_data[0]
+
+        # Add final data to run summary info
+        for field in final_data:
+            if field in agg_exclude_fields or field in summary_info:
+                continue
+            summary_info[f"phylo_{field}"] = final_data[field]
+
+        # Process time series
+        filtered_ts_data = utils.filter_ordered_data(
+            phylo_data,
+            time_series_units,
+            time_series_resolution
+        )
+
+        for line in filtered_ts_data:
+            gen = int(line["generation"])
+            time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
+            for field in time_series_phylo_fields:
+                time_series_info[gen][field] = line[field]
 
         ############################################################
         # Extract sys data
         ############################################################
-        # TODO
+        sys_data_path = os.path.join(run_path, "output", "systematics.csv")
+        sys_data = utils.read_csv(sys_data_path)
+        # Identify final generation
+        generations = [int(line["update"]) for line in sys_data]
+        max_gen = max(generations)
+
+        # Isolate data from final generation
+        final_data = [line for line in sys_data if int(line["update"]) == max_gen]
+        assert len(final_data) == 1
+        final_data = final_data[0]
+
+        # Add final data to run summary info
+        for field in final_data:
+            if field in agg_exclude_fields or field in summary_info:
+                continue
+            summary_info[f"sys_{field}"] = final_data[field]
+
+        # Process time series
+        filtered_ts_data = utils.filter_ordered_data(
+            sys_data,
+            time_series_units,
+            time_series_resolution
+        )
+
+        for line in filtered_ts_data:
+            gen = int(line["update"])
+            time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
+            for field in time_series_sys_fields:
+                time_series_info[gen][field] = line[field]
+        ############################################################
 
         ############################################################
         # Output time series data for this run
