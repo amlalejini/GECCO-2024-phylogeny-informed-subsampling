@@ -75,7 +75,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run submission script.")
     parser.add_argument("--data_dir", type=str, help="Where is the base output directory for each run?")
     parser.add_argument("--dump", type=str, help="Where to dump this?", default=".")
-    parser.add_argument("--units", type=str, default="gen", choices=["gen", "evals", "interval", "total"], help="Unit for resolution of time series")
+    parser.add_argument("--units", type=str, default="interval", choices=["interval", "total"], help="Unit for resolution of time series")
     parser.add_argument("--resolution", type=int, default=1, help="What resolution should we collect time series data at?")
 
     # Parse command line arguments
@@ -225,7 +225,7 @@ def main():
         if not completed:
             print("  - Run failed to finish.")
             incomplete_runs.append(run_dir)
-            continue
+            # continue
         ############################################################
 
         ############################################################
