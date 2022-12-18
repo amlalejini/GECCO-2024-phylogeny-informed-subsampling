@@ -4,7 +4,7 @@ REPLICATES=10
 EXP_SLUG=2022-12-14-diagnostics-lex
 ACCOUNT=devolab
 SEED_OFFSET=1000
-JOB_TIME=48:00:00
+JOB_TIME=96:00:00
 JOB_MEM=16G
 PROJECT_NAME=phylogeny-informed-evaluation
 

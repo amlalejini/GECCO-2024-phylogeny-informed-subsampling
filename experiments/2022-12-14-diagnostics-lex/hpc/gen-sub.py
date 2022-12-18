@@ -27,8 +27,8 @@ combos = CombinationCollector()
 fixed_parameters = {
     "POP_SIZE": "500",
     "STOP_MODE": "evaluations",
-    "MAX_GENS": "50000",
-    "MAX_EVALS": "2560000000",
+    "MAX_GENS": "25000",
+    "MAX_EVALS": "1250000000",
     "INIT_POP_RAND": "0",
     "GENE_LOWER_BND": "0",
     "GENE_UPPER_BND": "100",
