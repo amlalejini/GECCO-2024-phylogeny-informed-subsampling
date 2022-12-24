@@ -11,8 +11,8 @@
 
 EXP_SLUG=2022-12-14-diagnostics-lex
 PROJECT_NAME=phylogeny-informed-evaluation
-UNITS=interval
-RESOLUTION=1
+UNITS=total
+RESOLUTION=200
 
 REPO_DIR=/mnt/home/lalejini/devo_ws/${PROJECT_NAME}
 ANALYSIS_DIR=${REPO_DIR}/experiments/${EXP_SLUG}/analysis
