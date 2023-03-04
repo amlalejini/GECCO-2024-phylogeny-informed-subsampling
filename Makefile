@@ -1,17 +1,20 @@
 # Project-specific settings
 EMP_DIR := third-party/Empirical/include
+SGP_DIR := ../SignalGP/include
+PSB_DIR := ../psb-cpp/include
 CEREAL_DIR := third-party/Empirical/third-party/cereal/include
 
-PROJECT := diagnostics
-MAIN_CPP ?= source/diagnostics.cpp
+# PROJECT := diagnostics
+PROJECT := prog_synth
+MAIN_CPP ?= source/${PROJECT}.cpp
 
 # Flags to use regardless of compiler
-CFLAGS_all := -Wall -Wno-unused-function -std=c++17 -lstdc++fs -I$(EMP_DIR)/ -Iinclude/ -Ithird-party/
+CFLAGS_all := -Wall -Wno-unused-function -std=c++17 -lstdc++fs -I$(EMP_DIR)/ -Iinclude/ -Ithird-party/ -I$(SGP_DIR)/ -I$(PSB_DIR)/
 
 # Native compiler information
 CXX_nat := g++-12
-CFLAGS_nat := -O3 -DNDEBUG -msse4.2 $(CFLAGS_all)
-CFLAGS_nat_debug := -g $(CFLAGS_all)
+CFLAGS_nat := -O3 -DNDEBUG $(CFLAGS_all) # -msse4.2
+CFLAGS_nat_debug := -g -DEMP_TRACK_MEM $(CFLAGS_all)
 
 default: $(PROJECT)
 native: $(PROJECT)
