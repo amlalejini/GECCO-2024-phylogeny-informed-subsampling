@@ -120,7 +120,7 @@ explore_summary_data <- filter(
 ## Contradictory objectives
 
 ```{r}
-ggplot(
+contradictory_obj_final_plt <- ggplot(
     filter(
       con_obj_summary_data,
       evals_per_gen != 0.1
@@ -158,12 +158,22 @@ ggplot(
     labeller=label_both
   ) +
   theme(
-    legend.position="none"
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
   )
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-final.pdf"),
+  plot = contradictory_obj_final_plt,
+  width = 15,
+  height = 10
+)
 ```
 
 ```{r}
-ggplot(
+contradictory_obj_final_mean_pw_dist_plt <- ggplot(
     filter(
       con_obj_summary_data,
       evals_per_gen != 0.1
@@ -203,12 +213,18 @@ ggplot(
   theme(
     legend.position="none"
   )
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-phylo-mean-pw-dist.pdf"),
+  plot = contradictory_obj_final_mean_pw_dist_plt,
+  width = 15,
+  height = 10
+)
 ```
 
 ## Multipath exploration
 
 ```{r}
-ggplot(
+explore_final_score_plt <- ggplot(
     filter(
       explore_summary_data,
       evals_per_gen != 0.1
@@ -248,12 +264,67 @@ ggplot(
   theme(
     legend.position="none"
   )
+ggsave(
+  filename = paste0(plot_directory, "explore_final_score.pdf"),
+  plot = explore_final_score_plt,
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+explore_final_mean_pw_dist_plt <- ggplot(
+    filter(
+      explore_summary_data,
+      evals_per_gen != 0.1
+    ),
+    aes(
+      x = EVAL_FIT_EST_MODE,
+      y = phylo_mean_genotype_pairwise_distance,
+      fill = EVAL_FIT_EST_MODE
+    )
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8,
+    adjust=1.5
+  ) +
+  geom_point(
+    mapping=aes(color=EVAL_FIT_EST_MODE),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_y_continuous(
+    # limits = c(-0.5, 100)
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_wrap(
+    evals_per_gen~EVAL_MODE,
+    nrow=1,
+    labeller=label_both
+  ) +
+  theme(
+    legend.position="none"
+  )
+ggsave(
+  filename = paste0(plot_directory, "explore-phylo-mean-pw-dist.pdf"),
+  plot = explore_final_mean_pw_dist_plt,
+  width = 15,
+  height = 10
+)
 ```
 
 ## Exploitation rate
 
 ```{r}
-ggplot(
+exploit_final_score_plt <- ggplot(
     filter(
       exploit_summary_data,
       evals_per_gen != 0.1
@@ -293,4 +364,10 @@ ggplot(
   theme(
     legend.position="none"
   )
+ggsave(
+  filename = paste0(plot_directory, "exploit_final_score.pdf"),
+  plot = exploit_final_score_plt,
+  width = 15,
+  height = 10
+)
 ```
