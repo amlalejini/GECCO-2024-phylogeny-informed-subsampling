@@ -42,8 +42,13 @@
 
 # Local run files
 /diagnostics.cfg
-/diagnostics
+diagnostics
+
+/prog_synth.cfg
+prog_synth
+
 /output/
+local/
 scratch.cpp
 log.txt
 pat.txt
