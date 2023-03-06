@@ -11,12 +11,14 @@
 #include "emp/matching/MatchBin.hpp"
 #include "emp/base/Ptr.hpp"
 
-#include "sgp/cpu/linprg/LinearProgram.hpp"
-#include "sgp/cpu/LinearProgramCPU.hpp"
+// #include "sgp/cpu/linprg/LinearProgram.hpp"
+// #include "sgp/cpu/LinearProgramCPU.hpp"
+#include "sgp/cpu/lfunprg/LinearFunctionsProgram.hpp"
+#include "sgp/cpu/LinearFunctionsProgramCPU.hpp"
 #include "sgp/cpu/mem/BasicMemoryModel.hpp"
 #include "sgp/inst/InstructionLibrary.hpp"
 #include "sgp/EventLibrary.hpp"
-#include "sgp/inst/lpbm/InstructionAdder.hpp"
+#include "sgp/inst/lfpbm/InstructionAdder.hpp"
 
 #include "../phylogeny/phylogeny_utils.hpp"
 
@@ -25,14 +27,18 @@
 #include "Event.hpp"
 #include "ProblemManager.hpp"
 #include "ProgSynthHardware.hpp"
+#include "MutatorLinearFunctionsProgram.hpp"
 
 namespace psynth {
 
 // TODO - move these into internal namespace
 constexpr size_t TAG_SIZE = 32;
+constexpr size_t FUNC_NUM_TAGS = 1;
+constexpr size_t INST_TAG_CNT = 1;
+constexpr size_t INST_ARG_CNT = 3;
 using tag_t = emp::BitSet<TAG_SIZE>;
 using inst_arg_t = int;
-using program_t = sgp::cpu::linprg::LinearProgram<tag_t, inst_arg_t>;
+using program_t = sgp::cpu::lfunprg::LinearFunctionsProgram<tag_t, inst_arg_t>;
 using ORGANISM_T = ProgSynthOrg<program_t>;
 using MEMORY_MODEL_T = sgp::cpu::mem::BasicMemoryModel;
 using MATCHBIN_T = emp::MatchBin<
@@ -52,7 +58,7 @@ public:
   using hw_memory_model_t = MEMORY_MODEL_T;
   using hw_matchbin_t = MATCHBIN_T;
   using inst_t = typename program_t::inst_t;
-  using hardware_t = sgp::cpu::LinearProgramCPU<
+  using hardware_t = sgp::cpu::LinearFunctionsProgramCPU<
     hw_memory_model_t,
     inst_arg_t,
     hw_matchbin_t,
@@ -61,6 +67,8 @@ public:
   using inst_lib_t = sgp::inst::InstructionLibrary<hardware_t, inst_t>;
   using event_lib_t = sgp::EventLibrary<hardware_t>;
   using base_event_t = typename event_lib_t::event_t;
+  using mutator_t = MutatorLinearFunctionsProgram<hardware_t, tag_t, inst_arg_t>;
+
   using systematics_t = emp::Systematics<
     org_t,
     genome_t,
@@ -100,13 +108,16 @@ protected:
 
   size_t total_test_evaluations = 0; ///< Tracks the total number of "test case" evaluations across all organisms since the beginning of the run.
 
-  emp::Ptr<hardware_t> eval_hardware;
+  emp::Ptr<hardware_t> eval_hardware = nullptr;
   inst_lib_t inst_lib;
   event_lib_t event_lib;
+  emp::Ptr<mutator_t> mutator = nullptr;
 
   ProblemManager<hardware_t> problem_manager;
 
   size_t event_id_input_sig = 0;
+
+  bool found_solution = false;
 
   void Setup();
   void SetupProblem();
@@ -143,6 +154,7 @@ public:
   ~ProgSynthWorld() {
     // TODO
     if (eval_hardware != nullptr) { eval_hardware.Delete(); }
+    if (mutator != nullptr) { mutator.Delete(); }
   }
 
   void RunStep();
@@ -168,9 +180,11 @@ void ProgSynthWorld::Setup() {
   // Reset the world
   Reset();
   total_test_evaluations = 0;
+  found_solution = false;
 
   // Setup the population structure
   SetPopStruct_Mixed(true);
+
 
   // Configure world to set organism ID on placement
   OnPlacement(
@@ -193,7 +207,11 @@ void ProgSynthWorld::Setup() {
   // Setup the virtual hardware used to evaluate programs
   SetupVirtualHardware();
 
+  // Setup the program mutator
+  SetupMutator();
 
+
+  // TODO - SetAutoMutate!
 }
 
 void ProgSynthWorld::SetupProblem() {
@@ -214,7 +232,7 @@ void ProgSynthWorld::SetupInstructionLibrary() {
   std::cout << "Setting up instruction library." << std::endl;
   // Reset instruction library
   inst_lib.Clear();
-  sgp::inst::lpbm::InstructionAdder<hardware_t> inst_adder;
+  sgp::inst::lfpbm::InstructionAdder<hardware_t> inst_adder;
   // Add default instructions
   inst_adder.AddAllDefaultInstructions(inst_lib);
   // Add problem-specific instructions
@@ -235,15 +253,69 @@ void ProgSynthWorld::SetupEventLibrary() {
 }
 
 void ProgSynthWorld::SetupVirtualHardware() {
+  std::cout << "Setting up virtual hardware." << std::endl;
+  // TODO - Implement ability to run hardware in parallel
   if (eval_hardware == nullptr) {
     eval_hardware = emp::NewPtr<hardware_t>(*random_ptr, inst_lib, event_lib);
   }
   // Configure the SGP CPU
-  // TODO - Implement ability to run hardware in parallel
   eval_hardware->Reset();
   eval_hardware->SetActiveThreadLimit(config.MAX_ACTIVE_THREAD_CNT());
   eval_hardware->SetThreadCapacity(config.MAX_THREAD_CAPACITY());
+  // Configure problem-specific hardware component.
+  problem_manager.AddProblemHardware(*eval_hardware);
+  // Hardware should be in a valid thread state after configuration.
   emp_assert(eval_hardware->ValidateThreadState());
+}
+
+void ProgSynthWorld::SetupMutator() {
+  std::cout << "Setting up program mutator." << std::endl;
+  if (mutator != nullptr) {
+    mutator.Delete();
+  }
+  mutator = emp::NewPtr<mutator_t>(inst_lib);
+  mutator->ResetLastMutationTracker();
+  // Set program constraints
+  mutator->SetProgFunctionCntRange(
+    {config.PRG_MIN_FUNC_CNT(), config.PRG_MAX_FUNC_CNT()}
+  );
+  mutator->SetProgFunctionInstCntRange(
+    {config.PRG_MIN_FUNC_INST_CNT(), config.PRG_MAX_FUNC_INST_CNT()}
+  );
+  mutator->SetProgInstArgValueRange(
+    {config.PRG_INST_MIN_ARG_VAL(), config.PRG_INST_MAX_ARG_VAL()}
+  );
+  const size_t total_inst_limit = 2 * config.PRG_MAX_FUNC_INST_CNT() * config.PRG_MAX_FUNC_CNT();
+  mutator->SetTotalInstLimit(total_inst_limit);
+  mutator->SetFuncNumTags(FUNC_NUM_TAGS);
+  mutator->SetInstNumTags(INST_TAG_CNT);
+  mutator->SetInstNumArgs(INST_ARG_CNT);
+  // Set mutation rates
+  mutator->SetRateInstArgSub(config.MUT_RATE_INST_ARG_SUB());
+  mutator->SetRateInstTagBF(config.MUT_RATE_INST_TAG_BF());
+  mutator->SetRateInstSub(config.MUT_RATE_INST_SUB());
+  mutator->SetRateInstIns(config.MUT_RATE_INST_INS());
+  mutator->SetRateInstDel(config.MUT_RATE_INST_DEL());
+  mutator->SetRateSeqSlip(config.MUT_RATE_SEQ_SLIP());
+  mutator->SetRateFuncDup(config.MUT_RATE_FUNC_DUP());
+  mutator->SetRateFuncDel(config.MUT_RATE_FUNC_DEL());
+  mutator->SetRateFuncTagBF(config.MUT_RATE_FUNC_TAG_BF());
+  mutator->SetRateInstTagSingleBF(config.MUT_RATE_INST_TAG_SINGLE_BF());
+  mutator->SetRateFuncTagSingleBF(config.MUT_RATE_FUNC_TAG_SINGLE_BF());
+  mutator->SetRateInstTagSeqRand(config.MUT_RATE_INST_TAG_SEQ_RAND());
+  mutator->SetRateFuncTagSeqRand(config.MUT_RATE_FUNC_TAG_SEQ_RAND());
+
+  // Set world mutation function
+  SetMutFun(
+    [this](org_t& org, emp::Random& rnd) {
+      mutator->ResetLastMutationTracker(); // Reset mutator's recorded mutations.
+      const size_t mut_cnt = mutator->ApplyAll(
+        rnd,
+        org.GetGenome().GetProgram()
+      );
+      return mut_cnt;
+    }
+  );
 }
 
 }

@@ -39,6 +39,7 @@ protected:
   std::function<void(const std::string&)> load_training_set;
   std::function<void(const std::string&)> load_testing_set;
   std::function<void(inst_lib_t&)> add_problem_instructions;
+  std::function<void(sgp_hardware_t&)> add_problem_hardware;
 
   // std::string problem_name;
   bool configured = false;
@@ -101,6 +102,12 @@ protected:
 
     problem_util = emp::NewPtr<PROBLEM_T>();
 
+    // Configure function to add problem-specific hardware
+    add_problem_hardware = [this](sgp_hardware_t& hw) {
+      auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
+      problem_util_ptr->ConfigureHardware(hw);
+    };
+
     configured = true;
   }
 
@@ -140,9 +147,14 @@ public:
     emp_assert(configured);
     add_problem_instructions(inst_lib);
   }
+
+  void AddProblemHardware(sgp_hardware_t& hw) {
+    emp_assert(configured);
+    add_problem_hardware(hw);
+  }
+
   // TODO - load input into SGP hardware
   // TODO - check output
-  // TODO - configure instruction set
 
   // TODO - name to functionality map
 
