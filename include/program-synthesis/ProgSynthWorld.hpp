@@ -104,7 +104,7 @@ protected:
   inst_lib_t inst_lib;
   event_lib_t event_lib;
 
-  ProblemManager problem_manager;
+  ProblemManager<hardware_t> problem_manager;
 
   size_t event_id_input_sig = 0;
 
@@ -211,16 +211,19 @@ void ProgSynthWorld::SetupProblem() {
 }
 
 void ProgSynthWorld::SetupInstructionLibrary() {
+  std::cout << "Setting up instruction library." << std::endl;
   // Reset instruction library
   inst_lib.Clear();
   sgp::inst::lpbm::InstructionAdder<hardware_t> inst_adder;
+  // Add default instructions
   inst_adder.AddAllDefaultInstructions(inst_lib);
-  // TODO - add problem-specific instructions
-
+  // Add problem-specific instructions
+  problem_manager.AddProblemInstructions(inst_lib);
   // TODO - snapshot instruction set
 }
 
 void ProgSynthWorld::SetupEventLibrary() {
+  std::cout << "Setting up event library." << std::endl;
   event_lib.Clear();
   // TODO - configure event library
   // event_id_input_sig = event_lib.AddEvent(

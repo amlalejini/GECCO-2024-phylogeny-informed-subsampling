@@ -14,6 +14,7 @@
 
 // TODO - Data structure for tracking phenotypes
 // TODO - Subclass of systematics that makes it easy to search for relative
+// TODO - make search more efficient!
 
 namespace phylo {
 
@@ -36,6 +37,11 @@ struct phenotype_info {
 
   phen_t phenotype;     ///< Tracks phenotype associated with this taxon.
   emp::vector<bool> traits_evaluated; ///< Tracks whether a particular trait has been evaluated
+
+  // TODO - add struct that tracks each trait?
+  // emp::vector<bool> traits_estimated;
+  // emp::vector<double> trait_estimates;
+  // emp::vector<size_t> estimate_dists;
 
   const phen_t& GetPhenotype() const {
     return phenotype;

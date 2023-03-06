@@ -11,11 +11,16 @@
 #include "psb/readers/BaseProblemReader.hpp"
 
 #include "problems/problems.hpp"
+#include "problems/BaseProblem.hpp"
 
 namespace psynth {
 
+template<typename HARDWARE_T>
 class ProblemManager {
 public:
+
+  using sgp_hardware_t = HARDWARE_T;
+  using inst_lib_t = typename sgp_hardware_t::inst_lib_t;
 
   template<typename PROBLEM_T>
   static std::function<void(ProblemManager& manager)> BuildProblemSetupFunction() {
@@ -26,14 +31,16 @@ public:
 
 protected:
 
-  emp::Ptr<psb::BaseTestCaseSet> training_set;
-  emp::Ptr<psb::BaseTestCaseSet> testing_set;
-  // emp::Ptr<psb::BaseProblemUtility> problem_util;
+  emp::Ptr<psb::BaseTestCaseSet> training_set = nullptr;
+  emp::Ptr<psb::BaseTestCaseSet> testing_set = nullptr;
+  emp::Ptr<problems::BaseProblem> problem_util = nullptr;
 
   std::function<void()> cleanup = [](){ ; };
   std::function<void(const std::string&)> load_training_set;
   std::function<void(const std::string&)> load_testing_set;
+  std::function<void(inst_lib_t&)> add_problem_instructions;
 
+  // std::string problem_name;
   bool configured = false;
 
   /// Directory of available problems.
@@ -63,6 +70,11 @@ protected:
         testing_set_ptr.Delete();
         testing_set = nullptr;
       }
+      if (problem_util != nullptr) {
+        auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
+        problem_util_ptr.Delete();
+        problem_util_ptr = nullptr;
+      }
     };
 
     // Configure training set load function
@@ -80,6 +92,14 @@ protected:
     // Create new training/testing sets
     training_set = emp::NewPtr<psb::TestCaseSet<READER_T>>();
     testing_set = emp::NewPtr<psb::TestCaseSet<READER_T>>();
+
+    // Configure add instructions function
+    add_problem_instructions = [this](inst_lib_t& inst_lib) {
+      auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
+      problem_util_ptr->AddInstructions(inst_lib);
+    };
+
+    problem_util = emp::NewPtr<PROBLEM_T>();
 
     configured = true;
   }
@@ -106,17 +126,20 @@ public:
   }
 
   size_t GetTestingSetSize() const {
+    emp_assert(configured);
     return testing_set->GetSize();
   }
 
   size_t GetTrainingSetSize() const {
+    emp_assert(configured);
     return training_set->GetSize();
   }
 
   // template<typename INST_LIB_T>
-  // void AddProblemInstructions(INST_LIB_T& inst_lib) {
-
-  // }
+  void AddProblemInstructions(inst_lib_t& inst_lib) {
+    emp_assert(configured);
+    add_problem_instructions(inst_lib);
+  }
   // TODO - load input into SGP hardware
   // TODO - check output
   // TODO - configure instruction set
