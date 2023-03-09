@@ -10,6 +10,8 @@
 // SignalGP includes
 #include "sgp/EventLibrary.hpp"
 
+namespace psynth {
+
 /// Basic event type!
 /// - Just contains a tag.
 template<size_t TAG_SIZE>
@@ -32,17 +34,24 @@ struct Event : public sgp::BaseEvent {
 };
 
 /// Message event type
-/// - contains a tag and data
+/// - contains a tag and numeric data
 template<size_t TAG_SIZE>
-struct MessageEvent : public Event<TAG_SIZE> {
+struct NumericMessageEvent : public Event<TAG_SIZE> {
   using tag_t = typename Event<TAG_SIZE>::tag_t;
   using data_t = std::unordered_map<int, double>;
   data_t data;
 
-  MessageEvent(size_t _id, const tag_t& _tag, const data_t& _data=data_t())
-    : Event<TAG_SIZE>(_id, _tag), data(_data)
+  NumericMessageEvent(
+    size_t _id,
+    const tag_t& _tag,
+    const data_t& _data=data_t()
+  ) :
+    Event<TAG_SIZE>(_id, _tag),
+    data(_data)
   { ; }
 
   data_t & GetData() { return data; }
   const data_t & GetData() const { return data; }
 };
+
+}

@@ -13,6 +13,8 @@
 #include "problems/problems.hpp"
 #include "problems/BaseProblem.hpp"
 
+#include "ProgSynthOrg.hpp"
+
 namespace psynth {
 
 template<typename HARDWARE_T>
@@ -21,6 +23,9 @@ public:
 
   using sgp_hardware_t = HARDWARE_T;
   using inst_lib_t = typename sgp_hardware_t::inst_lib_t;
+  using sgp_program_t = typename sgp_hardware_t::program_t;
+  using org_t = ProgSynthOrg<sgp_program_t>;
+  using event_lib_t = typename sgp_hardware_t::event_lib_t;
 
   template<typename PROBLEM_T>
   static std::function<void(ProblemManager& manager)> BuildProblemSetupFunction() {
@@ -39,7 +44,10 @@ protected:
   std::function<void(const std::string&)> load_training_set;
   std::function<void(const std::string&)> load_testing_set;
   std::function<void(inst_lib_t&)> add_problem_instructions;
+  std::function<void(event_lib_t&)> add_problem_events;
   std::function<void(sgp_hardware_t&)> add_problem_hardware;
+  std::function<void(sgp_hardware_t&, org_t&, size_t)> init_training_case;
+  std::function<void(sgp_hardware_t&, org_t&, size_t)> init_testing_case;
 
   // std::string problem_name;
   bool configured = false;
@@ -100,12 +108,31 @@ protected:
       problem_util_ptr->AddInstructions(inst_lib);
     };
 
+    // Configure add events function
+    add_problem_events = [this](event_lib_t& event_lib) {
+      auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
+      problem_util_ptr->AddEvents(event_lib);
+    };
+
     problem_util = emp::NewPtr<PROBLEM_T>();
 
     // Configure function to add problem-specific hardware
     add_problem_hardware = [this](sgp_hardware_t& hw) {
       auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
       problem_util_ptr->ConfigureHardware(hw);
+    };
+
+    // Configure function to initialize a training example on a hardware unit
+    init_training_case = [this](sgp_hardware_t& hw, org_t& org, size_t test_id) {
+      auto training_set_ptr = training_set.Cast<psb::TestCaseSet<READER_T>>();
+      auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
+      problem_util_ptr->InitTest(hw, org, training_set_ptr->GetTest(test_id));
+    };
+
+    init_testing_case = [this](sgp_hardware_t& hw, org_t& org, size_t test_id) {
+      auto testing_set_ptr = testing_set.Cast<psb::TestCaseSet<READER_T>>();
+      auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
+      problem_util_ptr->InitTest(hw, org, testing_set_ptr->GetTest(test_id));
     };
 
     configured = true;
@@ -148,9 +175,33 @@ public:
     add_problem_instructions(inst_lib);
   }
 
+  void AddProblemEvents(event_lib_t& event_lib) {
+    emp_assert(configured);
+    add_problem_events(event_lib);
+  }
+
   void AddProblemHardware(sgp_hardware_t& hw) {
     emp_assert(configured);
     add_problem_hardware(hw);
+  }
+
+  void InitTrainingCase(sgp_hardware_t& hw, org_t& org, size_t test_id) {
+    emp_assert(configured);
+    init_training_case(hw, org, test_id);
+  }
+
+  void InitTestingCase(sgp_hardware_t& hw, org_t& org, size_t test_id) {
+    emp_assert(configured);
+    init_testing_case(hw, org, test_id);
+  }
+
+  void InitCase(sgp_hardware_t& hw, org_t& org, size_t test_id, bool training) {
+    emp_assert(configured);
+    if (training) {
+      init_training_case(hw, org, test_id);
+    } else {
+      init_testing_case(hw, org, test_id);
+    }
   }
 
   // TODO - load input into SGP hardware

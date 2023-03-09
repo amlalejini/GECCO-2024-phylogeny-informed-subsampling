@@ -9,8 +9,11 @@
 
 namespace psynth {
 
+template<typename TAG_T>
 class ProgSynthHardwareComponent {
 public:
+  using tag_t = TAG_T;
+
 protected:
   // Have a pointer<base-problem-specific-component> that is cast as necessary by problem
   emp::Ptr<BaseProblemHardware> prob_hw = nullptr;
@@ -24,6 +27,8 @@ protected:
   };
 
   std::function<void()> reset_prob_hw = [this]() { ; };
+
+  tag_t input_tag;
 
 public:
   ~ProgSynthHardwareComponent() {
@@ -62,6 +67,14 @@ public:
   PROB_HW_T& GetProbHW() {
     emp_assert(prob_hw_init);
     return *(prob_hw.Cast<PROB_HW_T>());
+  }
+
+  void SetInputTag(const tag_t& tag) {
+    input_tag = tag;
+  }
+
+  const tag_t& GetInputTag() {
+    return input_tag;
   }
 
 };

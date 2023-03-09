@@ -10,6 +10,7 @@
 #include "emp/bits/BitSet.hpp"
 #include "emp/matching/MatchBin.hpp"
 #include "emp/base/Ptr.hpp"
+#include "emp/control/Signal.hpp"
 
 // #include "sgp/cpu/linprg/LinearProgram.hpp"
 // #include "sgp/cpu/LinearProgramCPU.hpp"
@@ -21,6 +22,8 @@
 #include "sgp/inst/lfpbm/InstructionAdder.hpp"
 
 #include "../phylogeny/phylogeny_utils.hpp"
+#include "../utility/Grouping.hpp"
+#include "../selection/SelectionSchemes.hpp"
 
 #include "ProgSynthConfig.hpp"
 #include "ProgSynthOrg.hpp"
@@ -28,6 +31,12 @@
 #include "ProblemManager.hpp"
 #include "ProgSynthHardware.hpp"
 #include "MutatorLinearFunctionsProgram.hpp"
+
+// TODO - re-organize problem manager <==> world interactions to use world signals
+// i.e., pass the world to the problem manager configure, allow it to wire up functions to OnXSetup signals.
+
+// TODO - alternatively, give the problem manager a reference to the world and
+//        implement any necessary accessors
 
 namespace psynth {
 
@@ -62,13 +71,19 @@ public:
     hw_memory_model_t,
     inst_arg_t,
     hw_matchbin_t,
-    ProgSynthHardwareComponent
+    ProgSynthHardwareComponent<tag_t>
   >;
   using inst_lib_t = sgp::inst::InstructionLibrary<hardware_t, inst_t>;
   using event_lib_t = sgp::EventLibrary<hardware_t>;
   using base_event_t = typename event_lib_t::event_t;
   using mutator_t = MutatorLinearFunctionsProgram<hardware_t, tag_t, inst_arg_t>;
-
+  using selection_fun_t = std::function<
+    emp::vector<size_t>&(
+      size_t,
+      const emp::vector<size_t>&,
+      const emp::vector<size_t>&
+    )
+  >;
   using systematics_t = emp::Systematics<
     org_t,
     genome_t,
@@ -78,26 +93,6 @@ public:
   using taxon_t = typename systematics_t::taxon_t;
 
   using config_t = ProgSynthConfig;
-  using selection_fun_t = std::function<
-    emp::vector<size_t>&(
-      size_t,
-      const emp::vector<size_t>&,
-      const emp::vector<size_t>&
-    )
-  >;
-
-  struct Grouping {
-    size_t group_id = 0;
-    size_t group_size = 0;
-    emp::vector<size_t> member_ids;
-
-    void Resize(size_t size, size_t value = 0) {
-      group_size = size;
-      member_ids.resize(group_size, value);
-    }
-
-    size_t GetSize() const { return member_ids.size(); }
-  };
 
   struct SelectedStatistics {
     // TODO
@@ -106,18 +101,59 @@ public:
 protected:
   const config_t& config;
 
-  size_t total_test_evaluations = 0; ///< Tracks the total number of "test case" evaluations across all organisms since the beginning of the run.
-
   emp::Ptr<hardware_t> eval_hardware = nullptr;
   inst_lib_t inst_lib;
   event_lib_t event_lib;
   emp::Ptr<mutator_t> mutator = nullptr;
 
   ProblemManager<hardware_t> problem_manager;
+  // size_t event_id_input_sig = 0;
+  size_t event_id_numeric_input_sig = 0;
 
-  size_t event_id_input_sig = 0;
-
+  size_t total_tests = 0;
+  size_t total_test_evaluations = 0; ///< Tracks the total number of "test case" evaluations across all organisms since the beginning of the run.
   bool found_solution = false;
+
+  std::function<bool(void)> stop_run;
+
+  emp::vector<double> org_aggregate_scores;
+  emp::vector<bool> pop_test_coverage;
+
+  emp::Signal<void(size_t)> do_org_evaluation_sig;
+
+  emp::Signal<void(org_t&, size_t, bool)> begin_program_test_sig;
+  emp::Signal<void(org_t&, size_t)> do_program_test_sig;
+  emp::Signal<void(org_t&, size_t)> end_program_test_sig;
+
+  emp::vector<
+    emp::vector< std::function<double(void)> >
+  > fit_fun_set;      ///< Per-organism, per-test
+  emp::vector<
+    std::function<double(void)>
+  > agg_score_fun_set; ///< Per-organism, aggregate score
+
+  std::function<double(size_t, size_t)> estimate_test_score;
+
+  emp::vector< emp::vector<double> > org_test_scores;   ///< Test scores for each organism
+  emp::vector< emp::vector<bool> > org_test_evaluations; ///< Which test cases has each organism been evaluated on?
+
+  utils::GroupManager org_groupings;
+  utils::GroupManager test_groupings;
+
+  emp::Ptr<selection::BaseSelect> selector;
+  emp::vector<size_t> selected_parent_ids;
+
+  std::function<void(void)> run_selection_routine;
+  selection_fun_t selector_fun;
+
+  emp::Ptr<systematics_t> systematics_ptr;
+
+  std::string output_dir;
+
+  // -- Data files --
+  emp::Ptr<emp::DataFile> summary_file_ptr;
+  emp::Ptr<emp::DataFile> phylodiversity_file_ptr;
+  emp::Ptr<emp::DataFile> elite_file_ptr;
 
   void Setup();
   void SetupProblem();
@@ -131,6 +167,10 @@ protected:
   void SetupVirtualHardware();
   void SetupInstructionLibrary();
   void SetupEventLibrary();
+
+  void SetupEvaluation_Full();
+  void SetupEvaluation_Cohort();
+  void SetupEvaluation_DownSample();
 
   void InitializePopulation();
   void DoEvaluation();
@@ -191,6 +231,7 @@ void ProgSynthWorld::Setup() {
     [this](size_t pos) {
       auto& org = GetOrg(pos);
       org.SetPopID(pos);
+      org.GetPhenotype().Reset(total_tests);
       emp_assert(org.GetPopID() == pos);
     }
   );
@@ -209,6 +250,12 @@ void ProgSynthWorld::Setup() {
 
   // Setup the program mutator
   SetupMutator();
+
+  // Setup evaluation
+  SetupEvaluation();
+
+  // Setup selection
+  // SetupSelection();
 
 
   // TODO - SetAutoMutate!
@@ -243,13 +290,28 @@ void ProgSynthWorld::SetupInstructionLibrary() {
 void ProgSynthWorld::SetupEventLibrary() {
   std::cout << "Setting up event library." << std::endl;
   event_lib.Clear();
-  // TODO - configure event library
-  // event_id_input_sig = event_lib.AddEvent(
-  //   "InputSignal",
-  //   [this](hardware_t& hw, const base_event_t& e) {
-
-  //   }
-  // );
+  // Add default event set
+  event_id_numeric_input_sig = event_lib.AddEvent(
+    "NumericInputSignal",
+    [this](hardware_t& hw, const base_event_t& e) {
+      const NumericMessageEvent<TAG_SIZE>& event = static_cast<const NumericMessageEvent<TAG_SIZE>&>(e);
+      auto thread_id = hw.SpawnThreadWithTag(event.GetTag());
+      if (thread_id && event.GetData().size()) {
+        // If message resulted in thread being spawned, load message into local working space.
+        auto& thread = hw.GetThread(thread_id.value());
+        // Wait, wait. Does this thread have calls on the call stack?
+        if (thread.GetExecState().call_stack.size()) {
+          auto& call_state = thread.GetExecState().GetTopCallState();
+          auto& mem_state = call_state.GetMemory();
+          for (auto mem : event.GetData()) {
+            mem_state.SetWorking(mem.first, mem.second);
+          }
+        }
+      }
+    }
+  );
+  // Configure problem-specific events
+  problem_manager.AddProblemEvents(event_lib);
 }
 
 void ProgSynthWorld::SetupVirtualHardware() {
@@ -262,6 +324,10 @@ void ProgSynthWorld::SetupVirtualHardware() {
   eval_hardware->Reset();
   eval_hardware->SetActiveThreadLimit(config.MAX_ACTIVE_THREAD_CNT());
   eval_hardware->SetThreadCapacity(config.MAX_THREAD_CAPACITY());
+  // Configure input tag to all 0s
+  tag_t input_tag;
+  input_tag.Clear();
+  eval_hardware->GetCustomComponent().SetInputTag(input_tag);
   // Configure problem-specific hardware component.
   problem_manager.AddProblemHardware(*eval_hardware);
   // Hardware should be in a valid thread state after configuration.
@@ -316,6 +382,173 @@ void ProgSynthWorld::SetupMutator() {
       return mut_cnt;
     }
   );
+}
+
+void ProgSynthWorld::SetupEvaluation() {
+  std::cout << "Configuring evaluation (mode: " << config.EVAL_MODE() << ")" << std::endl;
+  // Total tests is equal to number of tests we loaded into the testing set.
+  total_tests = problem_manager.GetTestingSetSize();
+  // Allocate space for tracking organism aggregate scores
+  org_aggregate_scores.clear();
+  org_aggregate_scores.resize(config.POP_SIZE(), 0.0);
+  // Allocate space for tracking population-wide test coverage
+  pop_test_coverage.clear();
+  pop_test_coverage.resize(total_tests, false);
+  // Allocate space for tracking organism test scores
+  org_test_scores.clear();
+  org_test_scores.resize(
+    config.POP_SIZE(),
+    emp::vector<double>(total_tests, 0.0)
+  );
+  // Allocate space for tracking organism test evaluations
+  org_test_evaluations.clear();
+  org_test_evaluations.resize(
+    config.POP_SIZE(),
+    emp::vector<bool>(total_tests, false)
+  );
+  // Setup organism group manager.
+  emp::vector<size_t> possible_ids(config.POP_SIZE(), 0);
+  std::iota(
+    possible_ids.begin(),
+    possible_ids.end(),
+    0
+  );
+  org_groupings.SetPossibleIDs(possible_ids);
+  std::cout << org_groupings.GetPossibleIDs() << std::endl;
+
+  // Setup test group manager
+  possible_ids.resize(total_tests, 0);
+  std::iota(
+    possible_ids.begin(),
+    possible_ids.end(),
+    0
+  );
+  test_groupings.SetPossibleIDs(possible_ids);
+  std::cout << test_groupings.GetPossibleIDs() << std::endl;
+
+  // Clear out all actions associated with organism evaluation.
+  do_org_evaluation_sig.Clear();
+  // TODO - configure organism evaluation
+  // (1) Load program into hardware, run on all tests
+  // (2) Update world's score tracking vectors
+  // (3)
+
+  begin_program_test_sig.AddAction(
+    [this](org_t& org, size_t test_id, bool training) {
+      eval_hardware->ResetMatchBin();      // Reset the matchbin between tests
+      eval_hardware->ResetHardwareState(); // Reset hardware execution state information (global memory, threads, etc)
+      // TODO - anything else needs to happen before test eval?
+      // TODO - load test input
+      problem_manager.InitCase(
+        *eval_hardware,
+        org,
+        test_id,
+        training
+      );
+    }
+  );
+
+  // TODO - end_program_test_sig
+
+  // Configure the aggregate score functions
+  agg_score_fun_set.clear();
+  for (size_t org_id = 0; org_id < config.POP_SIZE(); ++org_id) {
+    agg_score_fun_set.emplace_back(
+      [this, org_id]() {
+        emp_assert(org_id < org_aggregate_scores.size());
+        return org_aggregate_scores[org_id];
+      }
+    );
+  }
+
+  // Configure the fitness functions (per-organism, per-test)
+  // TODO - have test scores in one place? (organism or here)
+  fit_fun_set.clear();
+  fit_fun_set.resize(config.POP_SIZE(), emp::vector<std::function<double(void)>>(0));
+  for (size_t org_id = 0; org_id < config.POP_SIZE(); ++org_id) {
+    for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+      fit_fun_set[org_id].emplace_back(
+        [this, org_id, test_id]() {
+          emp_assert(org_id < org_test_evaluations.size());
+          emp_assert(org_id < org_test_scores.size());
+          emp_assert(test_id < org_test_evaluations[org_id].size());
+          emp_assert(test_id < org_test_scores[org_id].size());
+          if (org_test_evaluations[org_id][test_id]) {
+            return org_test_scores[org_id][test_id];
+          } else {
+            return estimate_test_score(org_id, test_id);
+          }
+        }
+      );
+    }
+  }
+
+  // Setup evaluation mode
+  if (config.EVAL_MODE() == "full") {
+    SetupEvaluation_Full();
+  } else if (config.EVAL_MODE() == "cohort") {
+    SetupEvaluation_Cohort();
+  } else if (config.EVAL_MODE() == "down-sample") {
+    SetupEvaluation_DownSample();
+  } else {
+    std::cout << "Unknown EVAL_MODE: " << config.EVAL_MODE() << std::endl;
+    exit(-1);
+  }
+
+  // Record taxon info after evaluation, but before summing aggregate scores
+  // TODO
+
+}
+
+void ProgSynthWorld::SetupEvaluation_Full() {
+  std::cout << "Configuring evaluation mode: full" << std::endl;
+  emp_assert(total_tests > 0);
+
+  // Initialize the test groupings with one group that holds all tests.
+  test_groupings.SetSingleGroupMode();
+  // Initialize the organism groupings with one group that holds all organisms.
+  org_groupings.SetSingleGroupMode();
+  emp_assert(test_groupings.GetNumGroups() == org_groupings.GetNumGroups());
+
+  // Configure organism evaluation
+  // TODO
+  do_org_evaluation_sig.AddAction(
+    [this](size_t org_id) {
+      emp_assert(org_id < GetSize());
+      emp_assert(test_groupings.GetNumGroups() == 1);
+      auto& org = GetOrg(org_id);
+      // TODO - this is common across evaluation modes?
+      //        if so, move up
+      // Reset phenotype
+      phenotype_t& phen = org.GetPhenotype();
+      phen.Reset(total_tests);
+      // Load program onto evaluation hardware unit
+      eval_hardware->SetProgram(org.GetGenome().GetProgram());
+
+      const auto& test_group = test_groupings.GetGroup(0);
+      const auto& test_ids = test_group.GetMembers();
+      for (size_t i = 0; i < test_ids.size(); ++i) {
+        const size_t test_id = test_ids[i]; // Get test id from group.
+        // TODO - Run program on test.
+        begin_program_test_sig.Trigger(org, test_id, true);
+        do_program_test_sig.Trigger(org, test_id);
+        end_program_test_sig.Trigger(org, test_id);
+        emp_assert(false, "Have not implemented evaluation signals yet.");
+        // TODO - Update scores / test
+        org_test_evaluations[org_id][test_id] = true;
+        ++total_test_evaluations;
+      }
+    }
+  );
+
+}
+
+void ProgSynthWorld::SetupEvaluation_Cohort() {
+  // TODO
+}
+
+void ProgSynthWorld::SetupEvaluation_DownSample() {
+  // TODO
 }
 
 }
