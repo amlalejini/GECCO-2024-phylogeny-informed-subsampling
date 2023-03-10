@@ -21,6 +21,7 @@ EMP_BUILD_CONFIG(ProgSynthConfig,
   VALUE(EVAL_MODE, std::string, "full", "Evaluation mode. Options:\nfull\ncohort\ndown-sample"),
   VALUE(EVAL_FIT_EST_MODE, std::string, "none", "Fitness function estimation method. Options:\nnone\nancestor\nrelative"),
   VALUE(EVAL_MAX_PHYLO_SEARCH_DEPTH, int, -1, "Maximum phylogeny search depth when estimating fitness."),
+  VALUE(EVAL_CPU_CYCLES_PER_TEST, size_t, 128, "Maximum number of CPU cycles programs are run for single test case."),
 
   GROUP(SGP_CPU, "SignalGP Virtual CPU"),
   VALUE(MAX_ACTIVE_THREAD_CNT, size_t, 8, "Maximum number of active threads that can run simultaneously on a SGP virtual CPU."),

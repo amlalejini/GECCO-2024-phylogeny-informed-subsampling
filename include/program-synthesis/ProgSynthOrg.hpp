@@ -41,7 +41,9 @@ struct ProgSynthGenome {
 struct ProgSynthPhenotype {
   using this_t = ProgSynthPhenotype;
 
+  // TODO - replace three vectors with one vector of TestResults?
   emp::vector<double> test_scores;   ///< Scores on tests.
+  emp::vector<bool> test_passes;     ///< Pass/fail on tests
   emp::vector<bool> test_evaluated;  ///< Whether a test has been evaluated.
 
   double aggregate_score = 0.0;
@@ -64,6 +66,13 @@ struct ProgSynthPhenotype {
     std::fill(
       test_evaluated.begin(),
       test_evaluated.end(),
+      false
+    );
+
+    test_passes.resize(num_tests);
+    std::fill(
+      test_passes.begin(),
+      test_passes.end(),
       false
     );
   }

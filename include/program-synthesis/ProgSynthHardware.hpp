@@ -29,6 +29,7 @@ protected:
   std::function<void()> reset_prob_hw = [this]() { ; };
 
   tag_t input_tag;
+  bool stop_eval = false;
 
 public:
   ~ProgSynthHardwareComponent() {
@@ -55,10 +56,13 @@ public:
     prob_hw = emp::NewPtr<PROB_HW_T>();
     prob_hw_init = true;
 
+    stop_eval = false;
+
   }
 
   void Reset() {
     emp_assert(prob_hw_init);
+    stop_eval = false;
     // Reset problem hardware
     reset_prob_hw();
   }
@@ -75,6 +79,14 @@ public:
 
   const tag_t& GetInputTag() {
     return input_tag;
+  }
+
+  void FlagStopEval() {
+    stop_eval = true;
+  }
+
+  bool GetStopEval() const {
+    return stop_eval;
   }
 
 };

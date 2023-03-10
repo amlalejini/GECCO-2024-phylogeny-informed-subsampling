@@ -4,6 +4,7 @@
 #include <utility>
 #include <algorithm>
 #include <functional>
+#include <iostream>
 
 #include "emp/Evolve/World.hpp"
 #include "emp/Evolve/Systematics.hpp"
@@ -110,20 +111,22 @@ protected:
   // size_t event_id_input_sig = 0;
   size_t event_id_numeric_input_sig = 0;
 
-  size_t total_tests = 0;
+  size_t total_training_cases = 0;
   size_t total_test_evaluations = 0; ///< Tracks the total number of "test case" evaluations across all organisms since the beginning of the run.
   bool found_solution = false;
 
   std::function<bool(void)> stop_run;
+  std::function<bool(size_t)> check_org_solution;
 
-  emp::vector<double> org_aggregate_scores;
-  emp::vector<bool> pop_test_coverage;
+  emp::Signal<void(size_t)> begin_org_evaluation_sig;
+  emp::Signal<void(size_t)> do_org_evaluation_sig;  // Overall evaluate organism process.
+  emp::Signal<void(size_t)> end_org_evaluation_sig;
 
-  emp::Signal<void(size_t)> do_org_evaluation_sig;
+  emp::Signal<void(org_t&)> begin_program_eval_sig; // Triggered at beginning of program evaluation (program loaded on hardware, phenotype reset).
 
   emp::Signal<void(org_t&, size_t, bool)> begin_program_test_sig;
   emp::Signal<void(org_t&, size_t)> do_program_test_sig;
-  emp::Signal<void(org_t&, size_t)> end_program_test_sig;
+  emp::Signal<void(org_t&, size_t, bool)> end_program_test_sig;
 
   emp::vector<
     emp::vector< std::function<double(void)> >
@@ -134,8 +137,13 @@ protected:
 
   std::function<double(size_t, size_t)> estimate_test_score;
 
-  emp::vector< emp::vector<double> > org_test_scores;   ///< Test scores for each organism
-  emp::vector< emp::vector<bool> > org_test_evaluations; ///< Which test cases has each organism been evaluated on?
+  emp::vector<bool> pop_training_coverage;
+  emp::vector<double> org_aggregate_scores;
+  emp::vector<size_t> org_training_coverage;  ///< Organism coverage of training cases
+  emp::vector<size_t> org_num_training_cases; ///< Number of training cases organism has been evaluated against
+  emp::vector< emp::vector<double> > org_training_scores;   ///< Test scores for each organism
+  emp::vector< emp::vector<bool> > org_training_evaluations; ///< Which test cases has each organism been evaluated on?
+
 
   utils::GroupManager org_groupings;
   utils::GroupManager test_groupings;
@@ -205,12 +213,55 @@ public:
 };
 
 void ProgSynthWorld::RunStep() {
-  // TODO - DoEvaluation();
-  // TODO - DoSelection();
-  // TODO - DoUpdate();
+  DoEvaluation();
+  DoSelection();
+  DoUpdate();
 }
 
 void ProgSynthWorld::DoEvaluation() {
+  emp_assert(pop_training_coverage.size() == total_training_cases);
+  emp_assert(org_aggregate_scores.size() == config.POP_SIZE());
+  emp_assert(fit_fun_set.size() == config.POP_SIZE());
+  emp_assert(org_training_scores.size() == config.POP_SIZE());
+  emp_assert(org_training_evaluations.size() == config.POP_SIZE());
+  emp_assert(org_training_coverage.size() == config.POP_SIZE());
+  emp_assert(org_num_training_cases.size() == config.POP_SIZE());
+
+  // TODO - reset true max fitness organism
+
+  // Update test and organism groupings
+  org_groupings.UpdateGroupings();
+  test_groupings.UpdateGroupings();
+  // Reset things...
+  std::fill(
+    pop_training_coverage.begin(),
+    pop_training_coverage.end(),
+    false
+  );
+
+  // Evaluate each organism
+  for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
+    do_org_evaluation_sig.Trigger(org_id);
+  }
+
+  // Estimate aggregate fitness for each organism
+  // Need to do this separately to ensure all possible descendants of current taxa have been evaluated
+  // Otherwise, estimation can crash
+  for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
+    double est_agg_score = 0.0;
+    for (size_t test_id = 0; test_id < total_training_cases; ++test_id) {
+      est_agg_score += fit_fun_set[org_id][test_id]();
+    }
+    org_aggregate_scores[org_id] = est_agg_score;
+  }
+
+}
+
+void ProgSynthWorld::DoSelection() {
+  // TODO
+}
+
+void ProgSynthWorld::DoUpdate() {
   // TODO
 }
 
@@ -231,7 +282,7 @@ void ProgSynthWorld::Setup() {
     [this](size_t pos) {
       auto& org = GetOrg(pos);
       org.SetPopID(pos);
-      org.GetPhenotype().Reset(total_tests);
+      org.GetPhenotype().Reset(total_training_cases);
       emp_assert(org.GetPopID() == pos);
     }
   );
@@ -254,11 +305,19 @@ void ProgSynthWorld::Setup() {
   // Setup evaluation
   SetupEvaluation();
 
-  // Setup selection
+  // TODO - Setup selection
   // SetupSelection();
 
+  // TODO - Setup fitness function estimator
 
+  // TODO - Setup stopping condition
+
+  // TODO -Setup data collection
+
+  // TODO - Initialize population!
   // TODO - SetAutoMutate!
+
+  // TODO - Output a snapshot of the run configuration
 }
 
 void ProgSynthWorld::SetupProblem() {
@@ -387,24 +446,30 @@ void ProgSynthWorld::SetupMutator() {
 void ProgSynthWorld::SetupEvaluation() {
   std::cout << "Configuring evaluation (mode: " << config.EVAL_MODE() << ")" << std::endl;
   // Total tests is equal to number of tests we loaded into the testing set.
-  total_tests = problem_manager.GetTestingSetSize();
+  total_training_cases = problem_manager.GetTrainingSetSize();
+  // Allocate space for tracking organism training coverage
+  org_training_coverage.clear();
+  org_training_coverage.resize(config.POP_SIZE(), 0);
+  // Allocate space for tracking number of training cases an organism is evaluated against
+  org_num_training_cases.clear();
+  org_num_training_cases.resize(config.POP_SIZE(), 0);
   // Allocate space for tracking organism aggregate scores
   org_aggregate_scores.clear();
   org_aggregate_scores.resize(config.POP_SIZE(), 0.0);
   // Allocate space for tracking population-wide test coverage
-  pop_test_coverage.clear();
-  pop_test_coverage.resize(total_tests, false);
+  pop_training_coverage.clear();
+  pop_training_coverage.resize(total_training_cases, false);
   // Allocate space for tracking organism test scores
-  org_test_scores.clear();
-  org_test_scores.resize(
+  org_training_scores.clear();
+  org_training_scores.resize(
     config.POP_SIZE(),
-    emp::vector<double>(total_tests, 0.0)
+    emp::vector<double>(total_training_cases, 0.0)
   );
   // Allocate space for tracking organism test evaluations
-  org_test_evaluations.clear();
-  org_test_evaluations.resize(
+  org_training_evaluations.clear();
+  org_training_evaluations.resize(
     config.POP_SIZE(),
-    emp::vector<bool>(total_tests, false)
+    emp::vector<bool>(total_training_cases, false)
   );
   // Setup organism group manager.
   emp::vector<size_t> possible_ids(config.POP_SIZE(), 0);
@@ -415,9 +480,8 @@ void ProgSynthWorld::SetupEvaluation() {
   );
   org_groupings.SetPossibleIDs(possible_ids);
   std::cout << org_groupings.GetPossibleIDs() << std::endl;
-
   // Setup test group manager
-  possible_ids.resize(total_tests, 0);
+  possible_ids.resize(total_training_cases, 0);
   std::iota(
     possible_ids.begin(),
     possible_ids.end(),
@@ -427,16 +491,64 @@ void ProgSynthWorld::SetupEvaluation() {
   std::cout << test_groupings.GetPossibleIDs() << std::endl;
 
   // Clear out all actions associated with organism evaluation.
+  begin_org_evaluation_sig.Clear();
   do_org_evaluation_sig.Clear();
+  end_org_evaluation_sig.Clear();
+
+  begin_program_eval_sig.Clear();
+  begin_program_test_sig.Clear();
+  do_program_test_sig.Clear();
+  end_program_test_sig.Clear();
+
   // TODO - configure organism evaluation
-  // (1) Load program into hardware, run on all tests
-  // (2) Update world's score tracking vectors
-  // (3)
+  begin_org_evaluation_sig.AddAction(
+    [this](size_t org_id) {
+      // 0-out aggregate score
+      org_aggregate_scores[org_id] = 0.0;
+      // 0-out training coverage
+      org_training_coverage[org_id] = 0;
+      // 0-out num training cases evaluated against
+      org_num_training_cases[org_id] = 0;
+      // 0 out organism's training score
+      std::fill(
+        org_training_scores[org_id].begin(),
+        org_training_scores[org_id].end(),
+        0.0
+      );
+      // 0 out organism's evaluations
+      std::fill(
+        org_training_evaluations[org_id].begin(),
+        org_training_evaluations[org_id].end(),
+        false
+      );
+    }
+  );
+
+  end_org_evaluation_sig.AddAction(
+    [this](size_t org_id) {
+      // TODO - check if candidate for testing against testing set
+      // - Need to check if num_passes == number of tests evaluated on
+      // - If so, add to vector of ids to be tested whether they are solutions
+      // - Allow each evaluation mode to implement the actual testing
+      // TODO - record taxon information
+    }
+  );
+
+  begin_program_eval_sig.AddAction(
+    [this](org_t& org) {
+      // Reset phenotype
+      phenotype_t& phen = org.GetPhenotype();
+      phen.Reset(total_training_cases);
+      // Load program onto evaluation hardware unit
+      eval_hardware->SetProgram(org.GetGenome().GetProgram());
+    }
+  );
 
   begin_program_test_sig.AddAction(
     [this](org_t& org, size_t test_id, bool training) {
       eval_hardware->ResetMatchBin();      // Reset the matchbin between tests
       eval_hardware->ResetHardwareState(); // Reset hardware execution state information (global memory, threads, etc)
+      eval_hardware->GetCustomComponent().Reset(); // Reset custom component
       // TODO - anything else needs to happen before test eval?
       // TODO - load test input
       problem_manager.InitCase(
@@ -445,10 +557,54 @@ void ProgSynthWorld::SetupEvaluation() {
         test_id,
         training
       );
+      emp_assert(eval_hardware->ValidateThreadState());
     }
   );
 
-  // TODO - end_program_test_sig
+  do_program_test_sig.AddAction(
+    [this](org_t& org, size_t test_id) {
+      emp_assert(eval_hardware->ValidateThreadState());
+      // Step the hardware forward to process the input signal
+      for (size_t step = 0; step < config.EVAL_CPU_CYCLES_PER_TEST(); ++step) {
+        eval_hardware->SingleProcess();
+        // Stop early if no active or pending threads
+        const size_t num_active_threads = eval_hardware->GetNumActiveThreads();
+        const size_t num_pending_threads = eval_hardware->GetNumPendingThreads();
+        const bool stop_early = eval_hardware->GetCustomComponent().GetStopEval();
+        if (!(num_active_threads || num_pending_threads) || stop_early) {
+          break;
+        }
+      }
+    }
+  );
+
+  end_program_test_sig.AddAction(
+    [this](org_t& org, size_t test_id, bool training) {
+      const size_t org_id = org.GetPopID();
+      TestResult result = problem_manager.EvaluateOutput(
+        *eval_hardware,
+        org,
+        test_id,
+        training
+      );
+      // Record result on organism phenotype
+      auto& phen = org.GetPhenotype();
+      // TODO - consolodate phenotype tracking and local world tracking vectors
+      phen.test_scores[test_id] = result.score;
+      phen.test_passes[test_id] = result.is_correct;
+      phen.test_evaluated[test_id] = true;
+      phen.aggregate_score += result.score;
+      // world performance tracking
+      // TODO - assign partial credit for producing an output?
+      // org_aggregate_scores[org_id] += result.score;
+      org_training_scores[org_id][test_id] = result.score;
+      org_training_evaluations[org_id][test_id] = true;
+      org_training_coverage[org_id] += (size_t)result.is_correct;
+      org_num_training_cases[org_id] += 1;
+      // TODO - make sure pop training coverage gets 0'd out at beginning of evaluation step!
+      pop_training_coverage[test_id] = pop_training_coverage[test_id] || result.is_correct;
+    }
+  );
 
   // Configure the aggregate score functions
   agg_score_fun_set.clear();
@@ -466,15 +622,15 @@ void ProgSynthWorld::SetupEvaluation() {
   fit_fun_set.clear();
   fit_fun_set.resize(config.POP_SIZE(), emp::vector<std::function<double(void)>>(0));
   for (size_t org_id = 0; org_id < config.POP_SIZE(); ++org_id) {
-    for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+    for (size_t test_id = 0; test_id < total_training_cases; ++test_id) {
       fit_fun_set[org_id].emplace_back(
         [this, org_id, test_id]() {
-          emp_assert(org_id < org_test_evaluations.size());
-          emp_assert(org_id < org_test_scores.size());
-          emp_assert(test_id < org_test_evaluations[org_id].size());
-          emp_assert(test_id < org_test_scores[org_id].size());
-          if (org_test_evaluations[org_id][test_id]) {
-            return org_test_scores[org_id][test_id];
+          emp_assert(org_id < org_training_evaluations.size());
+          emp_assert(org_id < org_training_scores.size());
+          emp_assert(test_id < org_training_evaluations[org_id].size());
+          emp_assert(test_id < org_training_scores[org_id].size());
+          if (org_training_evaluations[org_id][test_id]) {
+            return org_training_scores[org_id][test_id];
           } else {
             return estimate_test_score(org_id, test_id);
           }
@@ -495,14 +651,11 @@ void ProgSynthWorld::SetupEvaluation() {
     exit(-1);
   }
 
-  // Record taxon info after evaluation, but before summing aggregate scores
-  // TODO
-
 }
 
 void ProgSynthWorld::SetupEvaluation_Full() {
   std::cout << "Configuring evaluation mode: full" << std::endl;
-  emp_assert(total_tests > 0);
+  emp_assert(total_training_cases > 0);
 
   // Initialize the test groupings with one group that holds all tests.
   test_groupings.SetSingleGroupMode();
@@ -511,44 +664,44 @@ void ProgSynthWorld::SetupEvaluation_Full() {
   emp_assert(test_groupings.GetNumGroups() == org_groupings.GetNumGroups());
 
   // Configure organism evaluation
-  // TODO
   do_org_evaluation_sig.AddAction(
     [this](size_t org_id) {
       emp_assert(org_id < GetSize());
       emp_assert(test_groupings.GetNumGroups() == 1);
       auto& org = GetOrg(org_id);
-      // TODO - this is common across evaluation modes?
-      //        if so, move up
-      // Reset phenotype
-      phenotype_t& phen = org.GetPhenotype();
-      phen.Reset(total_tests);
-      // Load program onto evaluation hardware unit
-      eval_hardware->SetProgram(org.GetGenome().GetProgram());
-
+      begin_program_eval_sig.Trigger(org);
       const auto& test_group = test_groupings.GetGroup(0);
       const auto& test_ids = test_group.GetMembers();
       for (size_t i = 0; i < test_ids.size(); ++i) {
         const size_t test_id = test_ids[i]; // Get test id from group.
-        // TODO - Run program on test.
+        // Handles test input:
         begin_program_test_sig.Trigger(org, test_id, true);
+        // Runs the program:
         do_program_test_sig.Trigger(org, test_id);
-        end_program_test_sig.Trigger(org, test_id);
-        emp_assert(false, "Have not implemented evaluation signals yet.");
-        // TODO - Update scores / test
-        org_test_evaluations[org_id][test_id] = true;
+        // Handles test output evaluation, updates phenotype:
+        end_program_test_sig.Trigger(org, test_id, true);
         ++total_test_evaluations;
       }
     }
   );
 
+  // Configure check to see if organism is a solution or not
+  check_org_solution = [this](size_t org_id) {
+    // TODO - Implement!
+    emp_assert(false);
+    return false;
+  };
+
 }
 
 void ProgSynthWorld::SetupEvaluation_Cohort() {
   // TODO
+  emp_assert(false);
 }
 
 void ProgSynthWorld::SetupEvaluation_DownSample() {
   // TODO
+  emp_assert(false);
 }
 
 }

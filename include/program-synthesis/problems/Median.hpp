@@ -4,6 +4,7 @@
 
 #include "BaseProblem.hpp"
 #include "psb/readers/Median.hpp"
+#include "../TestResult.hpp"
 
 namespace psynth::problems {
 
@@ -24,6 +25,12 @@ struct Median : public BaseProblem {
 
   template<typename HARDWARE_T, typename ORG_T>
   void InitTest(HARDWARE_T& hw, ORG_T& org, const test_case_t& test_io) { emp_assert(false); }
+
+  template<typename HARDWARE_T, typename ORG_T>
+  TestResult EvaluateOutput(HARDWARE_T& hw, ORG_T& org, const test_case_t& test_io) {
+    emp_assert(false);
+    return TestResult();
+  }
 
 };
 

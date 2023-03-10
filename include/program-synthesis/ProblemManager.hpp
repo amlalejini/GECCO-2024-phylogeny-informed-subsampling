@@ -10,10 +10,11 @@
 #include "psb/TestCaseSet.hpp"
 #include "psb/readers/BaseProblemReader.hpp"
 
+#include "ProgSynthOrg.hpp"
+#include "TestResult.hpp"
+
 #include "problems/problems.hpp"
 #include "problems/BaseProblem.hpp"
-
-#include "ProgSynthOrg.hpp"
 
 namespace psynth {
 
@@ -48,6 +49,8 @@ protected:
   std::function<void(sgp_hardware_t&)> add_problem_hardware;
   std::function<void(sgp_hardware_t&, org_t&, size_t)> init_training_case;
   std::function<void(sgp_hardware_t&, org_t&, size_t)> init_testing_case;
+  std::function<TestResult(sgp_hardware_t&, org_t&, size_t)> eval_output_training;
+  std::function<TestResult(sgp_hardware_t&, org_t&, size_t)> eval_output_testing;
 
   // std::string problem_name;
   bool configured = false;
@@ -135,6 +138,26 @@ protected:
       problem_util_ptr->InitTest(hw, org, testing_set_ptr->GetTest(test_id));
     };
 
+    eval_output_training = [this](
+      sgp_hardware_t& hw,
+      org_t& org,
+      size_t test_id
+    ) -> TestResult {
+      auto training_set_ptr = training_set.Cast<psb::TestCaseSet<READER_T>>();
+      auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
+      return problem_util_ptr->EvaluateOutput(hw, org, training_set_ptr->GetTest(test_id));
+    };
+
+    eval_output_testing = [this](
+      sgp_hardware_t& hw,
+      org_t& org,
+      size_t test_id
+    ) -> TestResult {
+      auto testing_set_ptr = testing_set.Cast<psb::TestCaseSet<READER_T>>();
+      auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
+      return problem_util_ptr->EvaluateOutput(hw, org, testing_set_ptr->GetTest(test_id));
+    };
+
     configured = true;
   }
 
@@ -204,8 +227,10 @@ public:
     }
   }
 
-  // TODO - load input into SGP hardware
-  // TODO - check output
+  TestResult EvaluateOutput(sgp_hardware_t& hw, org_t& org, size_t test_id, bool training) {
+    emp_assert(configured);
+    return (training) ? eval_output_training(hw, org, test_id) : eval_output_testing(hw, org, test_id);
+  }
 
   // TODO - name to functionality map
 

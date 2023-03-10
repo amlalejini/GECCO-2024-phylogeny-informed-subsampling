@@ -1,14 +1,17 @@
 #pragma once
 
 #include <utility>
+#include <unordered_map>
 
 #include "emp/base/Ptr.hpp"
+#include "emp/datastructs/map_utils.hpp"
 
 #include "psb/readers/SmallOrLarge.hpp"
 
 #include "../BaseProblemHardware.hpp"
-#include "BaseProblem.hpp"
 #include "../Event.hpp"
+#include "../TestResult.hpp"
+#include "BaseProblem.hpp"
 
 namespace psynth::problems {
 
@@ -34,6 +37,10 @@ struct SmallOrLargeHardware : public BaseProblemHardware {
     out_category = CATEGORY::NEITHER;
   }
 
+  CATEGORY GetOutput() {
+    return out_category;
+  }
+
 };
 
 struct SmallOrLarge : public BaseProblem {
@@ -44,6 +51,15 @@ struct SmallOrLarge : public BaseProblem {
   using prob_hw_t = SmallOrLargeHardware;
 
   size_t input_sig_event_id = 0;
+  std::unordered_map<
+    std::string,
+    SmallOrLargeHardware::CATEGORY
+  > output_str_to_category = {
+    {"small", SmallOrLargeHardware::CATEGORY::SMALL},
+    {"", SmallOrLargeHardware::CATEGORY::NEITHER},
+    {"large", SmallOrLargeHardware::CATEGORY::LARGE}
+  };
+
 
   // Configure hardware
   template<typename HARDWARE_T>
@@ -109,6 +125,25 @@ struct SmallOrLarge : public BaseProblem {
       }
     );
   }
+
+  template<typename HARDWARE_T, typename ORG_T>
+  psynth::TestResult EvaluateOutput(HARDWARE_T& hw, ORG_T& org, const test_case_t& test_io) {
+    const output_t& correct_output_str = test_io.second;
+    emp_assert(emp::Has(output_str_to_category, correct_output_str));
+    // Get correct output
+    auto correct_output = output_str_to_category[correct_output_str];
+    // Get reference to the problem component
+    auto& prob_component = hw.GetCustomComponent().template GetProbHW<prob_hw_t>();
+    // Did the program record any output?
+    const bool has_output = prob_component.GetOutput() != SmallOrLargeHardware::CATEGORY::NONE;
+    // Is the output correct?
+    const bool correct = prob_component.GetOutput() == correct_output;
+    emp_assert( !correct || (has_output && correct) ); // If it's correct, it must have output.
+    // No partial credit on this problem.
+    const double partial_credit = (correct) ? 1.0 : 0.0;
+    return {has_output, correct, partial_credit};
+  }
+
 };
 
 }
