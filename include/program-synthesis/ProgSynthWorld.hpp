@@ -13,8 +13,6 @@
 #include "emp/base/Ptr.hpp"
 #include "emp/control/Signal.hpp"
 
-// #include "sgp/cpu/linprg/LinearProgram.hpp"
-// #include "sgp/cpu/LinearProgramCPU.hpp"
 #include "sgp/cpu/lfunprg/LinearFunctionsProgram.hpp"
 #include "sgp/cpu/LinearFunctionsProgramCPU.hpp"
 #include "sgp/cpu/mem/BasicMemoryModel.hpp"
@@ -32,6 +30,7 @@
 #include "ProblemManager.hpp"
 #include "ProgSynthHardware.hpp"
 #include "MutatorLinearFunctionsProgram.hpp"
+#include "SelectedStatistics.hpp"
 
 // TODO - re-organize problem manager <==> world interactions to use world signals
 // i.e., pass the world to the problem manager configure, allow it to wire up functions to OnXSetup signals.
@@ -95,12 +94,10 @@ public:
 
   using config_t = ProgSynthConfig;
 
-  struct SelectedStatistics {
-    // TODO
-  };
-
 protected:
   const config_t& config;
+
+  bool world_configured = false;
 
   emp::Ptr<hardware_t> eval_hardware = nullptr;
   inst_lib_t inst_lib;
@@ -116,6 +113,7 @@ protected:
   bool found_solution = false;
 
   std::function<bool(void)> stop_run;
+  std::function<bool(void)> is_final_update;
   std::function<bool(size_t)> check_org_solution;
 
   emp::Signal<void(size_t)> begin_org_evaluation_sig;
@@ -144,24 +142,27 @@ protected:
   emp::vector< emp::vector<double> > org_training_scores;   ///< Test scores for each organism
   emp::vector< emp::vector<bool> > org_training_evaluations; ///< Which test cases has each organism been evaluated on?
 
-
   utils::GroupManager org_groupings;
   utils::GroupManager test_groupings;
 
-  emp::Ptr<selection::BaseSelect> selector;
+  emp::vector<size_t> all_training_case_ids;
+  emp::Ptr<selection::BaseSelect> selector = nullptr;
   emp::vector<size_t> selected_parent_ids;
 
   std::function<void(void)> run_selection_routine;
-  selection_fun_t selector_fun;
+  selection_fun_t selection_fun;
 
-  emp::Ptr<systematics_t> systematics_ptr;
+  emp::Ptr<systematics_t> systematics_ptr = nullptr;
 
+
+  // -- Output --
   std::string output_dir;
 
-  // -- Data files --
-  emp::Ptr<emp::DataFile> summary_file_ptr;
-  emp::Ptr<emp::DataFile> phylodiversity_file_ptr;
-  emp::Ptr<emp::DataFile> elite_file_ptr;
+  emp::Ptr<emp::DataFile> summary_file_ptr = nullptr;
+  emp::Ptr<emp::DataFile> phylodiversity_file_ptr = nullptr;
+  emp::Ptr<emp::DataFile> elite_file_ptr = nullptr;
+
+  SelectedStatistics selection_stats;
 
   void Setup();
   void SetupProblem();
@@ -180,7 +181,23 @@ protected:
   void SetupEvaluation_Cohort();
   void SetupEvaluation_DownSample();
 
+  void SetupSelection_Lexicase();
+  void SetupSelection_Tournament();
+  void SetupSelection_Truncation();
+  void SetupSelection_None();
+  void SetupSelection_Random();
+
+  void SetupFitFunEstimator_None();
+  void SetupFitFunEstimator_Ancestor();
+  void SetupFitFunEstimator_Relative();
+
+  void SetupStoppingCondition_Generations();
+  void SetupStoppingCondition_Evaluations();
+
   void InitializePopulation();
+  void InitializePopulation_Load();
+  void InitializePopulation_Random();
+
   void DoEvaluation();
   void DoSelection();
   void DoUpdate();
@@ -203,6 +220,7 @@ public:
     // TODO
     if (eval_hardware != nullptr) { eval_hardware.Delete(); }
     if (mutator != nullptr) { mutator.Delete(); }
+    if (selector != nullptr) { selector.Delete(); }
   }
 
   void RunStep();
@@ -210,12 +228,23 @@ public:
 
   const config_t& GetConfig() const { return config; }
 
+  size_t GetNumTrainingCases() const {
+    emp_assert(world_configured);
+    return total_training_cases;
+  }
+
 };
 
 void ProgSynthWorld::RunStep() {
   DoEvaluation();
   DoSelection();
   DoUpdate();
+}
+
+void ProgSynthWorld::Run() {
+  while (!stop_run()) {
+    RunStep();
+  }
 }
 
 void ProgSynthWorld::DoEvaluation() {
@@ -258,15 +287,56 @@ void ProgSynthWorld::DoEvaluation() {
 }
 
 void ProgSynthWorld::DoSelection() {
-  // TODO
+  // Run configured selection routine
+  run_selection_routine();
+  emp_assert(selected_parent_ids.size() == config.POP_SIZE());
+  // Each selected parent id reproduces
+  for (size_t id : selected_parent_ids) {
+    DoBirth(GetGenomeAt(id), id);
+  }
 }
 
 void ProgSynthWorld::DoUpdate() {
-  // TODO
+  // (1) Compute any per-generation statistics / intervals?
+  emp_assert(config.PRINT_INTERVAL() > 0);
+  const size_t cur_update = GetUpdate();
+  const bool final_update = is_final_update();
+  const bool print_interval = !(cur_update % config.PRINT_INTERVAL()) || final_update;
+  const bool summary_data_interval = !(cur_update % config.OUTPUT_SUMMARY_DATA_INTERVAL()) || final_update;
+  const bool snapshot_interval = !(cur_update % config.SNAPSHOT_INTERVAL()) || final_update;
+
+  // (2) File output
+  if (summary_data_interval) {
+    // Update selection statistics
+    selection_stats.Calculate(
+      selected_parent_ids,
+      *this
+    );
+    // TODO - Update files
+    // summary_file_ptr->Update();
+    // elite_file_ptr->Update();
+    // phylodiversity_file_ptr->Update();
+  }
+
+  if (snapshot_interval) {
+    // TODO - snapshot phylogeny
+  }
+
+  // (3) Print status
+  if (print_interval) {
+    std::cout << "update: " << GetUpdate() << "; ";
+    // TODO - add fitness
+    // std::cout << "best score (" << true_max_fit_org_id << "): " << GetOrg(true_max_fit_org_id).GetAggregateScore();
+    std::cout << std::endl;
+  }
+
+  // (4) Update!
+  Update();
 }
 
 void ProgSynthWorld::Setup() {
   std::cout << "--- Setting up ProgSynth ---" << std::endl;
+  world_configured = false;
 
   // Reset the world
   Reset();
@@ -305,19 +375,26 @@ void ProgSynthWorld::Setup() {
   // Setup evaluation
   SetupEvaluation();
 
-  // TODO - Setup selection
-  // SetupSelection();
+  // Setup selection
+  SetupSelection();
 
-  // TODO - Setup fitness function estimator
+  // Setup fitness function estimator
+  SetupFitFunEstimator();
 
   // TODO - Setup stopping condition
+  SetupStoppingCondition();
 
   // TODO -Setup data collection
 
-  // TODO - Initialize population!
-  // TODO - SetAutoMutate!
+  // Initialize population!
+  InitializePopulation();
+
+  // SetAutoMutate!
+  SetAutoMutate();
 
   // TODO - Output a snapshot of the run configuration
+
+  world_configured = true;
 }
 
 void ProgSynthWorld::SetupProblem() {
@@ -340,7 +417,10 @@ void ProgSynthWorld::SetupInstructionLibrary() {
   inst_lib.Clear();
   sgp::inst::lfpbm::InstructionAdder<hardware_t> inst_adder;
   // Add default instructions
-  inst_adder.AddAllDefaultInstructions(inst_lib);
+  inst_adder.AddAllDefaultInstructions(
+    inst_lib,
+    {"Fork", "Terminate"}
+  );
   // Add problem-specific instructions
   problem_manager.AddProblemInstructions(inst_lib);
   // TODO - snapshot instruction set
@@ -472,23 +552,24 @@ void ProgSynthWorld::SetupEvaluation() {
     emp::vector<bool>(total_training_cases, false)
   );
   // Setup organism group manager.
-  emp::vector<size_t> possible_ids(config.POP_SIZE(), 0);
+  emp::vector<size_t> possible_org_ids(config.POP_SIZE(), 0);
   std::iota(
-    possible_ids.begin(),
-    possible_ids.end(),
+    possible_org_ids.begin(),
+    possible_org_ids.end(),
     0
   );
-  org_groupings.SetPossibleIDs(possible_ids);
-  std::cout << org_groupings.GetPossibleIDs() << std::endl;
+  org_groupings.SetPossibleIDs(possible_org_ids);
+  // std::cout << "Possible org ids: " << org_groupings.GetPossibleIDs() << std::endl;
+
   // Setup test group manager
-  possible_ids.resize(total_training_cases, 0);
+  all_training_case_ids.resize(total_training_cases, 0);
   std::iota(
-    possible_ids.begin(),
-    possible_ids.end(),
+    all_training_case_ids.begin(),
+    all_training_case_ids.end(),
     0
   );
-  test_groupings.SetPossibleIDs(possible_ids);
-  std::cout << test_groupings.GetPossibleIDs() << std::endl;
+  test_groupings.SetPossibleIDs(all_training_case_ids);
+  // std::cout << "Possible training case ids: " << test_groupings.GetPossibleIDs() << std::endl;
 
   // Clear out all actions associated with organism evaluation.
   begin_org_evaluation_sig.Clear();
@@ -702,6 +783,310 @@ void ProgSynthWorld::SetupEvaluation_Cohort() {
 void ProgSynthWorld::SetupEvaluation_DownSample() {
   // TODO
   emp_assert(false);
+}
+
+void ProgSynthWorld::SetupSelection() {
+  std::cout << "Configuring parent selection routine" << std::endl;
+  // TODO - Can I have different worlds share selection routine setups?
+  emp_assert(selector == nullptr);
+
+  if (config.SELECTION() == "lexicase" ) {
+    SetupSelection_Lexicase();
+  } else if (config.SELECTION() == "tournament" ) {
+    SetupSelection_Tournament();
+  } else if (config.SELECTION() == "truncation" ) {
+    SetupSelection_Truncation();
+  } else if (config.SELECTION() == "none" ) {
+    SetupSelection_None();
+  } else if (config.SELECTION() == "random" ) {
+    SetupSelection_Random();
+  } else {
+    std::cout << "Unknown selection scheme: " << config.SELECTION() << std::endl;
+    exit(-1);
+  }
+}
+
+void ProgSynthWorld::SetupSelection_Lexicase() {
+
+  selector = emp::NewPtr<selection::LexicaseSelect>(
+    fit_fun_set,
+    *random_ptr
+  );
+
+  selection_fun = [this](
+    size_t n,
+    const emp::vector<size_t>& org_group,
+    const emp::vector<size_t>& test_group
+  ) -> emp::vector<size_t>& {
+    // Cast selector to lexicase selection
+    auto& sel = *(selector.Cast<selection::LexicaseSelect>());
+    return sel(n, org_group, test_group);
+  };
+
+}
+
+void ProgSynthWorld::SetupSelection_Tournament() {
+  selector = emp::NewPtr<selection::TournamentSelect>(
+    agg_score_fun_set,
+    *random_ptr,
+    config.TOURNAMENT_SIZE()
+  );
+
+  selection_fun = [this](
+    size_t n,
+    const emp::vector<size_t>& org_group,
+    const emp::vector<size_t>& test_group
+  ) -> emp::vector<size_t>& {
+    // Cast selector to lexicase selection
+    auto& sel = *(selector.Cast<selection::TournamentSelect>());
+    return sel(n, org_group);
+  };
+}
+
+void ProgSynthWorld::SetupSelection_Truncation() {
+  // TODO
+  emp_assert(false);
+}
+
+void ProgSynthWorld::SetupSelection_None() {
+  // TODO
+  emp_assert(false);
+}
+
+void ProgSynthWorld::SetupSelection_Random() {
+  // TODO
+  emp_assert(false);
+}
+
+void ProgSynthWorld::SetupFitFunEstimator() {
+  // Setup the default estimate_test_score functionality
+  // TODO - setup configurable fitness estimation
+  std::cout << "Configuring fitness function estimator (mode: " << config.EVAL_FIT_EST_MODE() << ")" << std::endl;
+
+  if (config.EVAL_FIT_EST_MODE() == "none") {
+    SetupFitFunEstimator_None();
+  }
+  else if (config.EVAL_FIT_EST_MODE() == "ancestor") {
+    SetupFitFunEstimator_Ancestor();
+  }
+  else if (config.EVAL_FIT_EST_MODE() == "relative") {
+    SetupFitFunEstimator_Relative();
+  } else {
+    std::cout << "Unrecognized EVAL_FIT_EST_MODE: " << config.EVAL_FIT_EST_MODE() << std::endl;
+    exit(-1);
+  }
+}
+
+void ProgSynthWorld::SetupFitFunEstimator_None() {
+  // Don't estimate anything
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    return org_training_scores[org_id][test_id];
+  };
+
+  // Configure selection routine
+  // No estimation, so only use evaluated tests in selection routine
+  run_selection_routine = [this]() {
+    // Resize parent ids to hold pop_size parents
+    selected_parent_ids.resize(config.POP_SIZE(), 0);
+    emp_assert(test_groupings.GetNumGroups() == org_groupings.GetNumGroups());
+    const size_t num_groups = org_groupings.GetNumGroups();
+    // For each grouping, select a number of parents equal to group size
+    size_t num_selected = 0;
+    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+
+      auto& org_group = org_groupings.GetGroup(group_id);
+      auto& test_group = test_groupings.GetGroup(group_id);
+      const size_t n = org_group.GetSize();
+      auto& selected = selection_fun(
+        n,
+        org_group.GetMembers(),
+        test_group.GetMembers()
+      );
+      emp_assert(selected.size() == n);
+      emp_assert(n + num_selected <= selected_parent_ids.size());
+      std::copy(
+        selected.begin(),
+        selected.end(),
+        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
+      );
+      num_selected += n;
+    }
+    // TODO - check that sets of selected ids correctly stored in selected_parent_ids
+  };
+
+}
+
+void ProgSynthWorld::SetupFitFunEstimator_Ancestor() {
+
+  // estimate_test_score
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
+
+    auto ancestor = phylo::NearestAncestorWithTraitEval(
+      taxon_ptr,
+      test_id,
+      config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+    );
+
+    if (ancestor) {
+      auto found_tax = ancestor.value();
+      emp_assert(found_tax->GetData().GetTraitsEvaluated()[test_id]);
+      return found_tax->GetData().GetPhenotype()[test_id];
+    } else {
+      return org_training_scores[org_id][test_id];
+    }
+
+  };
+
+  // run_selection_routine
+  run_selection_routine = [this]() {
+    // Resize parent ids to hold pop_size parents
+    selected_parent_ids.resize(config.POP_SIZE(), 0);
+    emp_assert(test_groupings.GetNumGroups() == org_groupings.GetNumGroups());
+    const size_t num_groups = org_groupings.GetNumGroups();
+    // For each grouping, select a number of parents equal to group size
+    size_t num_selected = 0;
+    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+      auto& org_group = org_groupings.GetGroup(group_id);
+      const size_t n = org_group.GetSize();
+      // Run selection, but use all possible test ids
+      auto& selected = selection_fun(
+        n,
+        org_group.GetMembers(),
+        all_training_case_ids
+      );
+      emp_assert(selected.size() == n);
+      emp_assert(n + num_selected <= selected_parent_ids.size());
+      std::copy(
+        selected.begin(),
+        selected.end(),
+        selected_parent_ids.begin() + num_selected
+      );
+      num_selected += n;
+    }
+  };
+}
+
+void ProgSynthWorld::SetupFitFunEstimator_Relative() {
+
+  // estimate_test_score
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
+
+    auto ancestor = phylo::NearestRelativeWithTraitEval(
+      taxon_ptr,
+      test_id,
+      config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+    );
+
+    if (ancestor) {
+      auto found_tax = ancestor.value();
+      emp_assert(found_tax->GetData().GetTraitsEvaluated()[test_id]);
+      return found_tax->GetData().GetPhenotype()[test_id];
+    } else {
+      return org_training_scores[org_id][test_id];
+    }
+
+  };
+
+  // run_selection_routine
+  run_selection_routine = [this]() {
+    // Resize parent ids to hold pop_size parents
+    selected_parent_ids.resize(config.POP_SIZE(), 0);
+    emp_assert(test_groupings.GetNumGroups() == org_groupings.GetNumGroups());
+    const size_t num_groups = org_groupings.GetNumGroups();
+    // For each grouping, select a number of parents equal to group size
+    size_t num_selected = 0;
+    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+      auto& org_group = org_groupings.GetGroup(group_id);
+      const size_t n = org_group.GetSize();
+      // Run selection, but use all possible test ids
+      auto& selected = selection_fun(
+        n,
+        org_group.GetMembers(),
+        all_training_case_ids
+      );
+      emp_assert(selected.size() == n);
+      emp_assert(n + num_selected <= selected_parent_ids.size());
+      std::copy(
+        selected.begin(),
+        selected.end(),
+        selected_parent_ids.begin() + num_selected
+      );
+      num_selected += n;
+    }
+
+  };
+
+}
+
+void ProgSynthWorld::SetupStoppingCondition() {
+  std::cout << "Configuring stopping condition" << std::endl;
+  if (config.STOP_MODE() == "generations") {
+    SetupStoppingCondition_Generations();
+  } else if (config.STOP_MODE() == "evaluations") {
+    SetupStoppingCondition_Evaluations();
+  } else {
+    std::cout << "Unknown STOP_MODE: " << config.STOP_MODE() << std::endl;
+    exit(-1);
+  }
+}
+
+void ProgSynthWorld::SetupStoppingCondition_Generations() {
+  stop_run = [this]() {
+    return GetUpdate() > config.MAX_GENS();
+  };
+  is_final_update = [this]() {
+    return GetUpdate() >= config.MAX_GENS();
+  };
+}
+
+void ProgSynthWorld::SetupStoppingCondition_Evaluations() {
+  stop_run = [this]() {
+    return total_test_evaluations > config.MAX_EVALS();
+  };
+  is_final_update = [this]() {
+    return total_test_evaluations >= config.MAX_EVALS();
+  };
+}
+
+void ProgSynthWorld::InitializePopulation() {
+  std::cout << "Initializing the population." << std::endl;
+  // Clear the current population
+  Clear();
+  // Initialize population according to configuration
+  if (config.POP_INIT_MODE() == "random") {
+    InitializePopulation_Random();
+  } else if (config.POP_INIT_MODE() == "load") {
+    InitializePopulation_Load();
+  } else {
+    std::cout << "Unknown POP_INIT_MODE: " << config.POP_INIT_MODE() << std::endl;
+    exit(-1);
+  }
+}
+
+void ProgSynthWorld::InitializePopulation_Load() {
+  // TODO
+  emp_assert(false);
+}
+
+void ProgSynthWorld::InitializePopulation_Random() {
+  for (size_t i = 0; i < config.POP_SIZE(); ++i) {
+    Inject(
+      {
+        sgp::cpu::lfunprg::GenRandLinearFunctionsProgram<hardware_t, TAG_SIZE>(
+          *random_ptr,
+          inst_lib,
+          {config.PRG_MIN_FUNC_CNT(), config.PRG_MAX_FUNC_CNT()},
+          FUNC_NUM_TAGS,
+          {config.PRG_MIN_FUNC_INST_CNT(), config.PRG_MAX_FUNC_INST_CNT()},
+          INST_TAG_CNT,
+          INST_ARG_CNT,
+          {config.PRG_INST_MIN_ARG_VAL(), config.PRG_INST_MAX_ARG_VAL()}
+        )
+      }
+    );
+  }
 }
 
 }

@@ -29,11 +29,6 @@ int main(int argc, char* argv[])
             << std::endl;
 
   psynth::ProgSynthWorld world(config);
-  // world.Run();
-
-  // pm.ConfigureProblem("")
-  // pm.ConfigureProblem<psb::readers::SmallOrLarge>();
-  // pm.ConfigureProblem<psb::readers::Bowling>();
-  // pm.ConfigureProblem<psb::readers::BouncingBalls>();
+  world.Run();
 
 }

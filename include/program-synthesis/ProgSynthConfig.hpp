@@ -12,10 +12,18 @@ EMP_BUILD_CONFIG(ProgSynthConfig,
   VALUE(MAX_EVALS, size_t, 2560000000, "Maximum number of trait evaluations."),
   VALUE(STOP_MODE, std::string, "generations", "How do we know when to stop? Options: generations\nevaluations"),
 
+  GROUP(SELECTION, "Selection settings"),
+  VALUE(SELECTION, std::string, "tournament", "Selection scheme to use"),
+  VALUE(TOURNAMENT_SIZE, size_t, 4, "Tournament size for selection schemes that use tournaments"),
+
   GROUP(PSB_PROBLEM, "Problem-related settings"),
   VALUE(PROBLEM, std::string, "small-or-large", "Problem to solve"),
   VALUE(TESTING_SET_PATH, std::string, "testing.json", "Path to testing set (json)"),
   VALUE(TRAINING_SET_PATH, std::string, "training.json", "Path to training set (json)"),
+
+  GROUP(POP_INIT, "Population initialization settings"),
+  VALUE(POP_INIT_MODE, std::string, "random", "How should we initialize the population? Options: random, load"),
+  VALUE(ANCESTOR_FILE_PATH, std::string, "ancestor.json", "Path to ancestor file"),
 
   GROUP(EVALUATION, "How are organisms evaluated?"),
   VALUE(EVAL_MODE, std::string, "full", "Evaluation mode. Options:\nfull\ncohort\ndown-sample"),
@@ -49,6 +57,12 @@ EMP_BUILD_CONFIG(ProgSynthConfig,
   VALUE(MUT_RATE_FUNC_TAG_SINGLE_BF, double, 0.0, "Per-tag single bit flip rate"),
   VALUE(MUT_RATE_INST_TAG_SEQ_RAND, double, 0.0, "Per-tag sequence randomization rate"),
   VALUE(MUT_RATE_FUNC_TAG_SEQ_RAND, double, 0.0, "Per-tag sequence randomization rate"),
+
+  GROUP(OUTPUT, "Output settings"),
+  VALUE(OUTPUT_DIR, std::string, "./output/", "What directory are we dumping all this data"),
+  VALUE(OUTPUT_SUMMARY_DATA_INTERVAL, size_t, 10, "How often should we output summary data?"),
+  VALUE(PRINT_INTERVAL, size_t, 1, "How often do we print run status information?"),
+  VALUE(SNAPSHOT_INTERVAL, size_t, 100, "How often should we snapshot?")
 
 )
 
