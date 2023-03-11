@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <sys/stat.h>
 
 #include "emp/Evolve/World.hpp"
 #include "emp/Evolve/Systematics.hpp"
@@ -22,6 +23,7 @@
 
 #include "../phylogeny/phylogeny_utils.hpp"
 #include "../utility/Grouping.hpp"
+#include "../utility/printing.hpp"
 #include "../selection/SelectionSchemes.hpp"
 
 #include "ProgSynthConfig.hpp"
@@ -31,6 +33,8 @@
 #include "ProgSynthHardware.hpp"
 #include "MutatorLinearFunctionsProgram.hpp"
 #include "SelectedStatistics.hpp"
+
+// TODO - implement program json output / input
 
 // TODO - re-organize problem manager <==> world interactions to use world signals
 // i.e., pass the world to the problem manager configure, allow it to wire up functions to OnXSetup signals.
@@ -194,6 +198,10 @@ protected:
   void SetupStoppingCondition_Generations();
   void SetupStoppingCondition_Evaluations();
 
+  void SetupDataCollection_Phylodiversity();
+  void SetupDataCollection_Summary();
+  void SetupDataCollection_Elite();
+
   void InitializePopulation();
   void InitializePopulation_Load();
   void InitializePopulation_Random();
@@ -217,10 +225,12 @@ public:
   }
 
   ~ProgSynthWorld() {
-    // TODO
     if (eval_hardware != nullptr) { eval_hardware.Delete(); }
     if (mutator != nullptr) { mutator.Delete(); }
     if (selector != nullptr) { selector.Delete(); }
+    if (phylodiversity_file_ptr != nullptr) { phylodiversity_file_ptr.Delete(); }
+    if (summary_file_ptr != nullptr) { summary_file_ptr.Delete(); }
+    if (elite_file_ptr != nullptr) { elite_file_ptr.Delete(); }
   }
 
   void RunStep();
@@ -343,6 +353,13 @@ void ProgSynthWorld::Setup() {
   total_test_evaluations = 0;
   found_solution = false;
 
+  // Configure output directory path, create directory
+  output_dir = config.OUTPUT_DIR();
+  mkdir(output_dir.c_str(), ACCESSPERMS);
+  if(output_dir.back() != '/') {
+      output_dir += '/';
+  }
+
   // Setup the population structure
   SetPopStruct_Mixed(true);
 
@@ -359,41 +376,32 @@ void ProgSynthWorld::Setup() {
 
   // Setup the program synthesis problem
   SetupProblem();
-
   // Setup the instruction library
   SetupInstructionLibrary();
-
   // Setup the event library
   SetupEventLibrary();
-
   // Setup the virtual hardware used to evaluate programs
   SetupVirtualHardware();
-
   // Setup the program mutator
   SetupMutator();
-
   // Setup evaluation
   SetupEvaluation();
-
   // Setup selection
   SetupSelection();
-
   // Setup fitness function estimator
   SetupFitFunEstimator();
-
-  // TODO - Setup stopping condition
+  // Setup stopping condition
   SetupStoppingCondition();
-
-  // TODO -Setup data collection
-
+  // Setup phylogeny tracking
+  SetupPhylogenyTracking();
+  // Setup data collection
+  SetupDataCollection();
   // Initialize population!
   InitializePopulation();
-
   // SetAutoMutate!
   SetAutoMutate();
-
-  // TODO - Output a snapshot of the run configuration
-
+  // Output a snapshot of the run configuration
+  SnapshotConfig();
   world_configured = true;
 }
 
@@ -1087,6 +1095,138 @@ void ProgSynthWorld::InitializePopulation_Random() {
       }
     );
   }
+}
+
+void ProgSynthWorld::SetupPhylogenyTracking() {
+  std::cout << "Configure phylogeny tracking" << std::endl;
+  emp_assert(systematics_ptr == nullptr);
+  // Create new systematics tracker
+  systematics_ptr = emp::NewPtr<systematics_t>(
+    [](const org_t& org) {
+      return org.GetGenome();
+    }
+  );
+
+
+  // Add phylogeny snapshot functions
+  // Fitness (aggregate score)
+  systematics_ptr->AddSnapshotFun(
+    [](const taxon_t& taxon) {
+      return emp::to_string(taxon.GetData().GetFitness());
+    },
+    "fitness"
+  );
+
+  // Phenotype
+  systematics_ptr->AddSnapshotFun(
+    [](const taxon_t& taxon) {
+      std::stringstream ss;
+      utils::PrintVector(ss, taxon.GetData().GetPhenotype(), true);
+      return ss.str();
+    },
+    "phenotype"
+  );
+
+  // Genome - TODO
+  systematics_ptr->AddSnapshotFun(
+    [](const taxon_t& taxon) {
+      return "TODO";
+    },
+    "genome"
+  );
+
+  systematics_ptr->AddEvolutionaryDistinctivenessDataNode();
+  systematics_ptr->AddPairwiseDistanceDataNode();
+  systematics_ptr->AddPhylogeneticDiversityDataNode();
+
+  AddSystematics(systematics_ptr, "genotype");
+  SetupSystematicsFile(
+    "genotype",
+    output_dir + "systematics.csv"
+  ).SetTimingRepeat(config.OUTPUT_SUMMARY_DATA_INTERVAL());
+
+
+}
+
+void ProgSynthWorld::SetupDataCollection() {
+  std::cout << "Configure data tracking" << std::endl;
+  SetupDataCollection_Phylodiversity();
+  SetupDataCollection_Summary();
+  SetupDataCollection_Elite();
+}
+
+void ProgSynthWorld::SetupDataCollection_Phylodiversity() {
+  // Create phylodiversity file
+  phylodiversity_file_ptr = emp::NewPtr<emp::DataFile>(
+    output_dir + "phylodiversity.csv"
+  );
+
+  phylodiversity_file_ptr->AddVar(update, "update", "Generation");
+  phylodiversity_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
+  phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("evolutionary_distinctiveness") , "genotype_evolutionary_distinctiveness", "evolutionary distinctiveness for a single update", true, true);
+  phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("pairwise_distance"), "genotype_pairwise_distance", "pairwise distance for a single update", true, true);
+  phylodiversity_file_ptr->AddCurrent(*systematics_ptr->GetDataNode("phylogenetic_diversity"), "genotype_current_phylogenetic_diversity", "current phylogenetic_diversity", true, true);
+  phylodiversity_file_ptr->PrintHeaderKeys();
+}
+
+void ProgSynthWorld::SetupDataCollection_Summary() {
+  // Create summary file
+  summary_file_ptr = emp::NewPtr<emp::DataFile>(
+    output_dir + "summary.csv"
+  );
+
+  // TODO
+}
+
+void ProgSynthWorld::SetupDataCollection_Elite() {
+  // Create elite file
+  elite_file_ptr = emp::NewPtr<emp::DataFile>(
+    output_dir + "elite.csv"
+  );
+
+  // TODO
+}
+
+void ProgSynthWorld::SnapshotConfig() {
+  emp::DataFile snapshot_file(output_dir + "run_config.csv");
+  std::function<std::string(void)> get_param;
+  std::function<std::string(void)> get_value;
+
+  snapshot_file.AddFun<std::string>(
+    [&get_param]() { return get_param(); },
+    "parameter"
+  );
+  snapshot_file.AddFun<std::string>(
+    [&get_value]() { return get_value(); },
+    "value"
+  );
+  snapshot_file.PrintHeaderKeys();
+
+  // Snapshot everything from config file
+  for (const auto& entry : config) {
+    get_param = [&entry]() { return entry.first; };
+    get_value = [&entry]() { return emp::to_string(entry.second->GetValue()); };
+    snapshot_file.Update();
+  }
+  // Snapshot misc. other details
+  emp::vector<std::pair<std::string, std::string>> misc_params = {
+    std::make_pair("TAG_SIZE", emp::to_string(TAG_SIZE)),
+    std::make_pair("FUNC_NUM_TAGS", emp::to_string(FUNC_NUM_TAGS)),
+    std::make_pair("INST_TAG_CNT", emp::to_string(INST_TAG_CNT)),
+    std::make_pair("INST_ARG_CNT", emp::to_string(INST_ARG_CNT)),
+    std::make_pair("sgp_program_type", "LinearFunctionsProgram"),
+    std::make_pair("matchbin_metric", "HammingMetric"),
+    std::make_pair("matchbin_selector", "RankedSelector"),
+    std::make_pair("total_training_cases", emp::to_string(total_training_cases)),
+    std::make_pair("total_testing_cases", emp::to_string(problem_manager.GetTestingSetSize()))
+  };
+
+  for (const auto& entry : misc_params) {
+    get_param = [&entry]() { return entry.first; };
+    get_value = [&entry]() { return entry.second; };
+    snapshot_file.Update();
+  }
+
 }
 
 }

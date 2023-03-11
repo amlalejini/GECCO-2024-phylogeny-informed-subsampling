@@ -8,13 +8,15 @@
 namespace utils {
 
 template<typename T>
-void PrintVector(std::ostream& os, const emp::vector<T>& vec) {
+void PrintVector(std::ostream& os, const emp::vector<T>& vec, bool quotes=false) {
+  if (quotes) os << "\"";
   os << "[";
   for (size_t i = 0; i < vec.size(); ++i) {
     if (i) os << ",";
     os << emp::to_string(vec[i]);
   }
   os << "]";
+  if (quotes) os << "\"";
 }
 
 }
