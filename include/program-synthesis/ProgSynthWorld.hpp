@@ -177,6 +177,7 @@ protected:
 
   SelectedStatistics selection_stats; ///< Utility struct that manages selection statistics
 
+  // -- Internal functions --
   void Setup();
   void SetupProblem();
   void SetupSelection();
@@ -386,7 +387,7 @@ void ProgSynthWorld::Setup() {
     [this](size_t pos) {
       auto& org = GetOrg(pos);
       org.SetPopID(pos);
-      org.GetPhenotype().Reset(total_training_cases);
+      org.ResetPhenotype(total_training_cases);
       emp_assert(org.GetPopID() == pos);
     }
   );
@@ -629,7 +630,7 @@ void ProgSynthWorld::SetupEvaluation() {
       );
       // Reset phenotype
       auto& org = GetOrg(org_id);
-      org.GetPhenotype().Reset(total_training_cases);
+      org.ResetPhenotype(total_training_cases);
     }
   );
 
@@ -693,21 +694,14 @@ void ProgSynthWorld::SetupEvaluation() {
         test_id,
         training
       );
+
       // Record result on organism phenotype
-      auto& phen = org.GetPhenotype();
-      // TODO - consolodate phenotype tracking and local world tracking vectors
-      phen.test_scores[test_id] = result.score;
-      phen.test_passes[test_id] = result.is_correct;
-      phen.test_evaluated[test_id] = true;
-      phen.aggregate_score += result.score;
-      // world performance tracking
-      // TODO - assign partial credit for producing an output?
-      // org_aggregate_scores[org_id] += result.score;
+      org.UpdatePhenotype(test_id, result);
+      // World performance tracking
       org_training_scores[org_id][test_id] = result.score;
       org_training_evaluations[org_id][test_id] = true;
       org_training_coverage[org_id] += (size_t)result.is_correct;
       org_num_training_cases[org_id] += 1;
-      // TODO - make sure pop training coverage gets 0'd out at beginning of evaluation step!
       pop_training_coverage[test_id] = pop_training_coverage[test_id] || result.is_correct;
     }
   );

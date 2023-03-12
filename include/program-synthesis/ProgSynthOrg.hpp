@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "emp/base/vector.hpp"
+#include "TestResult.hpp"
 
 // TODO - move genome and phenotype out of this file
 
@@ -38,10 +39,11 @@ struct ProgSynthGenome {
 };
 
 // TODO - make this a class that better handles updates
-struct ProgSynthPhenotype {
+class ProgSynthPhenotype {
+public:
   using this_t = ProgSynthPhenotype;
+protected:
 
-  // TODO - replace three vectors with one vector of TestResults?
   emp::vector<double> test_scores;   ///< Scores on tests.
   emp::vector<bool> test_passes;     ///< Pass/fail on tests
   emp::vector<bool> test_evaluated;  ///< Whether a test has been evaluated.
@@ -50,6 +52,7 @@ struct ProgSynthPhenotype {
   size_t num_passes = 0;
   bool is_solution = false;
 
+public:
   void Reset(size_t num_tests=1) {
     aggregate_score = 0.0;
     num_passes = 0;
@@ -77,18 +80,21 @@ struct ProgSynthPhenotype {
     );
   }
 
+  void Update(size_t test_id, const TestResult& test_result, bool evaluated=true) {
+    test_scores[test_id] = test_result.score;
+    test_passes[test_id] = test_result.is_correct;
+    test_evaluated[test_id] = evaluated;
+    num_passes += (size_t)test_result.is_correct;
+    aggregate_score += test_result.score;
+  }
+
   bool operator==(const this_t& o) const {
+    // Only use scores and is solution to test equality
     return std::tie(
-      aggregate_score,
       test_scores,
-      test_evaluated,
-      num_passes,
       is_solution
     ) == std::tie(
-      o.aggregate_score,
       o.test_scores,
-      o.test_evaluated,
-      o.num_passes,
       o.is_solution
     );
   }
@@ -98,23 +104,30 @@ struct ProgSynthPhenotype {
   }
 
   bool operator<(const this_t& o) const {
+    // Only use scores and is solution for comparison
     return std::tie(
-      aggregate_score,
       test_scores,
-      test_evaluated,
-      num_passes,
       is_solution
     ) < std::tie(
-      o.aggregate_score,
       o.test_scores,
-      o.test_evaluated,
-      o.num_passes,
       o.is_solution
     );
   }
 
   double GetAggregateScore() const {
     return aggregate_score;
+  }
+
+  bool PassedTest(size_t test_id) const {
+    return test_passes[test_id];
+  }
+
+  double GetTestScore(size_t test_id) const {
+    return test_scores[test_id];
+  }
+
+  bool TestEvaluated(size_t test_id) const {
+    return test_evaluated[test_id];
   }
 
 };
@@ -131,8 +144,6 @@ protected:
   phenotype_t phenotype;
   genome_t genome;
 
-  bool evaluated = false;
-
   size_t pop_id = 0;
 
 public:
@@ -140,9 +151,7 @@ public:
   ProgSynthOrg(const genome_t& g) :
     phenotype(),
     genome(g)
-  {
-    evaluated = false;
-  }
+  { ; }
 
   ProgSynthOrg(const ProgSynthOrg&) = default;
   ProgSynthOrg(ProgSynthOrg&&) = default;
@@ -150,15 +159,20 @@ public:
   genome_t& GetGenome() { return genome; }
   const genome_t& GetGenome() const { return genome; }
 
-  phenotype_t& GetPhenotype() { return phenotype; }
+  // phenotype_t& GetPhenotype() { return phenotype; }
   const phenotype_t& GetPhenotype() const { return phenotype; }
 
   size_t GetPopID() const { return pop_id; }
   void SetPopID(size_t id) { pop_id = id; }
 
-  bool IsEvaluated() const { return evaluated; }
+  void ResetPhenotype(size_t num_tests=1) {
+    phenotype.Reset(num_tests);
+  }
 
-  // TODO - process phenotype
+  void UpdatePhenotype(size_t test_id, const TestResult& test_result) {
+    phenotype.Update(test_id, test_result);
+  }
+
 };
 
 }

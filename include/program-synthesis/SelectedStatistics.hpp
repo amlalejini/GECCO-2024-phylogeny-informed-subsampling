@@ -35,7 +35,7 @@ namespace psynth {
         for (size_t s_i = 0; (s_i < selected.size() && !parent_test_coverage[test_id]); ++s_i) {
           const size_t org_id = selected[s_i];
           auto& org = world.GetOrg(org_id);
-          const bool pass_test = org.GetPhenotype().test_passes[test_id];
+          const bool pass_test = org.GetPhenotype().PassedTest(test_id);
           parent_test_coverage[test_id] = parent_test_coverage[test_id] || pass_test;
         }
       }
