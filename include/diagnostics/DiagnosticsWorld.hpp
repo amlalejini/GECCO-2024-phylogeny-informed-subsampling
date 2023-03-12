@@ -162,7 +162,9 @@ protected:
 
   void SetupFitFunEstimator_None();
   void SetupFitFunEstimator_Ancestor();
+  void SetupFitFunEstimator_AncestorOpt();
   void SetupFitFunEstimator_Relative();
+  void SetupFitFunEstimator_RelativeOpt();
 
   void SetupEvaluation_Cohort();
   void SetupEvaluation_DownSample();
@@ -1123,69 +1125,101 @@ void DiagnosticsWorld::SetupFitFunEstimator() {
   // TODO - setup configurable fitness estimation
   std::cout << "Configuring fitness function estimator (mode: " << config.EVAL_FIT_EST_MODE() << ")" << std::endl;
 
+  bool estimation_mode = config.EVAL_FIT_EST_MODE() == "none";
   if (config.EVAL_FIT_EST_MODE() == "none") {
     SetupFitFunEstimator_None();
-  }
-  else if (config.EVAL_FIT_EST_MODE() == "ancestor") {
+  } else if (config.EVAL_FIT_EST_MODE() == "ancestor") {
     SetupFitFunEstimator_Ancestor();
-  }
-  else if (config.EVAL_FIT_EST_MODE() == "relative") {
+  } else if (config.EVAL_FIT_EST_MODE() == "relative") {
     SetupFitFunEstimator_Relative();
+  } else if (config.EVAL_FIT_EST_MODE() == "ancestor-opt") {
+    SetupFitFunEstimator_AncestorOpt();
+  } else if (config.EVAL_FIT_EST_MODE() == "relative-opt") {
+    SetupFitFunEstimator_RelativeOpt();
   } else {
     std::cout << "Unrecognized EVAL_FIT_EST_MODE: " << config.EVAL_FIT_EST_MODE() << std::endl;
     exit(-1);
   }
 
-  // TODO - add all tests to all test groups if in estimation mode
+  // If we're using trait estimation, we can use all traits during selection
+  // otherwise, we can only use group traits.
+  if (estimation_mode) {
+    // run_selection_routine
+    run_selection_routine = [this]() {
+      // Resize parent ids to hold pop_size parents
+      selected_parent_ids.resize(config.POP_SIZE(), 0);
+      emp_assert(test_groupings.size() == org_groupings.size());
+      const size_t num_groups = org_groupings.size();
+      // For each grouping, select a number of parents equal to group size
+      size_t num_selected = 0;
+      for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+        auto& org_group = org_groupings[group_id];
+        const size_t n = org_group.GetSize();
+        // Run selection, but use all possible test ids
+        auto& selected = selection_fun(
+          n,
+          org_group.member_ids,
+          possible_test_ids
+        );
+        emp_assert(selected.size() == n);
+        emp_assert(n + num_selected <= selected_parent_ids.size());
+        std::copy(
+          selected.begin(),
+          selected.end(),
+          selected_parent_ids.begin() + num_selected
+        );
+        num_selected += n;
+      }
+    };
+  } else {
+    // No estimation, so only use evaluated tests in selection routine
+    run_selection_routine = [this]() {
+      // Resize parent ids to hold pop_size parents
+      selected_parent_ids.resize(config.POP_SIZE(), 0);
+      emp_assert(test_groupings.size() == org_groupings.size());
+      const size_t num_groups = org_groupings.size();
+      // For each grouping, select a number of parents equal to group size
+      size_t num_selected = 0;
+      for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+        auto& org_group = org_groupings[group_id];
+        auto& test_group = test_groupings[group_id];
+        const size_t n = org_group.GetSize();
+        auto& selected = selection_fun(
+          n,
+          org_group.member_ids,
+          test_group.member_ids
+        );
+        emp_assert(selected.size() == n);
+        emp_assert(n + num_selected <= selected_parent_ids.size());
+        std::copy(
+          selected.begin(),
+          selected.end(),
+          selected_parent_ids.begin() + num_selected
+        );
+        num_selected += n;
+      }
+    };
+
+  }
 }
 
 void DiagnosticsWorld::SetupFitFunEstimator_None() {
-  // TODO - implement
-
   // Don't estimate anything
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     return org_test_scores[org_id][test_id];
   };
-
-  // Configure selection routine
-  // No estimation, so only use evaluated tests in selection routine
-  run_selection_routine = [this]() {
-    // Resize parent ids to hold pop_size parents
-    selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings.size() == org_groupings.size());
-    const size_t num_groups = org_groupings.size();
-    // For each grouping, select a number of parents equal to group size
-    size_t num_selected = 0;
-    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-      auto& org_group = org_groupings[group_id];
-      auto& test_group = test_groupings[group_id];
-      const size_t n = org_group.GetSize();
-      auto& selected = selection_fun(
-        n,
-        org_group.member_ids,
-        test_group.member_ids
-      );
-      emp_assert(selected.size() == n);
-      emp_assert(n + num_selected <= selected_parent_ids.size());
-      std::copy(
-        selected.begin(),
-        selected.end(),
-        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
-      );
-      num_selected += n;
-    }
-    // TODO - check that sets of selected ids correctly stored in selected_parent_ids
-  };
 }
 
 void DiagnosticsWorld::SetupFitFunEstimator_Ancestor() {
+
   // estimate_test_score
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
 
     auto ancestor = phylo::NearestAncestorWithTraitEval(
       taxon_ptr,
-      test_id
+      test_id,
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
     if (ancestor) {
@@ -1195,37 +1229,46 @@ void DiagnosticsWorld::SetupFitFunEstimator_Ancestor() {
     } else {
       return org_test_scores[org_id][test_id];
     }
+
   };
 
+}
 
-  // run_selection_routine
-  run_selection_routine = [this]() {
-    // Resize parent ids to hold pop_size parents
-    selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings.size() == org_groupings.size());
-    const size_t num_groups = org_groupings.size();
-    // For each grouping, select a number of parents equal to group size
-    size_t num_selected = 0;
-    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-      auto& org_group = org_groupings[group_id];
-      const size_t n = org_group.GetSize();
-      // Run selection, but use all possible test ids
-      auto& selected = selection_fun(
-        n,
-        org_group.member_ids,
-        possible_test_ids
-      );
-      emp_assert(selected.size() == n);
-      emp_assert(n + num_selected <= selected_parent_ids.size());
-      std::copy(
-        selected.begin(),
-        selected.end(),
-        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
-      );
-      num_selected += n;
+void DiagnosticsWorld::SetupFitFunEstimator_AncestorOpt() {
+  // estimate_test_score
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
+
+    // If taxon has already been estimated on this trait, re-use estimated value
+    if (taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated) {
+      return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
     }
-  };
 
+    // Otherwise, find nearest ancestor
+    auto ancestor = phylo::NearestAncestorWithTraitEvalOpt(
+      taxon_ptr,
+      test_id,
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+    );
+
+    return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
+
+    // If found an ancestor, return their score; otherwise, return our own (probably 0) score
+    // if (ancestor) {
+    //   auto found_tax = ancestor.value();
+    //   emp_assert(
+    //     found_tax->GetData().TraitEvaluated(test_id) || found_tax->GetData().GetTraitEstimationInfo(test_id).estimated
+    //   );
+    //   emp_assert(
+    //     taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated &&
+    //     taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimation_dist <= (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+    //   );
+    //   return (taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score);
+    // } else {
+    //   emp_assert(taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated);
+    //   return org_test_scores[org_id][test_id];
+    // }
+  };
 }
 
 void DiagnosticsWorld::SetupFitFunEstimator_Relative() {
@@ -1235,7 +1278,8 @@ void DiagnosticsWorld::SetupFitFunEstimator_Relative() {
 
     auto ancestor = phylo::NearestRelativeWithTraitEval(
       taxon_ptr,
-      test_id
+      test_id,
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
     if (ancestor) {
@@ -1247,32 +1291,26 @@ void DiagnosticsWorld::SetupFitFunEstimator_Relative() {
     }
   };
 
-  // run_selection_routine
-  run_selection_routine = [this]() {
-    // Resize parent ids to hold pop_size parents
-    selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings.size() == org_groupings.size());
-    const size_t num_groups = org_groupings.size();
-    // For each grouping, select a number of parents equal to group size
-    size_t num_selected = 0;
-    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-      auto& org_group = org_groupings[group_id];
-      const size_t n = org_group.GetSize();
-      // Run selection, but use all possible test ids
-      auto& selected = selection_fun(
-        n,
-        org_group.member_ids,
-        possible_test_ids
-      );
-      emp_assert(selected.size() == n);
-      emp_assert(n + num_selected <= selected_parent_ids.size());
-      std::copy(
-        selected.begin(),
-        selected.end(),
-        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
-      );
-      num_selected += n;
+}
+
+void DiagnosticsWorld::SetupFitFunEstimator_RelativeOpt() {
+  // estimate_test_score
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
+
+    // If taxon has already been estimated on this trait, re-use estimated value
+    if (taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated) {
+      return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
     }
+
+    auto relative = phylo::NearestRelativeWithTraitEvalOpt(
+      taxon_ptr,
+      test_id,
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+    );
+
+    return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
+
   };
 }
 

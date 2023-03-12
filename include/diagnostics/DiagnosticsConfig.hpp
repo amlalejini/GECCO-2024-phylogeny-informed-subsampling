@@ -34,6 +34,7 @@ EMP_BUILD_CONFIG(DiagnosticsConfig,
   GROUP(EVALUTION, "How are organisms evaluated?"),
   VALUE(EVAL_MODE, std::string, "full", "Evaluation mode. Options:\nfull\ncohort\ndown-sample"),
   VALUE(EVAL_FIT_EST_MODE, std::string, "none", "Fitness function estimation method. Options:\nnone\nancestor\nrelative"),
+  VALUE(EVAL_MAX_PHYLO_SEARCH_DEPTH, int, -1, "Maximum phylogeny search depth when estimating fitness."),
 
   GROUP(EVALUATION_COHORT, "Cohort evaluation settings"),
   VALUE(NUM_COHORTS, size_t, 2, "How many cohorts should we divide the tests and organisms into?"),
