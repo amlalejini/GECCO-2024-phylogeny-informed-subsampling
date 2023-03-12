@@ -112,72 +112,70 @@ public:
 protected:
   const config_t& config;
 
-  bool world_configured = false;
+  bool world_configured = false;                ///< Has the world been configured?
 
-  emp::Ptr<hardware_t> eval_hardware = nullptr;
-  inst_lib_t inst_lib;
-  event_lib_t event_lib;
-  emp::Ptr<mutator_t> mutator = nullptr;
+  emp::Ptr<hardware_t> eval_hardware = nullptr; ///< Hardware used for program evaluation
+  inst_lib_t inst_lib;                          ///< SGP instruction library
+  event_lib_t event_lib;                        ///< SGP event library
+  emp::Ptr<mutator_t> mutator = nullptr;        ///< Handles SGP program mutation
 
-  ProblemManager<hardware_t> problem_manager;
-  // size_t event_id_input_sig = 0;
-  size_t event_id_numeric_input_sig = 0;
+  ProblemManager<hardware_t> problem_manager; ///< Manages interface to program synthesis problem
+  size_t event_id_numeric_input_sig = 0;      ///< SGP event ID for numeric input signals
 
-  size_t total_training_cases = 0;
+  size_t total_training_cases = 0;   ///< Tracks the total number of training cases being used
   size_t total_test_evaluations = 0; ///< Tracks the total number of "test case" evaluations across all organisms since the beginning of the run.
   bool found_solution = false;
 
-  std::function<bool(void)> stop_run;
-  std::function<bool(void)> is_final_update;
-  std::function<bool(size_t)> check_org_solution;
+  std::function<bool(void)> stop_run;               ///< Returns whether we've hit configured stopping condition
+  std::function<bool(void)> is_final_update;        ///< Returns whether we're on the final update for this run
+  std::function<bool(size_t)> check_org_solution;   ///< Checks whether a given organism is a solution (needs to be configured based on evalution mode)
 
-  emp::Signal<void(size_t)> begin_org_evaluation_sig;
-  emp::Signal<void(size_t)> do_org_evaluation_sig;  // Overall evaluate organism process.
+  emp::Signal<void(size_t)> begin_org_evaluation_sig; ///< Triggered at beginning of an organism's evaluation (in DoEvaluation). Handles phenotype / internal tracking resets
+  emp::Signal<void(size_t)> do_org_evaluation_sig;    ///< Evaluates organism on trigger
   emp::Signal<void(size_t)> end_org_evaluation_sig;
 
-  emp::Signal<void(org_t&)> begin_program_eval_sig; // Triggered at beginning of program evaluation (program loaded on hardware, phenotype reset).
+  emp::Signal<void(org_t&)> begin_program_eval_sig; ///< Triggered at beginning of program evaluation (program loaded on hardware).
 
-  emp::Signal<void(org_t&, size_t, bool)> begin_program_test_sig;
-  emp::Signal<void(org_t&, size_t)> do_program_test_sig;
+  emp::Signal<void(org_t&, size_t, bool)> begin_program_test_sig;  ///< Triggered right before evaluating a program on a particular test
+  emp::Signal<void(org_t&, size_t)> do_program_test_sig;           ///< Evaluates program on particular test on trigger
   emp::Signal<void(org_t&, size_t, bool)> end_program_test_sig;
 
   emp::vector<
     emp::vector< std::function<double(void)> >
-  > fit_fun_set;      ///< Per-organism, per-test
+  > fit_fun_set;       ///< Per-organism, per-test
   emp::vector<
     std::function<double(void)>
   > agg_score_fun_set; ///< Per-organism, aggregate score
 
-  std::function<double(size_t, size_t)> estimate_test_score;
+  std::function<double(size_t, size_t)> estimate_test_score; ///< Estimates test score
 
-  emp::vector<bool> pop_training_coverage;
-  emp::vector<double> org_aggregate_scores;
-  emp::vector<size_t> org_training_coverage;  ///< Organism coverage of training cases
-  emp::vector<size_t> org_num_training_cases; ///< Number of training cases organism has been evaluated against
-  emp::vector< emp::vector<double> > org_training_scores;   ///< Test scores for each organism
-  emp::vector< emp::vector<bool> > org_training_evaluations; ///< Which test cases has each organism been evaluated on?
+  emp::vector<bool> pop_training_coverage;    ///< Per-trait population coverage
+  emp::vector<double> org_aggregate_scores;   ///< Per-organism aggregate scores (using estimated score)
+  emp::vector<size_t> org_training_coverage;  ///< Per-organism training case coverage
+  emp::vector<size_t> org_num_training_cases; ///< Per-organism number of training cases organism has been evaluated against
+  emp::vector< emp::vector<double> > org_training_scores;    ///< Per-organism, scores for each training case
+  emp::vector< emp::vector<bool> > org_training_evaluations; ///< Per-organism, evaluated on training case?
 
-  utils::GroupManager org_groupings;
-  utils::GroupManager test_groupings;
+  utils::GroupManager org_groupings;    ///< Manages organism groupings. # org groupings should equal # test groupings
+  utils::GroupManager test_groupings;   ///< Manages test groupings. # org groupings should equal # organism groupings
 
-  emp::vector<size_t> all_training_case_ids;
-  emp::Ptr<selection::BaseSelect> selector = nullptr;
-  emp::vector<size_t> selected_parent_ids;
+  emp::vector<size_t> all_training_case_ids;            ///< Contains ids of all training cases
+  emp::Ptr<selection::BaseSelect> selector = nullptr;   ///< Pointer to selector
+  emp::vector<size_t> selected_parent_ids;              ///< Contains ids of all selected organisms
 
-  std::function<void(void)> run_selection_routine;
-  selection_fun_t selection_fun;
+  std::function<void(void)> run_selection_routine;      ///< Runs selection (needs to be configured differently depending on whether we're estimating fitness or not). Calls selection_fun.
+  selection_fun_t selection_fun;                        ///< Interface to selection call
 
-  emp::Ptr<systematics_t> systematics_ptr = nullptr;
-
+  emp::Ptr<systematics_t> systematics_ptr = nullptr;    ///< Pointer to phylogeny tracker
 
   // -- Output --
-  std::string output_dir;
+  std::string output_dir; ///< Directory where we dump output
 
-  emp::Ptr<emp::DataFile> summary_file_ptr = nullptr;
-  emp::Ptr<emp::DataFile> phylodiversity_file_ptr = nullptr;
-  emp::Ptr<emp::DataFile> elite_file_ptr = nullptr;
+  emp::Ptr<emp::DataFile> summary_file_ptr = nullptr;         ///< Manages summary output file
+  emp::Ptr<emp::DataFile> phylodiversity_file_ptr = nullptr;  ///< Manages phylodiversity output file
+  emp::Ptr<emp::DataFile> elite_file_ptr = nullptr;           ///< Manages elite output file
 
-  SelectedStatistics selection_stats;
+  SelectedStatistics selection_stats; ///< Utility struct that manages selection statistics
 
   void Setup();
   void SetupProblem();
@@ -244,7 +242,11 @@ public:
     if (elite_file_ptr != nullptr) { elite_file_ptr.Delete(); }
   }
 
+  /// @brief Run one step of evolutionary algorithm. Must configure world first.
   void RunStep();
+
+  /// @brief Run evolutionary algorithm forward until configured stopping condition.
+  //         Must configure world first.
   void Run();
 
   const config_t& GetConfig() const { return config; }
@@ -257,12 +259,14 @@ public:
 };
 
 void ProgSynthWorld::RunStep() {
+  emp_assert(world_configured);
   DoEvaluation();
   DoSelection();
   DoUpdate();
 }
 
 void ProgSynthWorld::Run() {
+  emp_assert(world_configured);
   while (!stop_run()) {
     RunStep();
   }
@@ -291,7 +295,9 @@ void ProgSynthWorld::DoEvaluation() {
 
   // Evaluate each organism
   for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
+    begin_org_evaluation_sig.Trigger(org_id);
     do_org_evaluation_sig.Trigger(org_id);
+    end_org_evaluation_sig.Trigger(org_id);
   }
 
   // Estimate aggregate fitness for each organism
@@ -621,6 +627,9 @@ void ProgSynthWorld::SetupEvaluation() {
         org_training_evaluations[org_id].end(),
         false
       );
+      // Reset phenotype
+      auto& org = GetOrg(org_id);
+      org.GetPhenotype().Reset(total_training_cases);
     }
   );
 
@@ -636,9 +645,6 @@ void ProgSynthWorld::SetupEvaluation() {
 
   begin_program_eval_sig.AddAction(
     [this](org_t& org) {
-      // Reset phenotype
-      phenotype_t& phen = org.GetPhenotype();
-      phen.Reset(total_training_cases);
       // Load program onto evaluation hardware unit
       eval_hardware->SetProgram(org.GetGenome().GetProgram());
     }
