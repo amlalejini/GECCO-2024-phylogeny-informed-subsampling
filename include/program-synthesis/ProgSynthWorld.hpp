@@ -44,15 +44,16 @@
 
 namespace psynth {
 
-// TODO - move these into internal namespace
+namespace world_defs {
+
 constexpr size_t TAG_SIZE = 32;
 constexpr size_t FUNC_NUM_TAGS = 1;
 constexpr size_t INST_TAG_CNT = 1;
 constexpr size_t INST_ARG_CNT = 3;
-using tag_t = emp::BitSet<TAG_SIZE>;
-using inst_arg_t = int;
-using program_t = sgp::cpu::lfunprg::LinearFunctionsProgram<tag_t, inst_arg_t>;
-using ORGANISM_T = ProgSynthOrg<program_t>;
+using TAG_T = emp::BitSet<TAG_SIZE>;
+using INST_ARG_T = int;
+using PROGRAM_T = sgp::cpu::lfunprg::LinearFunctionsProgram<TAG_T, INST_ARG_T>;
+using ORGANISM_T = ProgSynthOrg<PROGRAM_T>;
 using MEMORY_MODEL_T = sgp::cpu::mem::BasicMemoryModel;
 using MATCHBIN_T = emp::MatchBin<
   size_t,
@@ -61,16 +62,21 @@ using MATCHBIN_T = emp::MatchBin<
   emp::NopRegulator
 >;
 
-class ProgSynthWorld : public emp::World<ORGANISM_T> {
+}
+
+class ProgSynthWorld : public emp::World<world_defs::ORGANISM_T> {
 public:
   // --- Type aliases --
-  using org_t = ORGANISM_T;
+  using org_t = world_defs::ORGANISM_T;
   using base_t = emp::World<org_t>;
   using genome_t = typename org_t::genome_t;
   using phenotype_t = typename org_t::phenotype_t;
-  using hw_memory_model_t = MEMORY_MODEL_T;
-  using hw_matchbin_t = MATCHBIN_T;
+  using hw_memory_model_t = world_defs::MEMORY_MODEL_T;
+  using hw_matchbin_t = world_defs::MATCHBIN_T;
+  using program_t = world_defs::PROGRAM_T;
   using inst_t = typename program_t::inst_t;
+  using inst_arg_t = world_defs::INST_ARG_T;
+  using tag_t = world_defs::TAG_T;
   using hardware_t = sgp::cpu::LinearFunctionsProgramCPU<
     hw_memory_model_t,
     inst_arg_t,
@@ -97,6 +103,11 @@ public:
   using taxon_t = typename systematics_t::taxon_t;
 
   using config_t = ProgSynthConfig;
+
+  static constexpr size_t TAG_SIZE = world_defs::TAG_SIZE;
+  static constexpr size_t FUNC_NUM_TAGS = world_defs::FUNC_NUM_TAGS;
+  static constexpr size_t INST_TAG_CNT = world_defs::INST_TAG_CNT;
+  static constexpr size_t INST_ARG_CNT = world_defs::INST_ARG_CNT;
 
 protected:
   const config_t& config;
@@ -933,7 +944,7 @@ void ProgSynthWorld::SetupFitFunEstimator_Ancestor() {
     auto ancestor = phylo::NearestAncestorWithTraitEval(
       taxon_ptr,
       test_id,
-      config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
     if (ancestor) {
@@ -984,7 +995,7 @@ void ProgSynthWorld::SetupFitFunEstimator_Relative() {
     auto ancestor = phylo::NearestRelativeWithTraitEval(
       taxon_ptr,
       test_id,
-      config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
     if (ancestor) {
