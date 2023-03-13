@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "emp/base/vector.hpp"
+#include "emp/math/Random.hpp"
 
 namespace utils {
 
@@ -14,15 +15,15 @@ public:
   friend class GroupManager;
 protected:
   size_t group_id = 0;
-  size_t group_size = 0;
+  // size_t group_size = 0;
   emp::vector<size_t> member_ids;
 
 public:
   Grouping() = default;
 
   void Resize(size_t size, size_t id=0) {
-    group_size = size;
-    member_ids.resize(group_size, id);
+    // group_size = size;
+    member_ids.resize(size, id);
   }
 
   size_t GetGroupID() const {
@@ -54,7 +55,7 @@ public:
 
 
 protected:
-
+  emp::Random& random;
   emp::vector<size_t> possible_ids;       ///< List of all possible entity IDS (things to be grouped)
   emp::vector<size_t> member_group_assignments;  ///< Group ID of each entity.
   emp::vector<Grouping> groupings;
@@ -64,6 +65,8 @@ protected:
   bool dirty_groups = true;
 
 public:
+
+  GroupManager(emp::Random& rnd) : random(rnd) { ; }
 
   void SetPossibleIDs(const emp::vector<size_t>& ids) {
     // Update possible ids
@@ -89,6 +92,11 @@ public:
 
   const Grouping& GetGroup(size_t group_id) const {
     return groupings[group_id];
+  }
+
+  size_t GetMemberGroupID(size_t member_id) const {
+    emp_assert(member_id < member_group_assignments.size());
+    return member_group_assignments[member_id];
   }
 
   /// @brief Configure SingleGrouping mode.
@@ -119,6 +127,42 @@ public:
       emp_assert(groupings.size() == 1);
       emp_assert(groupings.back().GetMembers().size() == possible_ids.size());
       /* Do nothing! */
+    };
+  }
+
+  void SetCohortsMode(size_t num_cohorts) {
+    emp_assert(num_cohorts > 0);
+    // Compute cohort sizes
+    const size_t total_members = possible_ids.size();
+    const size_t base_cohort_size = (size_t)(total_members / num_cohorts);
+    size_t leftover_members = total_members - (base_cohort_size * num_cohorts);
+    groupings.resize(num_cohorts);
+    for (size_t i = 0; i < groupings.size(); ++i) {
+      size_t group_size = base_cohort_size;
+      if (leftover_members > 0) {
+        ++group_size;
+        --leftover_members;
+      }
+      auto& group = groupings[i];
+      group.SetGroupID(i);
+      group.Resize(group_size, 0);
+    }
+
+    assign_groupings = [this]() {
+      // Shuffle all possible test ids
+      emp::Shuffle(random, possible_ids);
+      // Assign to cohorts in shuffled order
+      size_t cur_pos = 0;
+      for (size_t cohort_id = 0; cohort_id < groupings.size(); ++cohort_id) {
+        auto& cohort = groupings[cohort_id];
+        for (size_t member_i = 0; member_i < cohort.GetSize(); ++member_i) {
+          const size_t member_id = possible_ids[cur_pos];
+          cohort.member_ids[member_i] = member_id;
+          member_group_assignments[member_i] = cohort.GetGroupID();
+          ++cur_pos;
+        }
+      }
+      emp_assert(cur_pos == possible_ids.size());
     };
   }
 

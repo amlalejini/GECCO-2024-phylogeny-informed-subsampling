@@ -31,6 +31,9 @@ EMP_BUILD_CONFIG(ProgSynthConfig,
   VALUE(EVAL_MAX_PHYLO_SEARCH_DEPTH, int, -1, "Maximum phylogeny search depth when estimating fitness."),
   VALUE(EVAL_CPU_CYCLES_PER_TEST, size_t, 128, "Maximum number of CPU cycles programs are run for single test case."),
 
+  GROUP(EVALUATION_COHORT, "Cohort evaluation settings"),
+  VALUE(NUM_COHORTS, size_t, 2, "How many cohorts should we divide the tests and organisms into?"),
+
   GROUP(SGP_CPU, "SignalGP Virtual CPU"),
   VALUE(MAX_ACTIVE_THREAD_CNT, size_t, 8, "Maximum number of active threads that can run simultaneously on a SGP virtual CPU."),
   VALUE(MAX_THREAD_CAPACITY, size_t, 16, "Maximum thread capacity."),

@@ -37,6 +37,8 @@
 
 // TODO - implement program json output / input
 
+// TODO - rename Grouping.hpp to GroupManager.hpp
+
 // TODO - re-organize problem manager <==> world interactions to use world signals
 // i.e., pass the world to the problem manager configure, allow it to wire up functions to OnXSetup signals.
 
@@ -160,8 +162,8 @@ protected:
   emp::vector< emp::vector<double> > org_training_scores;    ///< Per-organism, scores for each training case
   emp::vector< emp::vector<bool> > org_training_evaluations; ///< Per-organism, evaluated on training case?
 
-  utils::GroupManager org_groupings;    ///< Manages organism groupings. # org groupings should equal # test groupings
-  utils::GroupManager test_groupings;   ///< Manages test groupings. # org groupings should equal # organism groupings
+  emp::Ptr<utils::GroupManager> org_groupings = nullptr;    ///< Manages organism groupings. # org groupings should equal # test groupings
+  emp::Ptr<utils::GroupManager> test_groupings = nullptr;   ///< Manages test groupings. # org groupings should equal # organism groupings
 
   emp::vector<size_t> all_training_case_ids;            ///< Contains ids of all training cases
   emp::Ptr<selection::BaseSelect> selector = nullptr;   ///< Pointer to selector
@@ -245,6 +247,8 @@ public:
     if (phylodiversity_file_ptr != nullptr) { phylodiversity_file_ptr.Delete(); }
     if (summary_file_ptr != nullptr) { summary_file_ptr.Delete(); }
     if (elite_file_ptr != nullptr) { elite_file_ptr.Delete(); }
+    if (org_groupings != nullptr) { org_groupings.Delete(); }
+    if (test_groupings != nullptr) { test_groupings.Delete(); }
   }
 
   /// @brief Run one step of evolutionary algorithm. Must configure world first.
@@ -291,8 +295,8 @@ void ProgSynthWorld::DoEvaluation() {
   approx_max_fit = 0.0;
 
   // Update test and organism groupings
-  org_groupings.UpdateGroupings();
-  test_groupings.UpdateGroupings();
+  org_groupings->UpdateGroupings();
+  test_groupings->UpdateGroupings();
 
   // Reset population-level training case coverage
   std::fill(
@@ -475,10 +479,11 @@ void ProgSynthWorld::SetupProblem() {
     std::cout << "Unknown problem: " << config.PROBLEM() << std::endl;
     exit(-1);
   }
+  // Configure the problem via the problem manager
   problem_manager.ConfigureProblem(config.PROBLEM());
   problem_manager.LoadTrainingSet(config.TRAINING_SET_PATH());
   problem_manager.LoadTestingSet(config.TESTING_SET_PATH());
-  // TODO - be sure to output training / testing set sizes in cfg snapshot
+  // Print out loaded training/testing set sizes
   std::cout << "  - Loaded training set size: " << problem_manager.GetTrainingSetSize() << std::endl;
   std::cout << "  - Loaded testing set size: " << problem_manager.GetTestingSetSize() << std::endl;
 }
@@ -488,7 +493,7 @@ void ProgSynthWorld::SetupInstructionLibrary() {
   // Reset instruction library
   inst_lib.Clear();
   sgp::inst::lfpbm::InstructionAdder<hardware_t> inst_adder;
-  // Add default instructions
+  // Add default instructions (except Fork and Terminate)
   inst_adder.AddAllDefaultInstructions(
     inst_lib,
     {"Fork", "Terminate"}
@@ -597,6 +602,16 @@ void ProgSynthWorld::SetupMutator() {
 
 void ProgSynthWorld::SetupEvaluation() {
   std::cout << "Configuring evaluation (mode: " << config.EVAL_MODE() << ")" << std::endl;
+  if (org_groupings != nullptr) {
+    org_groupings.Delete();
+  }
+  if (test_groupings != nullptr) {
+    test_groupings.Delete();
+  }
+
+  org_groupings = emp::NewPtr<utils::GroupManager>(*random_ptr);
+  test_groupings = emp::NewPtr<utils::GroupManager>(*random_ptr);
+
   // Total tests is equal to number of tests we loaded into the testing set.
   total_training_cases = problem_manager.GetTrainingSetSize();
   // Allocate space for tracking organism training coverage
@@ -630,7 +645,7 @@ void ProgSynthWorld::SetupEvaluation() {
     possible_org_ids.end(),
     0
   );
-  org_groupings.SetPossibleIDs(possible_org_ids);
+  org_groupings->SetPossibleIDs(possible_org_ids);
   // std::cout << "Possible org ids: " << org_groupings.GetPossibleIDs() << std::endl;
 
   // Setup test group manager
@@ -640,7 +655,7 @@ void ProgSynthWorld::SetupEvaluation() {
     all_training_case_ids.end(),
     0
   );
-  test_groupings.SetPossibleIDs(all_training_case_ids);
+  test_groupings->SetPossibleIDs(all_training_case_ids);
   // std::cout << "Possible training case ids: " << test_groupings.GetPossibleIDs() << std::endl;
 
   // Clear out all actions associated with organism evaluation.
@@ -653,7 +668,7 @@ void ProgSynthWorld::SetupEvaluation() {
   do_program_test_sig.Clear();
   end_program_test_sig.Clear();
 
-  // TODO - configure organism evaluation
+  // Configure organism evaluation signals
   begin_org_evaluation_sig.AddAction(
     [this](size_t org_id) {
       // 0-out aggregate score
@@ -711,8 +726,7 @@ void ProgSynthWorld::SetupEvaluation() {
       eval_hardware->ResetMatchBin();      // Reset the matchbin between tests
       eval_hardware->ResetHardwareState(); // Reset hardware execution state information (global memory, threads, etc)
       eval_hardware->GetCustomComponent().Reset(); // Reset custom component
-      // TODO - anything else needs to happen before test eval?
-      // TODO - load test input
+      // Load test input via problem manager
       problem_manager.InitCase(
         *eval_hardware,
         org,
@@ -772,7 +786,6 @@ void ProgSynthWorld::SetupEvaluation() {
   }
 
   // Configure the fitness functions (per-organism, per-test)
-  // TODO - have test scores in one place? (organism or here)
   fit_fun_set.clear();
   fit_fun_set.resize(config.POP_SIZE(), emp::vector<std::function<double(void)>>(0));
   for (size_t org_id = 0; org_id < config.POP_SIZE(); ++org_id) {
@@ -812,19 +825,19 @@ void ProgSynthWorld::SetupEvaluation_Full() {
   emp_assert(total_training_cases > 0);
 
   // Initialize the test groupings with one group that holds all tests.
-  test_groupings.SetSingleGroupMode();
+  test_groupings->SetSingleGroupMode();
   // Initialize the organism groupings with one group that holds all organisms.
-  org_groupings.SetSingleGroupMode();
-  emp_assert(test_groupings.GetNumGroups() == org_groupings.GetNumGroups());
+  org_groupings->SetSingleGroupMode();
+  emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
 
   // Configure organism evaluation
   do_org_evaluation_sig.AddAction(
     [this](size_t org_id) {
       emp_assert(org_id < GetSize());
-      emp_assert(test_groupings.GetNumGroups() == 1);
+      emp_assert(test_groupings->GetNumGroups() == 1);
       auto& org = GetOrg(org_id);
       begin_program_eval_sig.Trigger(org);
-      const auto& test_group = test_groupings.GetGroup(0);
+      const auto& test_group = test_groupings->GetGroup(0);
       const auto& test_ids = test_group.GetMembers();
       for (size_t i = 0; i < test_ids.size(); ++i) {
         const size_t test_id = test_ids[i]; // Get test id from group.
@@ -849,8 +862,55 @@ void ProgSynthWorld::SetupEvaluation_Full() {
 }
 
 void ProgSynthWorld::SetupEvaluation_Cohort() {
-  // TODO
-  emp_assert(false);
+  std::cout << "Configuring evaluation mode: cohort" << std::endl;
+  emp_assert(total_training_cases > 0);
+  emp_assert(config.NUM_COHORTS() > 0);
+  emp_assert(config.POP_SIZE() > 0);
+
+  const size_t num_cohorts = config.NUM_COHORTS();
+  // Configure test groupings
+  test_groupings->SetCohortsMode(num_cohorts);
+  std::cout << "Number of cohorts: " << num_cohorts << std::endl;
+  std::cout << "Test cohorts:" << std::endl;
+  for (size_t group_id = 0; group_id < test_groupings->GetNumGroups(); ++group_id) {
+    std::cout << "  Test group " << group_id << " size: " << test_groupings->GetGroup(group_id).GetSize() << std::endl;
+  }
+
+  // Compute organism cohort sizes
+  org_groupings->SetCohortsMode(num_cohorts);
+  std::cout << "Organism cohorts:" << std::endl;
+  for (size_t group_id = 0; group_id < org_groupings->GetNumGroups(); ++group_id) {
+    std::cout << "  Org group " << group_id << " size: " << org_groupings->GetGroup(group_id).GetSize() << std::endl;
+  }
+
+  do_org_evaluation_sig.AddAction(
+    [this](size_t org_id) {
+      emp_assert(org_id < GetSize());
+      auto& org = GetOrg(org_id);
+      const size_t group_id = org_groupings->GetMemberGroupID(org_id);
+      // Trigger begin program evaluation signal
+      begin_program_eval_sig.Trigger(org);
+      // Evaluate organism on all tests in appropriate group
+      emp_assert(group_id < test_groupings->GetNumGroups());
+      emp_assert(group_id < org_groupings->GetNumGroups());
+      auto& test_group = test_groupings->GetGroup(group_id);
+      const auto& cohort_test_ids = test_group.GetMembers();
+      for (size_t i = 0; i < cohort_test_ids.size(); ++i) {
+        const size_t test_id = cohort_test_ids[i];
+        emp_assert(test_id < org.GetPhenotype().GetTestScores().size());
+        begin_program_test_sig.Trigger(org, test_id, true);
+        do_program_test_sig.Trigger(org, test_id);
+        end_program_test_sig.Trigger(org, test_id, true);
+        ++total_test_evaluations;
+      }
+    }
+  );
+
+  check_org_solution = [this](size_t org_id) {
+    // TODO - implement check org solution for cohort evaluation
+    emp_assert(false);
+    return false;
+  };
 }
 
 void ProgSynthWorld::SetupEvaluation_DownSample() {
@@ -961,14 +1021,14 @@ void ProgSynthWorld::SetupFitFunEstimator_None() {
   run_selection_routine = [this]() {
     // Resize parent ids to hold pop_size parents
     selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings.GetNumGroups() == org_groupings.GetNumGroups());
-    const size_t num_groups = org_groupings.GetNumGroups();
+    emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+    const size_t num_groups = org_groupings->GetNumGroups();
     // For each grouping, select a number of parents equal to group size
     size_t num_selected = 0;
     for (size_t group_id = 0; group_id < num_groups; ++group_id) {
 
-      auto& org_group = org_groupings.GetGroup(group_id);
-      auto& test_group = test_groupings.GetGroup(group_id);
+      auto& org_group = org_groupings->GetGroup(group_id);
+      auto& test_group = test_groupings->GetGroup(group_id);
       const size_t n = org_group.GetSize();
       auto& selected = selection_fun(
         n,
@@ -1015,12 +1075,12 @@ void ProgSynthWorld::SetupFitFunEstimator_Ancestor() {
   run_selection_routine = [this]() {
     // Resize parent ids to hold pop_size parents
     selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings.GetNumGroups() == org_groupings.GetNumGroups());
-    const size_t num_groups = org_groupings.GetNumGroups();
+    emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+    const size_t num_groups = org_groupings->GetNumGroups();
     // For each grouping, select a number of parents equal to group size
     size_t num_selected = 0;
     for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-      auto& org_group = org_groupings.GetGroup(group_id);
+      auto& org_group = org_groupings->GetGroup(group_id);
       const size_t n = org_group.GetSize();
       // Run selection, but use all possible test ids
       auto& selected = selection_fun(
@@ -1066,12 +1126,12 @@ void ProgSynthWorld::SetupFitFunEstimator_Relative() {
   run_selection_routine = [this]() {
     // Resize parent ids to hold pop_size parents
     selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings.GetNumGroups() == org_groupings.GetNumGroups());
-    const size_t num_groups = org_groupings.GetNumGroups();
+    emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+    const size_t num_groups = org_groupings->GetNumGroups();
     // For each grouping, select a number of parents equal to group size
     size_t num_selected = 0;
     for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-      auto& org_group = org_groupings.GetGroup(group_id);
+      auto& org_group = org_groupings->GetGroup(group_id);
       const size_t n = org_group.GetSize();
       // Run selection, but use all possible test ids
       auto& selected = selection_fun(
@@ -1282,7 +1342,7 @@ void ProgSynthWorld::SnapshotConfig() {
     std::make_pair("sgp_program_type", "LinearFunctionsProgram"),
     std::make_pair("matchbin_metric", "HammingMetric"),
     std::make_pair("matchbin_selector", "RankedSelector"),
-    std::make_pair("total_training_cases", emp::to_string(total_training_cases)),
+    std::make_pair("total_training_cases", emp::to_string(problem_manager.GetTrainingSetSize())),
     std::make_pair("total_testing_cases", emp::to_string(problem_manager.GetTestingSetSize()))
   };
 
