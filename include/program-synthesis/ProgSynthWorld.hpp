@@ -6,6 +6,7 @@
 #include <functional>
 #include <iostream>
 #include <sys/stat.h>
+#include <limits>
 
 #include "emp/Evolve/World.hpp"
 #include "emp/Evolve/Systematics.hpp"
@@ -125,6 +126,9 @@ protected:
   size_t total_training_cases = 0;   ///< Tracks the total number of training cases being used
   size_t total_test_evaluations = 0; ///< Tracks the total number of "test case" evaluations across all organisms since the beginning of the run.
   bool found_solution = false;
+
+  size_t approx_max_fit_id = 0;     ///< Tracks the "elite" organism each generation (based on trait estimates)
+  double approx_max_fit = 0.0;      ///< Tracks the "elite" organism aggregate score each generation (based on trait estimates)
 
   std::function<bool(void)> stop_run;               ///< Returns whether we've hit configured stopping condition
   std::function<bool(void)> is_final_update;        ///< Returns whether we're on the final update for this run
@@ -282,12 +286,15 @@ void ProgSynthWorld::DoEvaluation() {
   emp_assert(org_training_coverage.size() == config.POP_SIZE());
   emp_assert(org_num_training_cases.size() == config.POP_SIZE());
 
-  // TODO - reset true max fitness organism
+  // Reset ID of true max fitness organism
+  approx_max_fit_id = config.POP_SIZE() + 1;
+  approx_max_fit = 0.0;
 
   // Update test and organism groupings
   org_groupings.UpdateGroupings();
   test_groupings.UpdateGroupings();
-  // Reset things...
+
+  // Reset population-level training case coverage
   std::fill(
     pop_training_coverage.begin(),
     pop_training_coverage.end(),
@@ -296,8 +303,41 @@ void ProgSynthWorld::DoEvaluation() {
 
   // Evaluate each organism
   for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
+    // --- Begin organism evaluation: ---
+    // - Reset org aggregate score (world)
+    // - Reset org training coverage (world)
+    // - Reset org num training cases (world)
+    // - Reset org training scores (world)
+    // - Reset org phenotype (org)
     begin_org_evaluation_sig.Trigger(org_id);
+
+    // --- Do organism evaluation: ---
+    // - Trigger begin_program_eval_sig
+    //   - Load program into evaluation hardware
+    // - For each test (in grouping):
+    //   - Trigger begin_program_test_sig
+    //     - Reset eval hardware matchbin
+    //     - Reset eval hardwdare state (ResetHardwareState)
+    //     - Reset eval hardware custom component
+    //     - Use problem manager to load test input onto hardware
+    //   - Trigger do_program_test_sig
+    //     - Execute program for configured number of CPU cycles
+    //   - Trigger end_program_test_sig
+    //     - Use problem manager to evaluate hardware output
+    //     - org.UpdatePhenotype()
+    //     - Update world performance tracking:
+    //       - org_training_scores
+    //       - org_training_evaluations
+    //       - org_training_coverage
+    //       - org_num_training_cases
+    //       - pop_training_coverage
+    // - Increment total test evaluations
     do_org_evaluation_sig.Trigger(org_id);
+
+    // --- End organism evaluation: ---
+    // - Check if need to update approx_max_fit org
+    // TODO - check if need to check candidate against testing set
+    // Record taxon information
     end_org_evaluation_sig.Trigger(org_id);
   }
 
@@ -310,6 +350,13 @@ void ProgSynthWorld::DoEvaluation() {
       est_agg_score += fit_fun_set[org_id][test_id]();
     }
     org_aggregate_scores[org_id] = est_agg_score;
+
+    // Update identity of elite organism if necessary
+    if ((est_agg_score > approx_max_fit) || (approx_max_fit_id >= config.POP_SIZE()) ) {
+      approx_max_fit = est_agg_score;
+      approx_max_fit_id = org_id;
+    }
+
   }
 
 }
@@ -329,7 +376,7 @@ void ProgSynthWorld::DoUpdate() {
   emp_assert(config.PRINT_INTERVAL() > 0);
   const size_t cur_update = GetUpdate();
   const bool final_update = is_final_update();
-  const bool print_interval = !(cur_update % config.PRINT_INTERVAL()) || final_update;
+  const bool print_interval = (config.PRINT_INTERVAL() == 1) || (!(cur_update % config.PRINT_INTERVAL()) || final_update);
   const bool summary_data_interval = !(cur_update % config.OUTPUT_SUMMARY_DATA_INTERVAL()) || final_update;
   const bool snapshot_interval = !(cur_update % config.SNAPSHOT_INTERVAL()) || final_update;
 
@@ -353,8 +400,7 @@ void ProgSynthWorld::DoUpdate() {
   // (3) Print status
   if (print_interval) {
     std::cout << "update: " << GetUpdate() << "; ";
-    // TODO - add fitness
-    // std::cout << "best score (" << true_max_fit_org_id << "): " << GetOrg(true_max_fit_org_id).GetAggregateScore();
+    std::cout << "best score (" << approx_max_fit_id << "): " << approx_max_fit;
     std::cout << std::endl;
   }
 
@@ -636,11 +682,20 @@ void ProgSynthWorld::SetupEvaluation() {
 
   end_org_evaluation_sig.AddAction(
     [this](size_t org_id) {
+      auto& org = GetOrg(org_id);
+
       // TODO - check if candidate for testing against testing set
       // - Need to check if num_passes == number of tests evaluated on
       // - If so, add to vector of ids to be tested whether they are solutions
       // - Allow each evaluation mode to implement the actual testing
-      // TODO - record taxon information
+
+      // Record taxon information
+      taxon_t& taxon = *(systematics_ptr->GetTaxonAt(org_id));
+      taxon.GetData().RecordFitness(org.GetPhenotype().GetAggregateScore());
+      taxon.GetData().RecordPhenotype(
+        org.GetPhenotype().GetTestScores(),
+        org_training_evaluations[org_id]
+      );
     }
   );
 
@@ -694,7 +749,6 @@ void ProgSynthWorld::SetupEvaluation() {
         test_id,
         training
       );
-
       // Record result on organism phenotype
       org.UpdatePhenotype(test_id, result);
       // World performance tracking

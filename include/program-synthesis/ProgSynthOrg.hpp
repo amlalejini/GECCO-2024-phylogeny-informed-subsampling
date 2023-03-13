@@ -130,6 +130,10 @@ public:
     return test_evaluated[test_id];
   }
 
+  const emp::vector<double>& GetTestScores() const {
+    return test_scores;
+  }
+
 };
 
 template<typename PROGRAM_T>
