@@ -23,7 +23,7 @@
 #include "sgp/inst/lfpbm/InstructionAdder.hpp"
 
 #include "../phylogeny/phylogeny_utils.hpp"
-#include "../utility/Grouping.hpp"
+#include "../utility/GroupManager.hpp"
 #include "../utility/printing.hpp"
 #include "../selection/SelectionSchemes.hpp"
 
