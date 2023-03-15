@@ -37,13 +37,15 @@
 
 // TODO - implement program json output / input
 
-// TODO - rename Grouping.hpp to GroupManager.hpp
-
 // TODO - re-organize problem manager <==> world interactions to use world signals
 // i.e., pass the world to the problem manager configure, allow it to wire up functions to OnXSetup signals.
 
 // TODO - alternatively, give the problem manager a reference to the world and
 //        implement any necessary accessors
+
+// TODO - add optimized phylogeny search options
+
+// TODO - stop after solution found
 
 namespace psynth {
 
@@ -156,6 +158,7 @@ protected:
   std::function<double(size_t, size_t)> estimate_test_score; ///< Estimates test score
 
   emp::vector<bool> pop_training_coverage;    ///< Per-trait population coverage
+  double pop_num_training_cases_covered;
   emp::vector<double> org_aggregate_scores;   ///< Per-organism aggregate scores (using estimated score)
   emp::vector<size_t> org_training_coverage;  ///< Per-organism training case coverage
   emp::vector<size_t> org_num_training_cases; ///< Per-organism number of training cases organism has been evaluated against
@@ -305,6 +308,8 @@ void ProgSynthWorld::DoEvaluation() {
     false
   );
 
+  pop_num_training_cases_covered = 0.0;
+
   // Evaluate each organism
   for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
     // --- Begin organism evaluation: ---
@@ -391,8 +396,14 @@ void ProgSynthWorld::DoUpdate() {
       selected_parent_ids,
       *this
     );
+    pop_num_training_cases_covered = std::accumulate(
+      pop_training_coverage.begin(),
+      pop_training_coverage.end(),
+      0
+    );
+    // Update summary file
+    summary_file_ptr->Update();
     // TODO - Update files
-    // summary_file_ptr->Update();
     // elite_file_ptr->Update();
     // phylodiversity_file_ptr->Update();
   }
@@ -1299,8 +1310,56 @@ void ProgSynthWorld::SetupDataCollection_Summary() {
   summary_file_ptr = emp::NewPtr<emp::DataFile>(
     output_dir + "summary.csv"
   );
-
-  // TODO
+  // update
+  summary_file_ptr->AddVar(update, "update", "Generation");
+  // total training cases
+  summary_file_ptr->AddVar(
+    total_test_evaluations,
+    "evaluations",
+    "Test evaluations so far"
+  );
+  // pop-wide trait coverage
+  summary_file_ptr->AddVar(
+    pop_num_training_cases_covered,
+    "pop_training_coverage",
+    "True population-wide training case coverage"
+  );
+  // approx max aggregate score
+  summary_file_ptr->AddFun<double>(
+    [this]() -> double {
+      return approx_max_fit;
+    },
+    "max_approx_agg_score",
+    "Maximum approximated aggregate score"
+  );
+  // num unique selected
+  summary_file_ptr->AddVar(
+    selection_stats.num_unique_cand_selected,
+    "num_unique_selected",
+    "Number of unique candidates selected to be parents"
+  );
+  // entropy selected ids
+  summary_file_ptr->AddVar(
+    selection_stats.entropy_cand_selected,
+    "entropy_selected_ids",
+    "Entropy of candidate IDs selected"
+  );
+  // parents trait coverage
+  summary_file_ptr->AddVar(
+    selection_stats.parents_num_tests_covered,
+    "parents_training_coverage",
+    "True training case coverage of selected parents"
+  );
+  // trait coverage loss
+  summary_file_ptr->AddFun<size_t>(
+    [this]() {
+      emp_assert(pop_num_training_cases_covered >= selection_stats.parents_num_tests_covered);
+      return pop_num_training_cases_covered - selection_stats.parents_num_tests_covered;
+    },
+    "training_coverage_loss",
+    "(true) population training coverage - (true) parent training coverage"
+  );
+  summary_file_ptr->PrintHeaderKeys();
 }
 
 void ProgSynthWorld::SetupDataCollection_Elite() {
