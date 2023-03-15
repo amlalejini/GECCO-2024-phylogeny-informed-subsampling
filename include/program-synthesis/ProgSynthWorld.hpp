@@ -404,7 +404,7 @@ void ProgSynthWorld::DoUpdate() {
     // Update summary file
     summary_file_ptr->Update();
     // TODO - Update files
-    // elite_file_ptr->Update();
+    elite_file_ptr->Update();
     // phylodiversity_file_ptr->Update();
   }
 
@@ -1367,8 +1367,99 @@ void ProgSynthWorld::SetupDataCollection_Elite() {
   elite_file_ptr = emp::NewPtr<emp::DataFile>(
     output_dir + "elite.csv"
   );
-
   // TODO
+  elite_file_ptr->AddVar(update, "update", "Generation");
+  elite_file_ptr->AddVar(
+    total_test_evaluations,
+    "evaluations",
+    "Test evaluations so far"
+  );
+  // ID
+  elite_file_ptr->AddVar(
+    approx_max_fit_id,
+    "elite_id",
+    "Population ID of the elite organism"
+  );
+  // Approximate aggregate fitness
+  elite_file_ptr->AddVar(
+    approx_max_fit,
+    "approx_agg_score",
+    "Elite organism's approximate aggregate score"
+  );
+  // True aggregate fitness
+  elite_file_ptr->AddFun<double>(
+    [this]() -> double {
+      const auto& org = GetOrg(approx_max_fit_id);
+      return org.GetPhenotype().GetAggregateScore();
+    },
+    "eval_agg_score",
+    "Elite organism's evaluated aggregate score"
+  );
+  // org_training_coverage
+  elite_file_ptr->AddFun<size_t>(
+    [this]() -> size_t {
+      return org_training_coverage[approx_max_fit_id];
+    },
+    "eval_training_coverage",
+    "Coverage on evaluated training cases"
+  );
+  // org_num_training_cases
+  elite_file_ptr->AddFun<size_t>(
+    [this]() -> size_t {
+      return org_num_training_cases[approx_max_fit_id];
+    },
+    "num_training_cases_evaluated",
+    "Number of training cases that this organism was evaluated against"
+  );
+  // Org training cases evaluated on
+  elite_file_ptr->AddFun<std::string>(
+    [this]() -> std::string {
+      std::stringstream ss;
+      utils::PrintVector(
+        ss,
+        org_training_evaluations[approx_max_fit_id],
+        true
+      );
+      return ss.str();
+    },
+    "org_training_evaluations",
+    "Training cases this organism was evaluated against"
+  );
+  // Approximate training scores
+  elite_file_ptr->AddFun<std::string>(
+    [this]() -> std::string {
+      std::stringstream ss;
+      utils::PrintVector(
+        ss,
+        org_training_scores[approx_max_fit_id],
+        true
+      );
+      return ss.str();
+    },
+    "approx_training_scores",
+    "Scores on training cases (approximate where not evaluated)"
+  );
+  // Number of instructions (total)
+  elite_file_ptr->AddFun<size_t>(
+    [this]() -> size_t {
+      auto& org = GetOrg(approx_max_fit_id);
+      return org.GetGenome().GetProgram().GetInstCount();
+    },
+    "num_instructions",
+    "Number of instructions in organism genome"
+  );
+  // Num functions
+  elite_file_ptr->AddFun<size_t>(
+    [this]() -> size_t {
+      auto& org = GetOrg(approx_max_fit_id);
+      return org.GetGenome().GetProgram().GetSize();
+    },
+    "num_functions",
+    "Number of functions in organism genome"
+  );
+  // TODO - genome
+
+  elite_file_ptr->PrintHeaderKeys();
 }
 
 void ProgSynthWorld::SnapshotConfig() {
