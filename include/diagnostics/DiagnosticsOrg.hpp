@@ -36,7 +36,7 @@ protected:
     aggregate_score = std::accumulate(
       phenotype.begin(),
       phenotype.end(),
-      0
+      0.0
     );
   }
 
