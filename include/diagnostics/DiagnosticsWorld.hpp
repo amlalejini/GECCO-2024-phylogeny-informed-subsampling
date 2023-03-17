@@ -115,6 +115,7 @@ protected:
 
   emp::vector< emp::vector<double> > org_test_scores;   ///< Test scores for each organism
   emp::vector< emp::vector<bool> > org_test_evaluations; ///< Which test cases has each organism been evaluated on?
+  emp::vector< emp::vector<bool> > org_test_estimations; ///< Which test cases have been estimated?
 
   emp::vector<size_t> possible_test_ids;
   emp::vector<size_t> possible_pop_ids;
@@ -137,6 +138,7 @@ protected:
   emp::Ptr<systematics_t> systematics_ptr;
 
   size_t total_test_evaluations = 0;  ///< Tracks total number of "test case" evaluations (across all organisms since beginning of run)
+  size_t total_test_estimations = 0;
   std::string output_dir;
 
   size_t true_max_fit_org_id = 0;     ///< Tracks max fit organism (based on 'true' aggregate fitness)
@@ -487,6 +489,7 @@ void DiagnosticsWorld::SetupDataCollection() {
   // Configure summary file
   summary_file_ptr->AddVar(update, "update", "Generation");
   summary_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
+  summary_file_ptr->AddVar(total_test_estimations, "trait_estimations", "Test estimations so far");
   // population-wide trait coverage
   summary_file_ptr->AddFun<size_t>(
     [this]() -> size_t {
@@ -671,6 +674,103 @@ void DiagnosticsWorld::SetupPhylogenyTracking() {
     "genome"
   );
 
+  // *what population members are having the phylogenetic approximation applied,
+  // *what taxon is being used for the approximation, and
+  // *how far they are apart phylogeneticallly.
+
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) {
+      std::stringstream ss;
+      utils::PrintVector(ss, taxon.GetData().traits_evaluated, true);
+      return ss.str();
+    },
+    "traits_evaluated"
+  );
+
+  // -- taxon estimation information --
+  // Attempted estimation
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<bool> estimate_attempts(total_tests, false);
+      for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+        estimate_attempts[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).estimated;
+      }
+      utils::PrintVector(ss, estimate_attempts, true);
+      return ss.str();
+    },
+    "traits_attempted_estimations"
+  );
+
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<bool> trait_estimated(total_tests, false);
+      for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+        trait_estimated[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).estimate_success;
+      }
+      utils::PrintVector(ss, trait_estimated, true);
+      return ss.str();
+    },
+    "traits_successful_estimations"
+  );
+
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<size_t> estimate_source_ids(total_tests, 0);
+      for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+        estimate_source_ids[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).source_taxon_id;
+      }
+      utils::PrintVector(ss, estimate_source_ids, true);
+      return ss.str();
+    },
+    "traits_estimation_source_ids"
+  );
+
+  // Estimation distances
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<size_t> est_dists(total_tests, 0);
+      for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+        est_dists[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).estimation_dist;
+      }
+      utils::PrintVector(ss, est_dists, true);
+      return ss.str();
+    },
+    "traits_estimation_dist"
+  );
+
+  // Estimation scores
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<double> est_scores(total_tests, 0.0);
+      for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+        est_scores[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).estimated_score;
+      }
+      utils::PrintVector(ss, est_scores, true);
+      return ss.str();
+    },
+    "traits_estimated_scores"
+  );
+
   systematics_ptr->AddEvolutionaryDistinctivenessDataNode();
   systematics_ptr->AddPairwiseDistanceDataNode();
   systematics_ptr->AddPhylogeneticDiversityDataNode();
@@ -733,6 +833,12 @@ void DiagnosticsWorld::SetupEvaluation() {
     config.POP_SIZE(),
     emp::vector<bool>(total_tests, false)
   );
+  // Allocate space for tracking orgnaism test estimations
+  org_test_estimations.clear();
+  org_test_estimations.resize(
+    config.POP_SIZE(),
+    emp::vector<bool>(total_tests, false)
+  );
   // Initialize all possible test ids
   possible_test_ids.resize(total_tests, 0);
   std::iota(
@@ -785,6 +891,11 @@ void DiagnosticsWorld::SetupEvaluation() {
       std::fill(
         org_test_evaluations[org_id].begin(),
         org_test_evaluations[org_id].end(),
+        false
+      );
+      std::fill(
+        org_test_estimations[org_id].begin(),
+        org_test_estimations[org_id].end(),
         false
       );
     }
@@ -1216,16 +1327,16 @@ void DiagnosticsWorld::SetupFitFunEstimator_Ancestor() {
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
 
-    auto ancestor = phylo::NearestAncestorWithTraitEval(
+    phylo::TraitEstInfo& est_info = phylo::NearestAncestorWithTraitEval(
       taxon_ptr,
       test_id,
       (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
-    if (ancestor) {
-      auto found_tax = ancestor.value();
-      emp_assert(found_tax->GetData().GetTraitsEvaluated()[test_id]);
-      return found_tax->GetData().GetPhenotype()[test_id];
+    if (est_info.estimate_success) {
+      org_test_estimations[org_id][test_id] = true;
+      ++total_test_estimations;
+      return est_info.estimated_score;
     } else {
       return org_test_scores[org_id][test_id];
     }
@@ -1241,33 +1352,23 @@ void DiagnosticsWorld::SetupFitFunEstimator_AncestorOpt() {
 
     // If taxon has already been estimated on this trait, re-use estimated value
     if (taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated) {
+      org_test_estimations[org_id][test_id] = true;
       return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
     }
 
     // Otherwise, find nearest ancestor
-    auto ancestor = phylo::NearestAncestorWithTraitEvalOpt(
+    phylo::TraitEstInfo& est_info = phylo::NearestAncestorWithTraitEvalOpt(
       taxon_ptr,
       test_id,
       (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
-    return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
+    if (est_info.estimate_success) {
+      org_test_estimations[org_id][test_id] = true;
+      ++total_test_estimations;
+    }
 
-    // If found an ancestor, return their score; otherwise, return our own (probably 0) score
-    // if (ancestor) {
-    //   auto found_tax = ancestor.value();
-    //   emp_assert(
-    //     found_tax->GetData().TraitEvaluated(test_id) || found_tax->GetData().GetTraitEstimationInfo(test_id).estimated
-    //   );
-    //   emp_assert(
-    //     taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated &&
-    //     taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimation_dist <= (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
-    //   );
-    //   return (taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score);
-    // } else {
-    //   emp_assert(taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated);
-    //   return org_test_scores[org_id][test_id];
-    // }
+    return est_info.estimated_score;
   };
 }
 
@@ -1276,16 +1377,16 @@ void DiagnosticsWorld::SetupFitFunEstimator_Relative() {
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
 
-    auto ancestor = phylo::NearestRelativeWithTraitEval(
+    phylo::TraitEstInfo& est_info = phylo::NearestRelativeWithTraitEval(
       taxon_ptr,
       test_id,
       (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
-    if (ancestor) {
-      auto found_tax = ancestor.value();
-      emp_assert(found_tax->GetData().GetTraitsEvaluated()[test_id]);
-      return found_tax->GetData().GetPhenotype()[test_id];
+    if (est_info.estimate_success) {
+      org_test_estimations[org_id][test_id] = true;
+      ++total_test_estimations;
+      return est_info.estimated_score;
     } else {
       return org_test_scores[org_id][test_id];
     }
@@ -1300,17 +1401,22 @@ void DiagnosticsWorld::SetupFitFunEstimator_RelativeOpt() {
 
     // If taxon has already been estimated on this trait, re-use estimated value
     if (taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated) {
+      org_test_estimations[org_id][test_id] = true;
       return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
     }
 
-    auto relative = phylo::NearestRelativeWithTraitEvalOpt(
+    phylo::TraitEstInfo& est_info = phylo::NearestRelativeWithTraitEvalOpt(
       taxon_ptr,
       test_id,
       (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
-    return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
+    if (est_info.estimate_success) {
+      org_test_estimations[org_id][test_id] = true;
+      ++total_test_estimations;
+    }
 
+    return est_info.estimated_score;
   };
 }
 
@@ -1332,7 +1438,6 @@ void DiagnosticsWorld::SetupSelection() {
     std::cout << "Unknown selection scheme: " << config.SELECTION() << std::endl;
     exit(-1);
   }
-
 
 }
 
