@@ -129,6 +129,7 @@ protected:
 
   size_t total_training_cases = 0;   ///< Tracks the total number of training cases being used
   size_t total_test_evaluations = 0; ///< Tracks the total number of "test case" evaluations across all organisms since the beginning of the run.
+  size_t total_test_estimations = 0;
   bool found_solution = false;
 
   size_t approx_max_fit_id = 0;     ///< Tracks the "elite" organism each generation (based on trait estimates)
@@ -1007,6 +1008,7 @@ void ProgSynthWorld::SetupFitFunEstimator() {
   // TODO - setup configurable fitness estimation
   std::cout << "Configuring fitness function estimator (mode: " << config.EVAL_FIT_EST_MODE() << ")" << std::endl;
 
+  bool estimation_mode = config.EVAL_FIT_EST_MODE() != "none";
   if (config.EVAL_FIT_EST_MODE() == "none") {
     SetupFitFunEstimator_None();
   }
@@ -1019,6 +1021,66 @@ void ProgSynthWorld::SetupFitFunEstimator() {
     std::cout << "Unrecognized EVAL_FIT_EST_MODE: " << config.EVAL_FIT_EST_MODE() << std::endl;
     exit(-1);
   }
+
+  // Configure selection routine
+  if (estimation_mode) {
+    // run_selection_routine
+    run_selection_routine = [this]() {
+      // Resize parent ids to hold pop_size parents
+      selected_parent_ids.resize(config.POP_SIZE(), 0);
+      emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+      const size_t num_groups = org_groupings->GetNumGroups();
+      // For each grouping, select a number of parents equal to group size
+      size_t num_selected = 0;
+      for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+        auto& org_group = org_groupings->GetGroup(group_id);
+        const size_t n = org_group.GetSize();
+        // Run selection, but use all possible test ids
+        auto& selected = selection_fun(
+          n,
+          org_group.GetMembers(),
+          all_training_case_ids
+        );
+        emp_assert(selected.size() == n);
+        emp_assert(n + num_selected <= selected_parent_ids.size());
+        std::copy(
+          selected.begin(),
+          selected.end(),
+          selected_parent_ids.begin() + num_selected
+        );
+        num_selected += n;
+      }
+    };
+  } else {
+    // No estimation, so only use evaluated tests in selection routine
+    run_selection_routine = [this]() {
+      // Resize parent ids to hold pop_size parents
+      selected_parent_ids.resize(config.POP_SIZE(), 0);
+      emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+      const size_t num_groups = org_groupings->GetNumGroups();
+      // For each grouping, select a number of parents equal to group size
+      size_t num_selected = 0;
+      for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+        auto& org_group = org_groupings->GetGroup(group_id);
+        auto& test_group = test_groupings->GetGroup(group_id);
+        const size_t n = org_group.GetSize();
+        auto& selected = selection_fun(
+          n,
+          org_group.GetMembers(),
+          test_group.GetMembers()
+        );
+        emp_assert(selected.size() == n);
+        emp_assert(n + num_selected <= selected_parent_ids.size());
+        std::copy(
+          selected.begin(),
+          selected.end(),
+          selected_parent_ids.begin() + num_selected
+        );
+        num_selected += n;
+      }
+    };
+  }
+
 }
 
 void ProgSynthWorld::SetupFitFunEstimator_None() {
@@ -1026,89 +1088,30 @@ void ProgSynthWorld::SetupFitFunEstimator_None() {
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     return org_training_scores[org_id][test_id];
   };
-
-  // Configure selection routine
-  // No estimation, so only use evaluated tests in selection routine
-  run_selection_routine = [this]() {
-    // Resize parent ids to hold pop_size parents
-    selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
-    const size_t num_groups = org_groupings->GetNumGroups();
-    // For each grouping, select a number of parents equal to group size
-    size_t num_selected = 0;
-    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-
-      auto& org_group = org_groupings->GetGroup(group_id);
-      auto& test_group = test_groupings->GetGroup(group_id);
-      const size_t n = org_group.GetSize();
-      auto& selected = selection_fun(
-        n,
-        org_group.GetMembers(),
-        test_group.GetMembers()
-      );
-      emp_assert(selected.size() == n);
-      emp_assert(n + num_selected <= selected_parent_ids.size());
-      std::copy(
-        selected.begin(),
-        selected.end(),
-        selected_parent_ids.begin() + num_selected // TODO - check if this actually works!
-      );
-      num_selected += n;
-    }
-    // TODO - check that sets of selected ids correctly stored in selected_parent_ids
-  };
-
 }
 
 void ProgSynthWorld::SetupFitFunEstimator_Ancestor() {
-
+  // TODO - fix estimate test score!
   // estimate_test_score
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
 
-    auto ancestor = phylo::NearestAncestorWithTraitEval(
+    phylo::TraitEstInfo& est_info = phylo::NearestAncestorWithTraitEval(
       taxon_ptr,
       test_id,
       (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
-    if (ancestor) {
-      auto found_tax = ancestor.value();
-      emp_assert(found_tax->GetData().GetTraitsEvaluated()[test_id]);
-      return found_tax->GetData().GetPhenotype()[test_id];
+    if (est_info.estimate_success) {
+      // org_training_estimations[org_id][test_id] = true;
+      ++total_test_estimations;
+      return est_info.estimated_score;
     } else {
       return org_training_scores[org_id][test_id];
     }
 
   };
 
-  // run_selection_routine
-  run_selection_routine = [this]() {
-    // Resize parent ids to hold pop_size parents
-    selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
-    const size_t num_groups = org_groupings->GetNumGroups();
-    // For each grouping, select a number of parents equal to group size
-    size_t num_selected = 0;
-    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-      auto& org_group = org_groupings->GetGroup(group_id);
-      const size_t n = org_group.GetSize();
-      // Run selection, but use all possible test ids
-      auto& selected = selection_fun(
-        n,
-        org_group.GetMembers(),
-        all_training_case_ids
-      );
-      emp_assert(selected.size() == n);
-      emp_assert(n + num_selected <= selected_parent_ids.size());
-      std::copy(
-        selected.begin(),
-        selected.end(),
-        selected_parent_ids.begin() + num_selected
-      );
-      num_selected += n;
-    }
-  };
 }
 
 void ProgSynthWorld::SetupFitFunEstimator_Relative() {
@@ -1117,47 +1120,18 @@ void ProgSynthWorld::SetupFitFunEstimator_Relative() {
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
 
-    auto ancestor = phylo::NearestRelativeWithTraitEval(
+    phylo::TraitEstInfo& est_info = phylo::NearestRelativeWithTraitEval(
       taxon_ptr,
       test_id,
       (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
     );
 
-    if (ancestor) {
-      auto found_tax = ancestor.value();
-      emp_assert(found_tax->GetData().GetTraitsEvaluated()[test_id]);
-      return found_tax->GetData().GetPhenotype()[test_id];
+    if (est_info.estimate_success) {
+      // org_training_estimations[org_id][test_id] = true;
+      ++total_test_estimations;
+      return est_info.estimated_score;
     } else {
       return org_training_scores[org_id][test_id];
-    }
-
-  };
-
-  // run_selection_routine
-  run_selection_routine = [this]() {
-    // Resize parent ids to hold pop_size parents
-    selected_parent_ids.resize(config.POP_SIZE(), 0);
-    emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
-    const size_t num_groups = org_groupings->GetNumGroups();
-    // For each grouping, select a number of parents equal to group size
-    size_t num_selected = 0;
-    for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-      auto& org_group = org_groupings->GetGroup(group_id);
-      const size_t n = org_group.GetSize();
-      // Run selection, but use all possible test ids
-      auto& selected = selection_fun(
-        n,
-        org_group.GetMembers(),
-        all_training_case_ids
-      );
-      emp_assert(selected.size() == n);
-      emp_assert(n + num_selected <= selected_parent_ids.size());
-      std::copy(
-        selected.begin(),
-        selected.end(),
-        selected_parent_ids.begin() + num_selected
-      );
-      num_selected += n;
     }
 
   };
@@ -1243,6 +1217,7 @@ void ProgSynthWorld::SetupPhylogenyTracking() {
     }
   );
 
+  // TODO - add trait estimation tracking to phylogeny snapshot
 
   // Add phylogeny snapshot functions
   // Fitness (aggregate score)
@@ -1317,6 +1292,11 @@ void ProgSynthWorld::SetupDataCollection_Summary() {
     total_test_evaluations,
     "evaluations",
     "Test evaluations so far"
+  );
+  summary_file_ptr->AddVar(
+    total_test_estimations,
+    "test_estimations",
+    "Test estimations so far"
   );
   // pop-wide trait coverage
   summary_file_ptr->AddVar(

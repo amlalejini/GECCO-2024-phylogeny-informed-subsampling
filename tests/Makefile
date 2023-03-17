@@ -1,4 +1,4 @@
-TEST_NAMES := phylogeny MutatorLinearFunctionsProgram
+TEST_NAMES := phylogeny MutatorLinearFunctionsProgram PrintProgram
 
 TO_ROOT := $(shell git rev-parse --show-cdup)
 
@@ -6,7 +6,7 @@ SGP_DIR := $(TO_ROOT)/../SignalGP/include
 PSB_DIR := $(TO_ROOT)/../psb-cpp/include
 EMP_DIR := $(TO_ROOT)/third-party/Empirical/include
 
-CXX ?= g++-12
+CXX := g++-12
 
 FLAGS = -std=c++17 -pthread -Wall -Wno-unused-function -Wno-unused-private-field -lstdc++fs -I$(TO_ROOT)/include/ -I$(TO_ROOT)/third-party/ -I$(EMP_DIR) -I$(SGP_DIR) -I$(PSB_DIR)
 
