@@ -1236,7 +1236,7 @@ void DiagnosticsWorld::SetupFitFunEstimator() {
   // TODO - setup configurable fitness estimation
   std::cout << "Configuring fitness function estimator (mode: " << config.EVAL_FIT_EST_MODE() << ")" << std::endl;
 
-  bool estimation_mode = config.EVAL_FIT_EST_MODE() == "none";
+  bool estimation_mode = config.EVAL_FIT_EST_MODE() != "none";
   if (config.EVAL_FIT_EST_MODE() == "none") {
     SetupFitFunEstimator_None();
   } else if (config.EVAL_FIT_EST_MODE() == "ancestor") {
