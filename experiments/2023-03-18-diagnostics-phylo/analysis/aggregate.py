@@ -48,7 +48,7 @@ agg_exclude_fields = [
 ]
 
 time_series_summary_fields = [
-    "generation",
+    "update",
     "evaluations",
     "pop_optimal_trait_coverage",
     "max_agg_score",
@@ -175,14 +175,14 @@ def main():
         run_data = utils.read_csv(run_data_path)
 
         # Identify final generation
-        generations = [int(line["generation"]) for line in run_data]
+        generations = [int(line["update"]) for line in run_data]
         max_gen = max(generations)
         # Identify evaluations
         evaluations = [int(line["evaluations"]) for line in run_data]
         max_evals = max(evaluations)
 
         # Isolate data from final generation
-        final_data = [line for line in run_data if int(line["generation"]) == max_gen]
+        final_data = [line for line in run_data if int(line["update"]) == max_gen]
         assert len(final_data) == 1
         final_data = final_data[0]
 
@@ -198,13 +198,13 @@ def main():
             time_series_units,
             time_series_resolution
         )
-        ts_gens_included = [int(line["generation"]) for line in filtered_ts_data]
+        ts_gens_included = [int(line["update"]) for line in filtered_ts_data]
         ts_gens_included.sort()
         gen_to_ts_step = {ts_gens_included[i]:i for i in range(0, len(ts_gens_included))}
         time_series_info = {gen:{} for gen in ts_gens_included}
 
         for line in filtered_ts_data:
-            gen = int(line["generation"])
+            gen = int(line["update"])
             time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
             for field in time_series_summary_fields:
                 time_series_info[gen][field] = line[field]
@@ -240,14 +240,14 @@ def main():
         elite_data_path = os.path.join(run_path, "output", "elite.csv")
         elite_data = utils.read_csv(elite_data_path)
         # Identify final generation
-        generations = [int(line["generation"]) for line in elite_data]
+        generations = [int(line["update"]) for line in elite_data]
         max_gen = max(generations)
         # Identify evaluations
         evaluations = [int(line["evaluations"]) for line in elite_data]
         max_evals = max(evaluations)
 
         # Isolate data from final generation
-        final_data = [line for line in elite_data if int(line["generation"]) == max_gen]
+        final_data = [line for line in elite_data if int(line["update"]) == max_gen]
         assert len(final_data) == 1
         final_data = final_data[0]
 
@@ -266,7 +266,7 @@ def main():
             )
 
             for line in filtered_ts_data:
-                gen = int(line["generation"])
+                gen = int(line["update"])
                 time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
                 for field in time_series_elite_fields:
                     time_series_info[gen][field] = line[field]
@@ -279,14 +279,14 @@ def main():
         phylo_data_path = os.path.join(run_path, "output", "phylodiversity.csv")
         phylo_data = utils.read_csv(phylo_data_path)
         # Identify final generation
-        generations = [int(line["generation"]) for line in phylo_data]
+        generations = [int(line["update"]) for line in phylo_data]
         max_gen = max(generations)
         # Identify evaluations
         evaluations = [int(line["evaluations"]) for line in phylo_data]
         max_evals = max(evaluations)
 
         # Isolate data from final generation
-        final_data = [line for line in phylo_data if int(line["generation"]) == max_gen]
+        final_data = [line for line in phylo_data if int(line["update"]) == max_gen]
         assert len(final_data) == 1
         final_data = final_data[0]
 
@@ -305,7 +305,7 @@ def main():
             )
 
             for line in filtered_ts_data:
-                gen = int(line["generation"])
+                gen = int(line["update"])
                 time_series_info[gen]["ts_step"] = gen_to_ts_step[gen]
                 for field in time_series_phylo_fields:
                     time_series_info[gen][field] = line[field]
