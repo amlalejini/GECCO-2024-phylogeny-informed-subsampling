@@ -12,7 +12,7 @@
 
 #include "program-synthesis/program_utils.hpp"
 
-TEST_CASE("PrintProgramJSON") {
+TEST_CASE("PrintProgram") {
   constexpr size_t TAG_WIDTH = 16;
   constexpr int RANDOM_SEED = 2;
   using mem_model_t = sgp::cpu::mem::BasicMemoryModel;
@@ -65,7 +65,7 @@ TEST_CASE("PrintProgramJSON") {
     {5, 6, 7},
     {tag_t(random)}
   );
-  program.PushFunction(tag_t(random));
+  program.PushFunction(emp::vector<tag_t>{tag_t(random), tag_t(random), tag_t(random)});
   program.PushInst(
     inst_lib,
     "Add",
@@ -95,4 +95,50 @@ TEST_CASE("PrintProgramJSON") {
       inst_lib
     );
   }
+}
+
+TEST_CASE("LoadProgram") {
+  constexpr size_t TAG_WIDTH = 16;
+  // constexpr int RANDOM_SEED = 2;
+  using mem_model_t = sgp::cpu::mem::BasicMemoryModel;
+  using arg_t = int;
+  using matchbin_t = emp::MatchBin<
+    size_t,
+    emp::HammingMetric<TAG_WIDTH>,
+    emp::RankedSelector<>,
+    emp::AdditiveCountdownRegulator<>
+  >;
+  using hardware_t = sgp::cpu::LinearFunctionsProgramCPU<
+    mem_model_t,
+    arg_t,
+    matchbin_t
+  >;
+  using inst_lib_t = typename hardware_t::inst_lib_t;
+  using program_t = typename hardware_t::program_t;
+  // using function_t = typename program_t::function_t;
+  // using tag_t = emp::BitSet<TAG_WIDTH>;
+
+  // emp::Random random(RANDOM_SEED);
+
+  inst_lib_t inst_lib;
+  inst_lib.Clear();
+  sgp::inst::lfpbm::InstructionAdder<hardware_t> inst_adder;
+  // Add instructions (except Fork and Terminate)
+  inst_adder.AddAllDefaultInstructions(
+    inst_lib,
+    {"Fork", "Terminate"}
+  );
+
+  std::ifstream prg_fstream("sgp_program.sgp");
+  REQUIRE(prg_fstream.is_open());
+
+  program_t program = psynth::LoadLinearFunctionsProgram_PrintFormat<inst_lib_t, TAG_WIDTH>(
+    prg_fstream,
+    inst_lib
+  );
+
+  program.Print(
+    std::cout,
+    inst_lib
+  );
 }

@@ -34,6 +34,7 @@
 #include "ProgSynthHardware.hpp"
 #include "MutatorLinearFunctionsProgram.hpp"
 #include "SelectedStatistics.hpp"
+#include "program_utils.hpp"
 
 // TODO - implement program json output / input
 
@@ -223,7 +224,7 @@ protected:
   void SetupDataCollection_Elite();
 
   void InitializePopulation();
-  void InitializePopulation_Load();
+  void InitializePopulation_LoadSingle();
   void InitializePopulation_Random();
 
   void DoEvaluation();
@@ -1175,17 +1176,28 @@ void ProgSynthWorld::InitializePopulation() {
   // Initialize population according to configuration
   if (config.POP_INIT_MODE() == "random") {
     InitializePopulation_Random();
-  } else if (config.POP_INIT_MODE() == "load") {
-    InitializePopulation_Load();
+  } else if (config.POP_INIT_MODE() == "load-single") {
+    InitializePopulation_LoadSingle();
   } else {
     std::cout << "Unknown POP_INIT_MODE: " << config.POP_INIT_MODE() << std::endl;
     exit(-1);
   }
 }
 
-void ProgSynthWorld::InitializePopulation_Load() {
+void ProgSynthWorld::InitializePopulation_LoadSingle() {
   // TODO
-  emp_assert(false);
+  std::ifstream prg_fstream(config.ANCESTOR_FILE_PATH());
+  if (!prg_fstream.is_open()) {
+    std::cout << "Failed to open ancestor file: " << config.ANCESTOR_FILE_PATH() << std::endl;
+    exit(-1);
+  }
+  program_t ancestor = LoadLinearFunctionsProgram_PrintFormat<inst_lib_t, TAG_SIZE>(
+    prg_fstream,
+    inst_lib
+  );
+  for (size_t i = 0; i < config.POP_SIZE(); ++i) {
+    Inject({ancestor});
+  }
 }
 
 void ProgSynthWorld::InitializePopulation_Random() {
