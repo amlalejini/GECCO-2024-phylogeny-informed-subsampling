@@ -42,7 +42,7 @@
 
 # Local run files
 /diagnostics.cfg
-diagnostics
+/diagnostics
 
 /prog_synth.cfg
 prog_synth
