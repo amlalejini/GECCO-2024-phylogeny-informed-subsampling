@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <limits>
+#include <fstream>
 
 #include "emp/Evolve/World.hpp"
 #include "emp/Evolve/Systematics.hpp"
@@ -43,10 +44,6 @@
 
 // TODO - alternatively, give the problem manager a reference to the world and
 //        implement any necessary accessors
-
-// TODO - add optimized phylogeny search options
-
-// TODO - stop after solution found
 
 namespace psynth {
 
@@ -129,9 +126,13 @@ protected:
   size_t event_id_numeric_input_sig = 0;      ///< SGP event ID for numeric input signals
 
   size_t total_training_cases = 0;   ///< Tracks the total number of training cases being used
+  size_t total_testing_cases = 0;    ///< Tracks the total number of testing cases
   size_t total_test_evaluations = 0; ///< Tracks the total number of "test case" evaluations across all organisms since the beginning of the run.
   size_t total_test_estimations = 0;
   bool found_solution = false;
+  int solution_id = -1;
+
+  size_t test_order_barrier = 0; ///< Used to mark which tests have been moved to front this generation
 
   size_t approx_max_fit_id = 0;     ///< Tracks the "elite" organism each generation (based on trait estimates)
   double approx_max_fit = 0.0;      ///< Tracks the "elite" organism aggregate score each generation (based on trait estimates)
@@ -148,7 +149,7 @@ protected:
 
   emp::Signal<void(org_t&, size_t, bool)> begin_program_test_sig;  ///< Triggered right before evaluating a program on a particular test
   emp::Signal<void(org_t&, size_t)> do_program_test_sig;           ///< Evaluates program on particular test on trigger
-  emp::Signal<void(org_t&, size_t, bool)> end_program_test_sig;
+  emp::Signal<void(org_t&, size_t)> end_program_test_sig;          ///< Evaluates program output. Use *ONLY* for training cases.
 
   emp::vector<
     emp::vector< std::function<double(void)> >
@@ -166,6 +167,7 @@ protected:
   emp::vector<size_t> org_num_training_cases; ///< Per-organism number of training cases organism has been evaluated against
   emp::vector< emp::vector<double> > org_training_scores;    ///< Per-organism, scores for each training case
   emp::vector< emp::vector<bool> > org_training_evaluations; ///< Per-organism, evaluated on training case?
+  // emp::vector<bool>  org_passed_all_eval_training_cases;
 
   emp::Ptr<utils::GroupManager> org_groupings = nullptr;    ///< Manages organism groupings. # org groupings should equal # test groupings
   emp::Ptr<utils::GroupManager> test_groupings = nullptr;   ///< Manages test groupings. # org groupings should equal # organism groupings
@@ -173,6 +175,7 @@ protected:
   emp::vector<size_t> all_training_case_ids;            ///< Contains ids of all training cases
   emp::Ptr<selection::BaseSelect> selector = nullptr;   ///< Pointer to selector
   emp::vector<size_t> selected_parent_ids;              ///< Contains ids of all selected organisms
+  emp::vector<size_t> all_testing_case_ids;             ///< Contains ids of all testing cases (order will be manipualted as we go)
 
   std::function<void(void)> run_selection_routine;      ///< Runs selection (needs to be configured differently depending on whether we're estimating fitness or not). Calls selection_fun.
   selection_fun_t selection_fun;                        ///< Interface to selection call
@@ -232,6 +235,7 @@ protected:
   void DoUpdate();
 
   void SnapshotConfig();
+  void SnapshotSolution();
 
 public:
 
@@ -312,6 +316,8 @@ void ProgSynthWorld::DoEvaluation() {
 
   pop_num_training_cases_covered = 0.0;
 
+  test_order_barrier = 0;
+
   // Evaluate each organism
   for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
     // --- Begin organism evaluation: ---
@@ -347,7 +353,8 @@ void ProgSynthWorld::DoEvaluation() {
 
     // --- End organism evaluation: ---
     // - Check if need to update approx_max_fit org
-    // TODO - check if need to check candidate against testing set
+    // - Check if need to check candidate against testing set
+    //   - If so, check if organism is a solution using the testing set
     // Record taxon information
     end_org_evaluation_sig.Trigger(org_id);
   }
@@ -367,7 +374,12 @@ void ProgSynthWorld::DoEvaluation() {
       approx_max_fit = est_agg_score;
       approx_max_fit_id = org_id;
     }
+  }
 
+  // If we found a solution, guarantee that the found solution is marked as the elite organism
+  if (found_solution) {
+    approx_max_fit_id = solution_id;
+    approx_max_fit = org_aggregate_scores[solution_id];
   }
 
 }
@@ -405,13 +417,16 @@ void ProgSynthWorld::DoUpdate() {
     );
     // Update summary file
     summary_file_ptr->Update();
-    // TODO - Update files
     elite_file_ptr->Update();
-    // phylodiversity_file_ptr->Update();
+    phylodiversity_file_ptr->Update();
   }
 
   if (snapshot_interval) {
-    // TODO - snapshot phylogeny
+    systematics_ptr->Snapshot(output_dir + "phylo_" + emp::to_string(GetUpdate()) + ".csv");
+  }
+
+  if (found_solution) {
+    SnapshotSolution();
   }
 
   // (3) Print status
@@ -627,6 +642,7 @@ void ProgSynthWorld::SetupEvaluation() {
 
   // Total tests is equal to number of tests we loaded into the testing set.
   total_training_cases = problem_manager.GetTrainingSetSize();
+  total_testing_cases = problem_manager.GetTestingSetSize();
   // Allocate space for tracking organism training coverage
   org_training_coverage.clear();
   org_training_coverage.resize(config.POP_SIZE(), 0);
@@ -671,6 +687,13 @@ void ProgSynthWorld::SetupEvaluation() {
   test_groupings->SetPossibleIDs(all_training_case_ids);
   // std::cout << "Possible training case ids: " << test_groupings.GetPossibleIDs() << std::endl;
 
+  all_testing_case_ids.resize(total_testing_cases, 0);
+  std::iota(
+    all_testing_case_ids.begin(),
+    all_testing_case_ids.end(),
+    0
+  );
+
   // Clear out all actions associated with organism evaluation.
   begin_org_evaluation_sig.Clear();
   do_org_evaluation_sig.Clear();
@@ -712,11 +735,6 @@ void ProgSynthWorld::SetupEvaluation() {
     [this](size_t org_id) {
       auto& org = GetOrg(org_id);
 
-      // TODO - check if candidate for testing against testing set
-      // - Need to check if num_passes == number of tests evaluated on
-      // - If so, add to vector of ids to be tested whether they are solutions
-      // - Allow each evaluation mode to implement the actual testing
-
       // Record taxon information
       taxon_t& taxon = *(systematics_ptr->GetTaxonAt(org_id));
       taxon.GetData().RecordFitness(org.GetPhenotype().GetAggregateScore());
@@ -724,6 +742,16 @@ void ProgSynthWorld::SetupEvaluation() {
         org.GetPhenotype().GetTestScores(),
         org_training_evaluations[org_id]
       );
+
+      // Ccheck if candidate for testing against testing set
+      // - Need to check if num_passes == number of tests evaluated on
+      // - If so, add to vector of ids to be tested whether they are solutions
+      // - Allow each evaluation mode to implement the actual testing
+      if ((org_training_coverage[org_id] == org_num_training_cases[org_id]) && !found_solution) {
+        found_solution = check_org_solution(org_id);
+        solution_id = org_id;
+      }
+
     }
   );
 
@@ -768,13 +796,13 @@ void ProgSynthWorld::SetupEvaluation() {
   );
 
   end_program_test_sig.AddAction(
-    [this](org_t& org, size_t test_id, bool training) {
+    [this](org_t& org, size_t test_id) {
       const size_t org_id = org.GetPopID();
       TestResult result = problem_manager.EvaluateOutput(
         *eval_hardware,
         org,
         test_id,
-        training
+        true
       );
       // Record result on organism phenotype
       org.UpdatePhenotype(test_id, result);
@@ -831,6 +859,36 @@ void ProgSynthWorld::SetupEvaluation() {
     exit(-1);
   }
 
+  // Configure check to see if organism is a solution or not
+  check_org_solution = [this](size_t org_id) {
+    auto& org = GetOrg(org_id);
+    begin_program_eval_sig.Trigger(org);
+    for (size_t i = 0; i < all_testing_case_ids.size(); ++i) {
+      const size_t test_id = all_testing_case_ids[i]; // Get the current test id
+      // Handle test input:
+      begin_program_test_sig.Trigger(org, test_id, false);
+      // Run the program:
+      do_program_test_sig.Trigger(org, test_id);
+      // Manually check program output
+      TestResult result = problem_manager.EvaluateOutput(
+        *eval_hardware,
+        org,
+        test_id,
+        false
+      );
+      if (!result.is_correct) {
+        // Move the current test to the beginning
+        if (i > test_order_barrier) {
+          emp_assert(test_order_barrier < all_testing_case_ids.size());
+          std::swap(all_testing_case_ids[i], all_testing_case_ids[test_order_barrier]);
+          ++test_order_barrier;
+        }
+        return false;
+      }
+    }
+    return true;
+  };
+
 }
 
 void ProgSynthWorld::SetupEvaluation_Full() {
@@ -859,18 +917,11 @@ void ProgSynthWorld::SetupEvaluation_Full() {
         // Runs the program:
         do_program_test_sig.Trigger(org, test_id);
         // Handles test output evaluation, updates phenotype:
-        end_program_test_sig.Trigger(org, test_id, true);
+        end_program_test_sig.Trigger(org, test_id);
         ++total_test_evaluations;
       }
     }
   );
-
-  // Configure check to see if organism is a solution or not
-  check_org_solution = [this](size_t org_id) {
-    // TODO - Implement!
-    emp_assert(false);
-    return false;
-  };
 
 }
 
@@ -913,17 +964,12 @@ void ProgSynthWorld::SetupEvaluation_Cohort() {
         emp_assert(test_id < org.GetPhenotype().GetTestScores().size());
         begin_program_test_sig.Trigger(org, test_id, true);
         do_program_test_sig.Trigger(org, test_id);
-        end_program_test_sig.Trigger(org, test_id, true);
+        end_program_test_sig.Trigger(org, test_id);
         ++total_test_evaluations;
       }
     }
   );
 
-  check_org_solution = [this](size_t org_id) {
-    // TODO - implement check org solution for cohort evaluation
-    emp_assert(false);
-    return false;
-  };
 }
 
 void ProgSynthWorld::SetupEvaluation_DownSample() {
@@ -1006,7 +1052,6 @@ void ProgSynthWorld::SetupSelection_Random() {
 
 void ProgSynthWorld::SetupFitFunEstimator() {
   // Setup the default estimate_test_score functionality
-  // TODO - setup configurable fitness estimation
   std::cout << "Configuring fitness function estimator (mode: " << config.EVAL_FIT_EST_MODE() << ")" << std::endl;
 
   bool estimation_mode = config.EVAL_FIT_EST_MODE() != "none";
@@ -1153,19 +1198,19 @@ void ProgSynthWorld::SetupStoppingCondition() {
 
 void ProgSynthWorld::SetupStoppingCondition_Generations() {
   stop_run = [this]() {
-    return GetUpdate() > config.MAX_GENS();
+    return (GetUpdate() > config.MAX_GENS()) || found_solution;
   };
   is_final_update = [this]() {
-    return GetUpdate() >= config.MAX_GENS();
+    return (GetUpdate() >= config.MAX_GENS()) || found_solution;
   };
 }
 
 void ProgSynthWorld::SetupStoppingCondition_Evaluations() {
   stop_run = [this]() {
-    return total_test_evaluations > config.MAX_EVALS();
+    return (total_test_evaluations > config.MAX_EVALS()) || found_solution;
   };
   is_final_update = [this]() {
-    return total_test_evaluations >= config.MAX_EVALS();
+    return (total_test_evaluations >= config.MAX_EVALS()) || found_solution;
   };
 }
 
@@ -1185,16 +1230,17 @@ void ProgSynthWorld::InitializePopulation() {
 }
 
 void ProgSynthWorld::InitializePopulation_LoadSingle() {
-  // TODO
   std::ifstream prg_fstream(config.ANCESTOR_FILE_PATH());
   if (!prg_fstream.is_open()) {
     std::cout << "Failed to open ancestor file: " << config.ANCESTOR_FILE_PATH() << std::endl;
     exit(-1);
   }
+  // Load ancestor program from file (print format)
   program_t ancestor = LoadLinearFunctionsProgram_PrintFormat<inst_lib_t, TAG_SIZE>(
     prg_fstream,
     inst_lib
   );
+  // Inject POP_SIZE number of copies of loaded program into population.
   for (size_t i = 0; i < config.POP_SIZE(); ++i) {
     Inject({ancestor});
   }
@@ -1229,8 +1275,6 @@ void ProgSynthWorld::SetupPhylogenyTracking() {
     }
   );
 
-  // TODO - add trait estimation tracking to phylogeny snapshot
-
   // Add phylogeny snapshot functions
   // Fitness (aggregate score)
   systematics_ptr->AddSnapshotFun(
@@ -1250,13 +1294,110 @@ void ProgSynthWorld::SetupPhylogenyTracking() {
     "phenotype"
   );
 
-  // Genome - TODO
+  // TODO - add trait estimation tracking to phylogeny snapshot
+  // -- taxon estimation information --
+  // traits_evaluated
   systematics_ptr->AddSnapshotFun(
-    [](const taxon_t& taxon) {
-      return "TODO";
+    [this](const taxon_t& taxon) {
+      std::stringstream ss;
+      utils::PrintVector(ss, taxon.GetData().traits_evaluated, true);
+      return ss.str();
     },
-    "genome"
+    "training_cases_evaluated"
   );
+
+  // Attempted estimation
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<bool> estimate_attempts(total_training_cases, false);
+      for (size_t test_id = 0; test_id < total_training_cases; ++test_id) {
+        estimate_attempts[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).estimated;
+      }
+      utils::PrintVector(ss, estimate_attempts, true);
+      return ss.str();
+    },
+    "training_cases_attempted_estimations"
+  );
+
+  // traits_successful_estimations
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<bool> trait_estimated(total_training_cases, false);
+      for (size_t test_id = 0; test_id < total_training_cases; ++test_id) {
+        trait_estimated[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).estimate_success;
+      }
+      utils::PrintVector(ss, trait_estimated, true);
+      return ss.str();
+    },
+    "training_cases_successful_estimations"
+  );
+
+  // traits_estimation_source_ids
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<size_t> estimate_source_ids(total_training_cases, 0);
+      for (size_t test_id = 0; test_id < total_training_cases; ++test_id) {
+        estimate_source_ids[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).source_taxon_id;
+      }
+      utils::PrintVector(ss, estimate_source_ids, true);
+      return ss.str();
+    },
+    "training_cases_estimation_source_ids"
+  );
+
+  // Estimation distances
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<size_t> est_dists(total_training_cases, 0);
+      for (size_t test_id = 0; test_id < total_training_cases; ++test_id) {
+        est_dists[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).estimation_dist;
+      }
+      utils::PrintVector(ss, est_dists, true);
+      return ss.str();
+    },
+    "training_cases_estimation_dist"
+  );
+
+  // Estimation scores
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      if (taxon.GetData().GetPhenotype().size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      emp::vector<double> est_scores(total_training_cases, 0.0);
+      for (size_t test_id = 0; test_id < total_training_cases; ++test_id) {
+        est_scores[test_id] = taxon.GetData().GetTraitEstimationInfo(test_id).estimated_score;
+      }
+      utils::PrintVector(ss, est_scores, true);
+      return ss.str();
+    },
+    "training_cases_estimated_scores"
+  );
+
+  // Genome - TODO
+  // systematics_ptr->AddSnapshotFun(
+  //   [](const taxon_t& taxon) {
+  //     return "TODO";
+  //   },
+  //   "genome"
+  // );
 
   systematics_ptr->AddEvolutionaryDistinctivenessDataNode();
   systematics_ptr->AddPairwiseDistanceDataNode();
@@ -1310,6 +1451,11 @@ void ProgSynthWorld::SetupDataCollection_Summary() {
     "test_estimations",
     "Test estimations so far"
   );
+  summary_file_ptr->AddVar(
+    found_solution,
+    "found_solution",
+    "Did we find a solution?"
+  );
   // pop-wide trait coverage
   summary_file_ptr->AddVar(
     pop_num_training_cases_covered,
@@ -1359,7 +1505,7 @@ void ProgSynthWorld::SetupDataCollection_Elite() {
   elite_file_ptr = emp::NewPtr<emp::DataFile>(
     output_dir + "elite.csv"
   );
-  // TODO
+  // TODO - output program
   elite_file_ptr->AddVar(update, "update", "Generation");
   elite_file_ptr->AddVar(
     total_test_evaluations,
@@ -1449,7 +1595,23 @@ void ProgSynthWorld::SetupDataCollection_Elite() {
     "num_functions",
     "Number of functions in organism genome"
   );
-  // TODO - genome
+
+  // elite_file_ptr->AddFun<std::string>(
+  //   [this]() -> std::string {
+  //     std::stringstream ss;
+  //     auto& org = GetOrg(approx_max_fit_id);
+  //     ss << "\"";
+  //     PrintProgramJSON(
+  //       ss,
+  //       org.GetGenome().GetProgram(),
+  //       inst_lib
+  //     );
+  //     ss << "\"";
+  //     return ss.str();
+  //   },
+  //   "genome",
+  //   "Organism program (JSON format)"
+  // );
 
   elite_file_ptr->PrintHeaderKeys();
 }
@@ -1494,6 +1656,18 @@ void ProgSynthWorld::SnapshotConfig() {
     snapshot_file.Update();
   }
 
+}
+
+void ProgSynthWorld::SnapshotSolution() {
+  std::ofstream outfile;
+  outfile.open(output_dir + "solution.sgp");
+  emp_assert(found_solution);
+  auto& solution = GetOrg(solution_id);
+  solution.GetGenome().GetProgram().Print(
+    outfile,
+    inst_lib
+  );
+  outfile.close();
 }
 
 }

@@ -66,7 +66,6 @@ struct SmallOrLarge : public BaseProblem {
   void ConfigureHardware(HARDWARE_T& hw) {
     auto& hw_component = hw.GetCustomComponent();
     hw_component.template CreateProblemHardware<prob_hw_t>();
-    // TODO get event library, get name of requisite events
   }
 
   // Configure instructions
