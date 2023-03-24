@@ -2,6 +2,7 @@
 
 #include "SmallOrLarge.hpp"
 #include "Median.hpp"
+#include "Grade.hpp"
 
 // TODO
 // - Grade

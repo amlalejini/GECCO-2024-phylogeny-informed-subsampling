@@ -61,7 +61,8 @@ protected:
     std::function<void(ProblemManager& manager)>
   > problem_dir = {
     {"small-or-large", BuildProblemSetupFunction<problems::SmallOrLarge>()},
-    {"median", BuildProblemSetupFunction<problems::Median>()}
+    {"median", BuildProblemSetupFunction<problems::Median>()},
+    {"grade", BuildProblemSetupFunction<problems::Grade>()}
   };
 
   template<typename PROBLEM_T>
