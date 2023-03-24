@@ -1075,17 +1075,17 @@ void ProgSynthWorld::SetupSelection_Tournament() {
 }
 
 void ProgSynthWorld::SetupSelection_Truncation() {
-  // TODO
+  // TODO - trunction selection
   emp_assert(false);
 }
 
 void ProgSynthWorld::SetupSelection_None() {
-  // TODO
+  // TODO - No selection
   emp_assert(false);
 }
 
 void ProgSynthWorld::SetupSelection_Random() {
-  // TODO
+  // TODO - Random selection
   emp_assert(false);
 }
 
@@ -1384,7 +1384,6 @@ void ProgSynthWorld::SetupPhylogenyTracking() {
     "phenotype"
   );
 
-  // TODO - add trait estimation tracking to phylogeny snapshot
   // -- taxon estimation information --
   // traits_evaluated
   systematics_ptr->AddSnapshotFun(
@@ -1595,7 +1594,7 @@ void ProgSynthWorld::SetupDataCollection_Elite() {
   elite_file_ptr = emp::NewPtr<emp::DataFile>(
     output_dir + "elite.csv"
   );
-  // TODO - output program
+
   elite_file_ptr->AddVar(update, "update", "Generation");
   elite_file_ptr->AddVar(
     total_test_evaluations,

@@ -172,7 +172,7 @@ sgp::cpu::lfunprg::LinearFunctionsProgram<emp::BitSet<TAG_WIDTH>, int> LoadLinea
 void LoadLinearFunctionsProgram_JSONFormat(
   std::istream& input
 ) {
-  // TODO - implement
+  // TODO - implement JSON format load
   emp_assert(false);
 }
 

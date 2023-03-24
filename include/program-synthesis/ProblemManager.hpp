@@ -232,8 +232,6 @@ public:
     return (training) ? eval_output_training(hw, org, test_id) : eval_output_testing(hw, org, test_id);
   }
 
-  // TODO - name to functionality map
-
   bool IsValidProblem(const std::string& problem_name) {
     return emp::Has(problem_dir, problem_name);
   }
