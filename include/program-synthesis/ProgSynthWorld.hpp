@@ -37,8 +37,6 @@
 #include "SelectedStatistics.hpp"
 #include "program_utils.hpp"
 
-// TODO - implement program json output / input
-
 // TODO - re-organize problem manager <==> world interactions to use world signals
 // i.e., pass the world to the problem manager configure, allow it to wire up functions to OnXSetup signals.
 
@@ -1655,6 +1653,20 @@ void ProgSynthWorld::SnapshotConfig() {
     get_value = [&entry]() { return entry.second; };
     snapshot_file.Update();
   }
+
+  // Snapshot the instruction set
+  get_param = []() { return "instruction_set"; };
+  get_value = [this]() {
+    std::stringstream ss;
+    ss << "\"[";
+    for (size_t i = 0; i < inst_lib.GetSize(); ++i) {
+      if (i) ss << ",";
+      ss << inst_lib.GetName(i);
+    }
+    ss << "]\"";
+    return ss.str();
+  };
+  snapshot_file.Update();
 
 }
 
