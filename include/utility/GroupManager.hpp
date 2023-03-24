@@ -158,11 +158,38 @@ public:
         for (size_t member_i = 0; member_i < cohort.GetSize(); ++member_i) {
           const size_t member_id = possible_ids[cur_pos];
           cohort.member_ids[member_i] = member_id;
-          member_group_assignments[member_i] = cohort.GetGroupID();
+          member_group_assignments[member_id] = cohort.GetGroupID();
           ++cur_pos;
         }
       }
       emp_assert(cur_pos == possible_ids.size());
+    };
+  }
+
+  void SetDownSampleMode(size_t sample_size) {
+    // Initialize single group to hold down-sample
+    groupings.resize(1);
+    auto& group = groupings.back();
+    group.SetGroupID(0);
+    group.Resize(sample_size, 0);
+    // Configure assign_groupings
+    assign_groupings = [this, sample_size]() {
+      emp_assert(groupings.size() == 1);
+      // Get focal group
+      auto& group = groupings.back();
+      emp_assert(group.member_ids.size() == sample_size);
+      // Shuffle all possible ids
+      emp::Shuffle(random, possible_ids);
+      // Assign to down-sample in shuffled order
+      for (size_t i = 0; i < sample_size; ++i) {
+        const size_t member_id = possible_ids[i];
+        group.member_ids[i] = member_id;
+        member_group_assignments[i] = 0;
+      }
+      for (size_t i = sample_size; i < possible_ids.size(); ++i) {
+        const size_t member_id = possible_ids[i];
+        member_group_assignments[member_id] = 1;
+      }
     };
   }
 

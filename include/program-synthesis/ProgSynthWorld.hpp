@@ -215,7 +215,9 @@ protected:
 
   void SetupFitFunEstimator_None();
   void SetupFitFunEstimator_Ancestor();
+  void SetupFitFunEstimator_AncestorOpt();
   void SetupFitFunEstimator_Relative();
+  void SetupFitFunEstimator_RelativeOpt();
 
   void SetupStoppingCondition_Generations();
   void SetupStoppingCondition_Evaluations();
@@ -526,7 +528,6 @@ void ProgSynthWorld::SetupInstructionLibrary() {
   );
   // Add problem-specific instructions
   problem_manager.AddProblemInstructions(inst_lib);
-  // TODO - snapshot instruction set
 }
 
 void ProgSynthWorld::SetupEventLibrary() {
@@ -971,8 +972,48 @@ void ProgSynthWorld::SetupEvaluation_Cohort() {
 }
 
 void ProgSynthWorld::SetupEvaluation_DownSample() {
-  // TODO
-  emp_assert(false);
+  std::cout << "Configuring evaluation mode: down-sample" << std::endl;
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() > 0);
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() <= 1.0);
+  emp_assert(total_training_cases > 0);
+
+  size_t sample_size = (size_t)(config.TEST_DOWNSAMPLE_RATE() * (double)total_training_cases);
+  sample_size = (sample_size == 0) ? sample_size + 1 : sample_size;
+  emp_assert(sample_size > 0);
+  emp_assert(sample_size <= total_training_cases);
+
+  std::cout << "Down-sample: sample_size = " << sample_size << std::endl;
+
+  // Configure test groupings
+  test_groupings->SetDownSampleMode(sample_size);
+  std::cout << "Test groups (initial):" << std::endl;
+  for (size_t group_id = 0; group_id < test_groupings->GetNumGroups(); ++group_id) {
+    std::cout << "  Test group " << group_id << " size: " << test_groupings->GetGroup(group_id).GetSize() << std::endl;
+  }
+
+  // Configure organism groupings
+  org_groupings->SetSingleGroupMode();
+
+  // Configure organism evaluation
+  do_org_evaluation_sig.AddAction(
+    [this](size_t org_id) {
+      emp_assert(org_id < GetSize());
+      auto& org = GetOrg(org_id);
+      begin_program_eval_sig.Trigger(org);
+      const auto& test_group = test_groupings->GetGroup(0);
+      const auto& test_ids = test_group.GetMembers();
+      for (size_t i = 0; i < test_ids.size(); ++i) {
+        const size_t test_id = test_ids[i]; // Test test id from group
+        // Handles test input:
+        begin_program_test_sig.Trigger(org, test_id, true);
+        // Runs the program:
+        do_program_test_sig.Trigger(org, test_id);
+        // Handles test output evaluation, updates phenotype:
+        end_program_test_sig.Trigger(org, test_id);
+        ++total_test_evaluations;
+      }
+    }
+  );
 }
 
 void ProgSynthWorld::SetupSelection() {
@@ -1055,12 +1096,14 @@ void ProgSynthWorld::SetupFitFunEstimator() {
   bool estimation_mode = config.EVAL_FIT_EST_MODE() != "none";
   if (config.EVAL_FIT_EST_MODE() == "none") {
     SetupFitFunEstimator_None();
-  }
-  else if (config.EVAL_FIT_EST_MODE() == "ancestor") {
+  } else if (config.EVAL_FIT_EST_MODE() == "ancestor") {
     SetupFitFunEstimator_Ancestor();
-  }
-  else if (config.EVAL_FIT_EST_MODE() == "relative") {
+  } else if (config.EVAL_FIT_EST_MODE() == "relative") {
     SetupFitFunEstimator_Relative();
+  } else if (config.EVAL_FIT_EST_MODE() == "ancestor-opt") {
+    SetupFitFunEstimator_AncestorOpt();
+  } else if (config.EVAL_FIT_EST_MODE() == "relative-opt") {
+    SetupFitFunEstimator_RelativeOpt();
   } else {
     std::cout << "Unrecognized EVAL_FIT_EST_MODE: " << config.EVAL_FIT_EST_MODE() << std::endl;
     exit(-1);
@@ -1135,7 +1178,6 @@ void ProgSynthWorld::SetupFitFunEstimator_None() {
 }
 
 void ProgSynthWorld::SetupFitFunEstimator_Ancestor() {
-  // TODO - fix estimate test score!
   // estimate_test_score
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
@@ -1147,7 +1189,6 @@ void ProgSynthWorld::SetupFitFunEstimator_Ancestor() {
     );
 
     if (est_info.estimate_success) {
-      // org_training_estimations[org_id][test_id] = true;
       ++total_test_estimations;
       return est_info.estimated_score;
     } else {
@@ -1158,8 +1199,33 @@ void ProgSynthWorld::SetupFitFunEstimator_Ancestor() {
 
 }
 
-void ProgSynthWorld::SetupFitFunEstimator_Relative() {
+void ProgSynthWorld::SetupFitFunEstimator_AncestorOpt() {
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
 
+    // If taxon has already been estimated on this trait, re-use estimated value
+    if (taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated) {
+      return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
+    }
+
+    // Otherwise, find nearest ancestor
+    phylo::TraitEstInfo& est_info = phylo::NearestAncestorWithTraitEvalOpt(
+      taxon_ptr,
+      test_id,
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+    );
+
+    if (est_info.estimate_success) {
+      ++total_test_estimations;
+      return est_info.estimated_score;
+    } else {
+      return org_training_scores[org_id][test_id];
+    }
+
+  };
+}
+
+void ProgSynthWorld::SetupFitFunEstimator_Relative() {
   // estimate_test_score
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
@@ -1171,7 +1237,33 @@ void ProgSynthWorld::SetupFitFunEstimator_Relative() {
     );
 
     if (est_info.estimate_success) {
-      // org_training_estimations[org_id][test_id] = true;
+      ++total_test_estimations;
+      return est_info.estimated_score;
+    } else {
+      return org_training_scores[org_id][test_id];
+    }
+
+  };
+
+}
+
+void ProgSynthWorld::SetupFitFunEstimator_RelativeOpt() {
+  // estimate_test_score
+  estimate_test_score = [this](size_t org_id, size_t test_id) {
+    emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
+
+    // If taxon has already been estimated on this trait, re-use estimated value
+    if (taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated) {
+      return taxon_ptr->GetData().GetTraitEstimationInfo(test_id).estimated_score;
+    }
+
+    phylo::TraitEstInfo& est_info = phylo::NearestRelativeWithTraitEvalOpt(
+      taxon_ptr,
+      test_id,
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+    );
+
+    if (est_info.estimate_success) {
       ++total_test_estimations;
       return est_info.estimated_score;
     } else {

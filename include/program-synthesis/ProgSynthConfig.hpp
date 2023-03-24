@@ -33,6 +33,7 @@ EMP_BUILD_CONFIG(ProgSynthConfig,
 
   GROUP(EVALUATION_COHORT, "Cohort evaluation settings"),
   VALUE(NUM_COHORTS, size_t, 2, "How many cohorts should we divide the tests and organisms into?"),
+  VALUE(TEST_DOWNSAMPLE_RATE, double, 0.5, "Proportion of training cases to down-sample each generation"),
 
   GROUP(SGP_CPU, "SignalGP Virtual CPU"),
   VALUE(MAX_ACTIVE_THREAD_CNT, size_t, 8, "Maximum number of active threads that can run simultaneously on a SGP virtual CPU."),
