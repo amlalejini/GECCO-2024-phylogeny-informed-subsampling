@@ -426,6 +426,7 @@ void ProgSynthWorld::DoUpdate() {
   }
 
   if (found_solution) {
+    std::cout << "Found solution!" << std::endl;
     SnapshotSolution();
   }
 
