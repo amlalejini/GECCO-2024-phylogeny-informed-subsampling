@@ -175,12 +175,12 @@ public:
 
   void LoadTestingSet(const std::string& filename) {
     emp_assert(configured);
-    load_training_set(filename);
+    load_testing_set(filename);
   }
 
   void LoadTrainingSet(const std::string& filename) {
     emp_assert(configured);
-    load_testing_set(filename);
+    load_training_set(filename);
   }
 
   size_t GetTestingSetSize() const {
