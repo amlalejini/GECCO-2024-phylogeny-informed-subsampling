@@ -30,7 +30,7 @@ fixed_parameters = {
     "MAX_EVALS": "50000000",
     "STOP_MODE": "evaluations",
     "POP_INIT_MODE": "random",
-    "OUTPUT_SUMMARY_DATA_INTERVAL":  "50",
+    "OUTPUT_SUMMARY_DATA_INTERVAL": "50",
     "PRINT_INTERVAL": "10",
     "SNAPSHOT_INTERVAL": "10000",
     "EVAL_MAX_PHYLO_SEARCH_DEPTH": "10"
@@ -76,9 +76,9 @@ combos.add_val(
 combos.add_val(
     "problem__COPY_OVER",
     [
-        "-PROBLEM grade -TESTING_SET_PATH grade-testing.json -TRAINING_SET_PATH grade-training.json -PRG_MAX_FUNC_CNT 2 -PRG_MAX_FUNC_INST_CNT 128 -EVAL_CPU_CYCLES_PER_TEST 128",
+        "-PROBLEM grade -TESTING_SET_PATH grade-imbalanced-testing.json -TRAINING_SET_PATH grade-imbalanced-training.json -PRG_MAX_FUNC_CNT 2 -PRG_MAX_FUNC_INST_CNT 128 -EVAL_CPU_CYCLES_PER_TEST 128",
         "-PROBLEM median -TESTING_SET_PATH median-testing.json -TRAINING_SET_PATH median-training.json -PRG_MAX_FUNC_CNT 2 -PRG_MAX_FUNC_INST_CNT 64 -EVAL_CPU_CYCLES_PER_TEST 64",
-        "-PROBLEM small-or-large -TESTING_SET_PATH small-or-large-testing.json -TRAINING_SET_PATH small-or-large-training.json -PRG_MAX_FUNC_CNT 2 -PRG_MAX_FUNC_INST_CNT 64 -EVAL_CPU_CYCLES_PER_TEST 64"
+        "-PROBLEM small-or-large -TESTING_SET_PATH small-or-large-imbalanced-testing.json -TRAINING_SET_PATH small-or-large-imbalanced-training.json -PRG_MAX_FUNC_CNT 2 -PRG_MAX_FUNC_INST_CNT 64 -EVAL_CPU_CYCLES_PER_TEST 64"
     ]
 )
 
@@ -112,7 +112,6 @@ def main():
     seed_offset = args.seed_offset
     job_time_request = args.time_request
     job_memory_request = args.mem
-    # patch_mode = args.patch
 
     # Load in the base slurm file
     base_sub_script = ""
@@ -144,7 +143,8 @@ def main():
     for condition_dict in combo_list:
         cur_seed = seed_offset + (cur_job_id * num_replicates)
         # Figure out current problem
-        problem = condition_dict["problem__COPY_OVER"].split("-PROBLEM")[-1].strip().split(" ")[0]
+        testing_set = condition_dict["problem__COPY_OVER"].split("-TESTING_SET_PATH")[-1].strip().split(" ")[0]
+        training_set = condition_dict["problem__COPY_OVER"].split("-TRAINING_SET_PATH")[-1].strip().split(" ")[0]
         filename_prefix = f'RUN_C{cond_i}'
         file_str = base_sub_script
         file_str = file_str.replace("<<TIME_REQUEST>>", job_time_request)
@@ -155,7 +155,8 @@ def main():
         file_str = file_str.replace("<<EXEC>>", executable)
         file_str = file_str.replace("<<JOB_SEED_OFFSET>>", str(cur_seed))
         file_str = file_str.replace("<<ACCOUNT_NAME>>", hpc_account)
-        file_str = file_str.replace("<<PROBLEM>>", problem)
+        file_str = file_str.replace("<<TRAINING_SET>>", training_set)
+        file_str = file_str.replace("<<TESTING_SET>>", testing_set)
 
         ###################################################################
         # Configure the run

@@ -17,7 +17,8 @@ EXEC=<<EXEC>>
 CONFIG_DIR=<<CONFIG_DIR>>
 REPO_DIR=<<REPO_DIR>>
 RUN_DIR=<<RUN_DIR>>
-PROBLEM=<<PROBLEM>>
+TRAINING_SET=<<TRAINING_SET>>
+TESTING_SET=<<TESTING_SET>>
 
 # Load correct environment
 cd ${REPO_DIR}
@@ -28,8 +29,8 @@ source ${REPO_DIR}/pyenv/bin/activate
 
 mkdir -p ${RUN_DIR}
 cd ${RUN_DIR}
-cp ${CONFIG_DIR}/${PROBLEM}-training.json .
-cp ${CONFIG_DIR}/${PROBLEM}-testing.json .
+cp ${CONFIG_DIR}/${TRAINING_SET} .
+cp ${CONFIG_DIR}/${TESTING_SET} .
 cp ${CONFIG_DIR}/*.cfg .
 cp ${CONFIG_DIR}/${EXEC} .
 
@@ -42,8 +43,8 @@ cd ${RUN_DIR}
 
 ######## Clean up ########
 rm ${RUN_DIR}/*.cfg
-rm ${RUN_DIR}/${PROBLEM}-training.json
-rm ${RUN_DIR}/${PROBLEM}-testing.json
+rm ${RUN_DIR}/${TRAINING_SET}
+rm ${RUN_DIR}/${TESTING_SET}
 rm ${RUN_DIR}/${EXEC}
 
 
