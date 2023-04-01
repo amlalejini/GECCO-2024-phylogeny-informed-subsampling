@@ -1,0 +1,1 @@
+Focuses in on small or large. Runs longer, uses different search depths.
