@@ -430,6 +430,10 @@ void ProgSynthWorld::DoUpdate() {
     SnapshotSolution();
   }
 
+  if (final_update && (cur_update % config.OUTPUT_SUMMARY_DATA_INTERVAL())) {
+    GetFile(output_dir + "systematics.csv").Update();
+  }
+
   // (3) Print status
   if (print_interval) {
     std::cout << "update: " << GetUpdate() << "; ";
