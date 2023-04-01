@@ -67,5 +67,6 @@ def filter_ordered_data_interval(data, interval):
     return [data[i] for i in range(len(data)) if (i==0) or (not (i % interval)) or (i==len(data)-1)]
 
 def filter_ordered_data_total(data, total):
-    sample = [int(x*(len(data)-1)/(total-1)) for x in range(total)]
+    sample = {int(x*(len(data)-1)/(total-1)) for x in range(total)}
+    sample = sorted(list(sample))
     return [data[i] for i in sample]
