@@ -396,6 +396,7 @@ def main():
             print("Header mismatch!")
             exit(-1)
         summary_line = [str(summary_info[field]) for field in summary_fields]
+        summary_line = [f"\"{value}\"" if value.startswith("[") else value for value in summary_line ]
         summary_content_lines.append(",".join(summary_line))
         ############################################################
 
