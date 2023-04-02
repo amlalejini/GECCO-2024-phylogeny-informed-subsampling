@@ -62,7 +62,8 @@ protected:
   > problem_dir = {
     {"small-or-large", BuildProblemSetupFunction<problems::SmallOrLarge>()},
     {"median", BuildProblemSetupFunction<problems::Median>()},
-    {"grade", BuildProblemSetupFunction<problems::Grade>()}
+    {"grade", BuildProblemSetupFunction<problems::Grade>()},
+    {"fizz-buzz", BuildProblemSetupFunction<problems::FizzBuzz>()}
   };
 
   template<typename PROBLEM_T>
