@@ -80,7 +80,7 @@ combos.add_val(
     "problem__COPY_OVER",
     [
         "-PROBLEM small-or-large -TESTING_SET_PATH small-or-large-imbalanced-testing.json -TRAINING_SET_PATH small-or-large-imbalanced-training.json -PRG_MAX_FUNC_INST_CNT 64 -EVAL_CPU_CYCLES_PER_TEST 64",
-        "-PROBLEM median -TESTING_SET_PATH median-imbalanced-testing.json -TRAINING_SET_PATH median-imbalanced-training.json -PRG_MAX_FUNC_INST_CNT 64 -EVAL_CPU_CYCLES_PER_TEST 64",
+        "-PROBLEM median -TESTING_SET_PATH median-testing.json -TRAINING_SET_PATH median-training.json -PRG_MAX_FUNC_INST_CNT 64 -EVAL_CPU_CYCLES_PER_TEST 64",
         "-PROBLEM grade -TESTING_SET_PATH grade-imbalanced-testing.json -TRAINING_SET_PATH grade-imbalanced-training.json -PRG_MAX_FUNC_INST_CNT 128 -EVAL_CPU_CYCLES_PER_TEST 128",
         "-PROBLEM fizz-buzz -TESTING_SET_PATH fizz-buzz-imbalanced-testing.json -TRAINING_SET_PATH fizz-buzz-imbalanced-training.json -PRG_MAX_FUNC_INST_CNT 128 -EVAL_CPU_CYCLES_PER_TEST 128"
     ]
