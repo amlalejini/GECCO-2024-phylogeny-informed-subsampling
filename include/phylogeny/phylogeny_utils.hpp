@@ -54,7 +54,7 @@ struct TraitEstInfo {
 
   void SetEst(bool success, double score, size_t dist, size_t source_id) {
     estimated = true;
-    estimate_success = true;
+    estimate_success = success;
     estimated_score = score;
     estimation_dist = dist;
     source_taxon_id = source_id;
