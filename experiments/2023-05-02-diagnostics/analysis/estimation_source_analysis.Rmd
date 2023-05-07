@@ -73,11 +73,11 @@ It appears that down-sampling is only ever drawing estimations from self or ance
 Let's look at down-sampled lexicase and compare relative-based and ancestor-based estimation. First, the proportion of times an ancestor was used:
 
 ```{r relative_vs_ancestor_ancestor}
-ggplot(phylo_informed_all_phylo_data %>% filter(EVAL_FIT_EST_MODE != "none", EVAL_MODE=="down-sample")) + geom_boxplot(aes(x=EVAL_FIT_EST_MODE, y=ancestor_count/(other_count+ancestor_count+descendant_count+self_count+outside_count), group=EVAL_FIT_EST_MODE)) + facet_grid(cols=vars(DIAGNOSTIC), rows=vars(evals_per_gen)) + theme_bw() + scale_y_continuous("Proportion of self lookups") + scale_x_discrete() + theme(legend.position = "none")
+ggplot(phylo_informed_all_phylo_data %>% filter(EVAL_FIT_EST_MODE != "none", EVAL_MODE=="down-sample")) + geom_boxplot(aes(x=EVAL_FIT_EST_MODE, y=ancestor_count/(other_count+ancestor_count+descendant_count+self_count+outside_count), group=EVAL_FIT_EST_MODE)) + facet_grid(cols=vars(DIAGNOSTIC), rows=vars(evals_per_gen)) + theme_bw() + scale_y_continuous("Proportion of ancestor lookups") + scale_x_discrete() + theme(legend.position = "none")
 ```
 
 Self is just the inverse, but let's double check:
 
-```{r relative_vs_ancestor_ancestor}
+```{r relative_vs_ancestor_slef}
 ggplot(phylo_informed_all_phylo_data %>% filter(EVAL_FIT_EST_MODE != "none", EVAL_MODE=="down-sample")) + geom_boxplot(aes(x=EVAL_FIT_EST_MODE, y=self_count/(other_count+ancestor_count+descendant_count+self_count+outside_count), group=EVAL_FIT_EST_MODE)) + facet_grid(cols=vars(DIAGNOSTIC), rows=vars(evals_per_gen)) + theme_bw() + scale_y_continuous("Proportion of self lookups") + scale_x_discrete() + theme(legend.position = "none")
 ```
