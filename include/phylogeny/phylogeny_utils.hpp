@@ -240,7 +240,8 @@ TraitEstInfo& NearestAncestorWithTraitEvalOpt(
 
     // Has the focal trait been estimated in this taxon before?
     const auto& trait_est_info = taxon_info.GetTraitEstimationInfo(trait_id);
-    if (trait_est_info.estimated) {
+    // if (trait_est_info.estimated) {
+    if (trait_est_info.estimate_success) {
       // Only mark ancestor as found if estimation falls within distance constraint
       found_ancestor = ((trait_est_info.estimation_dist + dist) <= max_dist);
       est_score = trait_est_info.estimated_score;
@@ -398,7 +399,9 @@ TraitEstInfo& NearestRelativeWithTraitEvalOpt(
     // If relative has been estimated & estimation is too far away, skip.
     auto& cur_tax_info = cur_tax->GetData();
     auto& cur_tax_est = cur_tax_info.GetTraitEstimationInfo(trait_id);
-    if (cur_tax_est.estimated && cur_tax_est.estimation_dist >= max_dist) {
+
+    // if (cur_tax_est.estimated && cur_tax_est.estimation_dist >= max_dist) {
+    if (cur_tax_est.estimate_success && cur_tax_est.estimation_dist >= max_dist) {
       continue;
     }
 
