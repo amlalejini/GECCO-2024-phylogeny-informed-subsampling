@@ -136,6 +136,8 @@ protected:
   selection_fun_t selection_fun;
 
   emp::Ptr<systematics_t> systematics_ptr;
+  size_t mrca_changes = 0;
+  emp::Ptr<taxon_t> mrca_ptr = nullptr;
 
   size_t total_test_evaluations = 0;  ///< Tracks total number of "test case" evaluations (across all organisms since beginning of run)
   size_t total_test_estimations = 0;
@@ -282,7 +284,14 @@ void DiagnosticsWorld::DoSelection() {
 }
 
 void DiagnosticsWorld::DoUpdate() {
-  // (1) Compute any per-generation statistics?
+  // Check for MRCA changes
+  emp::Ptr<taxon_t> cur_taxa = systematics_ptr->GetMRCA();
+  if (cur_taxa != mrca_ptr) {
+    ++mrca_changes;
+    mrca_ptr = cur_taxa;
+  }
+
+  // Compute any per-generation statistics?
   emp_assert(config.PRINT_INTERVAL() > 0);
   const size_t cur_update = GetUpdate();
   const bool final_update = cur_update == config.MAX_GENS();
@@ -481,6 +490,7 @@ void DiagnosticsWorld::SetupDataCollection() {
   // Configure phylodiversity file
   phylodiversity_file_ptr->AddVar(update, "update", "Generation");
   phylodiversity_file_ptr->AddVar(total_test_evaluations, "evaluations", "Test evaluations so far");
+  phylodiversity_file_ptr->AddVar(mrca_changes, "mrca_changes", "Number of MRCA changes");
   phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("evolutionary_distinctiveness") , "genotype_evolutionary_distinctiveness", "evolutionary distinctiveness for a single update", true, true);
   phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("pairwise_distance"), "genotype_pairwise_distance", "pairwise distance for a single update", true, true);
   phylodiversity_file_ptr->AddCurrent(*systematics_ptr->GetDataNode("phylogenetic_diversity"), "genotype_current_phylogenetic_diversity", "current phylogenetic_diversity", true, true);
@@ -642,6 +652,9 @@ void DiagnosticsWorld::SetupPhylogenyTracking() {
   systematics_ptr = emp::NewPtr<systematics_t>(
     [](const org_t& org) { return org.GetGenome(); }
   );
+
+  mrca_changes = 0;
+  mrca_ptr = nullptr;
 
   // Add phylo snapshot functions
   systematics_ptr->AddSnapshotFun(
