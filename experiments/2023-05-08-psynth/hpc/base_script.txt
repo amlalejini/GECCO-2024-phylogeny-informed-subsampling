@@ -15,17 +15,17 @@ SEED=$((JOB_SEED_OFFSET + SLURM_ARRAY_TASK_ID - 1))
 EXEC=<<EXEC>>
 # Setup all directories at the beginning
 CONFIG_DIR=<<CONFIG_DIR>>
-REPO_DIR=<<REPO_DIR>>
+# REPO_DIR=<<REPO_DIR>>
 RUN_DIR=<<RUN_DIR>>
 TRAINING_SET=<<TRAINING_SET>>
 TESTING_SET=<<TESTING_SET>>
 
 # Load correct environment
-cd ${REPO_DIR}
+# cd ${REPO_DIR}
 module load GCCcore/11.2.0
 module load Python/3.9.6
 # Activate python virtual environment
-source ${REPO_DIR}/pyenv/bin/activate
+# source ${REPO_DIR}/pyenv/bin/activate
 
 mkdir -p ${RUN_DIR}
 cd ${RUN_DIR}
