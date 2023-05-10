@@ -104,6 +104,7 @@ protected:
   std::function<void(const genome_t&, phenotype_t&)> translate_genome_fun;
 
   std::function<bool(void)> stop_run;
+  bool force_full_compete = false;
 
   // TODO - create a class/struct that manages all of this?
   size_t total_tests=0;
@@ -947,12 +948,16 @@ void DiagnosticsWorld::SetupEvaluation() {
   }
 
   // full vs cohort vs down-sample
+  force_full_compete = false;
   if (config.EVAL_MODE() == "full") {
     SetupEvaluation_Full();
   } else if (config.EVAL_MODE() == "cohort") {
     SetupEvaluation_Cohort();
   } else if (config.EVAL_MODE() == "down-sample") {
     SetupEvaluation_DownSample();
+  } else if (config.EVAL_MODE() == "cohort-full-compete") {
+    SetupEvaluation_Cohort();
+    force_full_compete = true;
   } else {
     std::cout << "Unknown EVAL_MODE: " << config.EVAL_MODE() << std::endl;
     exit(-1);
@@ -1268,33 +1273,53 @@ void DiagnosticsWorld::SetupFitFunEstimator() {
   // If we're using trait estimation, we can use all traits during selection
   // otherwise, we can only use group traits.
   if (estimation_mode) {
-    // run_selection_routine
-    run_selection_routine = [this]() {
-      // Resize parent ids to hold pop_size parents
-      selected_parent_ids.resize(config.POP_SIZE(), 0);
-      emp_assert(test_groupings.size() == org_groupings.size());
-      const size_t num_groups = org_groupings.size();
-      // For each grouping, select a number of parents equal to group size
-      size_t num_selected = 0;
-      for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-        auto& org_group = org_groupings[group_id];
-        const size_t n = org_group.GetSize();
-        // Run selection, but use all possible test ids
+    if (force_full_compete) {
+      // Force full competition with all candidates + all training cases
+      run_selection_routine = [this]() {
+        // Resize parent ids to hold pop_size parents
+        selected_parent_ids.resize(config.POP_SIZE(), 0);
+        // Select pop size number individuals using all orgs and all training cases
         auto& selected = selection_fun(
-          n,
-          org_group.member_ids,
+          config.POP_SIZE(),
+          possible_pop_ids,
           possible_test_ids
         );
-        emp_assert(selected.size() == n);
-        emp_assert(n + num_selected <= selected_parent_ids.size());
+        emp_assert(selected.size() == selected_parent_ids.size());
         std::copy(
           selected.begin(),
           selected.end(),
-          selected_parent_ids.begin() + num_selected
+          selected_parent_ids.begin()
         );
-        num_selected += n;
-      }
-    };
+      };
+    } else {
+      // Competition according to group assignment, but use all possible training cases
+      run_selection_routine = [this]() {
+        // Resize parent ids to hold pop_size parents
+        selected_parent_ids.resize(config.POP_SIZE(), 0);
+        emp_assert(test_groupings.size() == org_groupings.size());
+        const size_t num_groups = org_groupings.size();
+        // For each grouping, select a number of parents equal to group size
+        size_t num_selected = 0;
+        for (size_t group_id = 0; group_id < num_groups; ++group_id) {
+          auto& org_group = org_groupings[group_id];
+          const size_t n = org_group.GetSize();
+          // Run selection, but use all possible test ids
+          auto& selected = selection_fun(
+            n,
+            org_group.member_ids,
+            possible_test_ids
+          );
+          emp_assert(selected.size() == n);
+          emp_assert(n + num_selected <= selected_parent_ids.size());
+          std::copy(
+            selected.begin(),
+            selected.end(),
+            selected_parent_ids.begin() + num_selected
+          );
+          num_selected += n;
+        }
+      };
+    }
   } else {
     // No estimation, so only use evaluated tests in selection routine
     run_selection_routine = [this]() {
