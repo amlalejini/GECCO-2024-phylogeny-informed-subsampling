@@ -161,7 +161,8 @@ template<typename TAXON>
 TraitEstInfo& NearestAncestorWithTraitEval(
   emp::Ptr<TAXON> tax,
   size_t trait_id,
-  size_t max_dist = (size_t)-1
+  size_t max_dist = (size_t)-1,
+  double est_fail_trait_val = 0
 ) {
   emp_assert(tax != nullptr);
   size_t dist = 0;
@@ -198,7 +199,7 @@ TraitEstInfo& NearestAncestorWithTraitEval(
   } else {
     focal_est_info.SetEst(
       false,
-      tax->GetData().GetTraitScore(trait_id),
+      est_fail_trait_val,
       0,
       tax->GetID()
     );
@@ -212,7 +213,8 @@ template<typename TAXON>
 TraitEstInfo& NearestAncestorWithTraitEvalOpt(
   emp::Ptr<TAXON> tax,
   size_t trait_id,
-  size_t max_dist = (size_t)-1
+  size_t max_dist = (size_t)-1,
+  double est_fail_trait_val = 0.0
 ) {
   emp_assert(tax != nullptr);
   size_t dist = 0;
@@ -269,7 +271,7 @@ TraitEstInfo& NearestAncestorWithTraitEvalOpt(
   } else {
     focal_est_info.SetEst(
       false,
-      focal_taxon_info.GetTraitScore(trait_id),
+      est_fail_trait_val,
       0,
       tax->GetID()
     );
@@ -285,7 +287,8 @@ template<typename TAXON>
 TraitEstInfo& NearestRelativeWithTraitEval(
   emp::Ptr<TAXON> tax,
   size_t trait_id,
-  size_t max_dist = (size_t)-1
+  size_t max_dist = (size_t)-1,
+  double est_fail_trait_val = 0.0
 ) {
   emp_assert(tax != nullptr);
   // Track discovered taxa. Start with current taxon.
@@ -344,7 +347,7 @@ TraitEstInfo& NearestRelativeWithTraitEval(
 
   focal_est_info.SetEst(
     false,
-    tax->GetData().GetTraitScore(trait_id),
+    est_fail_trait_val,
     0,
     tax->GetID()
   );
@@ -358,7 +361,8 @@ template<typename TAXON>
 TraitEstInfo& NearestRelativeWithTraitEvalOpt(
   emp::Ptr<TAXON> tax,
   size_t trait_id,
-  size_t max_dist = (size_t)-1
+  size_t max_dist = (size_t)-1,
+  double est_fail_trait_val = 0.0
 ) {
   emp_assert(tax != nullptr);
   // Track discovered taxa. Start with current taxon.
@@ -440,7 +444,7 @@ TraitEstInfo& NearestRelativeWithTraitEvalOpt(
   } else {
     focal_est_info.SetEst(
       false,
-      tax->GetData().GetTraitScore(trait_id),
+      est_fail_trait_val,
       0,
       tax->GetID()
     );
