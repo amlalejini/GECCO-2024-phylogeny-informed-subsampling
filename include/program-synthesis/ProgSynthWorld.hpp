@@ -269,6 +269,9 @@ public:
   //         Must configure world first.
   void Run();
 
+  /// @brief Instead of running evolutionary search, run a mutation analysis on loaded 'ancestor' file.
+  void RunMutationAnalysis();
+
   const config_t& GetConfig() const { return config; }
 
   size_t GetNumTrainingCases() const {
@@ -287,6 +290,12 @@ void ProgSynthWorld::RunStep() {
 
 void ProgSynthWorld::Run() {
   emp_assert(world_configured);
+  // If mutation analysis mode, run mutation analysis and return.
+  if (config.MUTATION_ANALYSIS_MODE()) {
+    RunMutationAnalysis();
+    return;
+  }
+  // Otherwise, run evolution!
   while (!stop_run()) {
     RunStep();
   }
@@ -1810,6 +1819,186 @@ void ProgSynthWorld::SnapshotSolution() {
     inst_lib
   );
   outfile.close();
+}
+
+void ProgSynthWorld::RunMutationAnalysis() {
+  std::cout << "Running a mutation analysis on the focal genotypes." << std::endl;
+
+  size_t genotype_id = 0; // Tracks current focal genotype
+  size_t mutant_id = 0;   // Tracks current mutant id
+
+  ////////////////////////////////////////////////
+  // Configure output
+  ////////////////////////////////////////////////
+  emp::DataFile mutant_file(output_dir + "mutant_analysis.csv");
+  mutant_file.AddVar(genotype_id, "genotype_id");
+  mutant_file.AddVar(mutant_id, "mutant_id");
+  mutant_file.AddFun<bool>(
+    [this, &mutant_id]() {
+      return mutant_id == 0;
+    },
+    "is_original"
+  );
+  mutant_file.AddFun<double>(
+    [this, &mutant_id]() {
+      return org_aggregate_scores[mutant_id];
+    },
+    "agg_score"
+  );
+  mutant_file.AddFun<size_t>(
+    [this, &mutant_id]() {
+      return org_training_coverage[mutant_id];
+    },
+    "training_case_coverage"
+  );
+  mutant_file.AddFun<std::string>(
+    [this, &mutant_id]() -> std::string {
+      std::stringstream ss;
+      utils::PrintVector(
+        ss,
+        org_training_scores[mutant_id],
+        true
+      );
+      return ss.str();
+    },
+    "training_case_scores"
+  );
+  mutant_file.AddFun<size_t>(
+    [this, &mutant_id]() {
+      auto& org = GetOrg(mutant_id);
+      return org.GetGenome().GetProgram().GetInstCount();
+    },
+    "num_instructions"
+  );
+  mutant_file.AddFun<size_t>(
+    [this, &mutant_id]() {
+      auto& org = GetOrg(mutant_id);
+      return org.GetGenome().GetProgram().GetSize();
+    },
+    "num_functions"
+  );
+  mutant_file.PrintHeaderKeys();
+
+
+  ////////////////////////////////////////////////
+  // Load the focal organism(s)
+  ////////////////////////////////////////////////
+  std::ifstream prg_fstream(config.FOCAL_GENOTYPES_FPATH());
+  if (!prg_fstream.is_open()) {
+    std::cout << "Failed to open focal genotypes file: " << config.FOCAL_GENOTYPES_FPATH() << std::endl;
+    exit(-1);
+  }
+  emp::vector<program_t> focal_programs = LoadLinearFunctionsPrograms_PrintFormat<inst_lib_t, TAG_SIZE>(
+    prg_fstream,
+    inst_lib
+  );
+
+  // Run analysis on each focal genotype
+  for (genotype_id = 0; genotype_id < focal_programs.size(); ++genotype_id) {
+
+    // Clear out existing population.
+    Clear();
+    emp_assert(GetSize() == 0);
+
+    auto& focal_program = focal_programs[genotype_id];
+
+    // Inject focal program into population at position 0.
+    Inject({focal_program});
+
+    // Ensure uniqueness.
+    std::set<program_t> mutants({focal_program});
+
+    std::cout << "Generating " << config.NUM_MUTANTS() << " mutants." << std::endl;
+
+    ////////////////////////////////////////////////
+    // Generate N unique mutants
+    ////////////////////////////////////////////////
+    // (<= because focal program included in mutants)
+    while (mutants.size() <= config.NUM_MUTANTS()) {
+      // Create a copy of the focal program
+      program_t mutant_program(focal_program);
+      mutator->ResetLastMutationTracker(); // Reset mutator's recorded mutations.
+      mutator->ApplyAll(
+        *random_ptr,
+        mutant_program
+      );
+      // If we've seen this program before, skip adding it.
+      if (emp::Has(mutants, mutant_program)) {
+        continue;
+      }
+      Inject({mutant_program});
+      mutants.emplace(mutant_program);
+    }
+    emp_assert(GetSize() == (config.NUM_MUTANTS() + 1));
+
+    ////////////////////////////////////////////////
+    // Run each mutant against the full training set
+    ////////////////////////////////////////////////
+    // Reset tracking vectors
+    org_training_scores.clear();
+    org_training_scores.resize(
+      GetSize(),
+      emp::vector<double>(total_training_cases, 0.0)
+    );
+    org_aggregate_scores.clear();
+    org_aggregate_scores.resize(
+      GetSize(),
+      0.0
+    );
+    org_training_coverage.clear();
+    org_training_coverage.resize(
+      GetSize(),
+      0
+    );
+    // For each mutant:
+    for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
+      // -- Begin org evaluation --
+      // 0-out scores / coverage
+      std::fill(
+        org_training_scores[org_id].begin(),
+        org_training_scores[org_id].end(),
+        0.0
+      );
+      org_aggregate_scores[org_id] = 0.0;
+      org_training_coverage[org_id] = 0.0;
+      // Reset phenotype
+      auto& org = GetOrg(org_id);
+      org.ResetPhenotype(total_training_cases);
+      // -- Program evaluation --
+      eval_hardware->SetProgram(org.GetGenome().GetProgram());
+      // Run program on each training case:
+      for (size_t i = 0; i < total_training_cases; ++i) {
+        const size_t test_id = all_training_case_ids[i];
+        // Begin program test
+        begin_program_test_sig.Trigger( org, test_id, true);
+        // Do program test
+        do_program_test_sig.Trigger(org, test_id);
+        // End program test
+        // - Evaluate output
+        TestResult result = problem_manager.EvaluateOutput(
+          *eval_hardware,
+          org,
+          test_id,
+          true
+        );
+        // - Update organism phenotype
+        org.UpdatePhenotype(test_id, result);
+        // - Update tracking
+        org_training_scores[org_id][test_id] = result.score;
+        org_aggregate_scores[org_id] += result.score;
+        org_training_coverage[org_id] += (size_t)result.is_correct;
+      }
+    }
+
+    ////////////////////////////////////////////////
+    // Write to mutant analysis file
+    ////////////////////////////////////////////////
+    for (mutant_id = 0; mutant_id < GetSize(); ++mutant_id) {
+      mutant_file.Update();
+    }
+
+  }
+
 }
 
 }

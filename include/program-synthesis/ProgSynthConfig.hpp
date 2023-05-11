@@ -66,7 +66,12 @@ EMP_BUILD_CONFIG(ProgSynthConfig,
   VALUE(OUTPUT_DIR, std::string, "./output/", "What directory are we dumping all this data"),
   VALUE(OUTPUT_SUMMARY_DATA_INTERVAL, size_t, 10, "How often should we output summary data?"),
   VALUE(PRINT_INTERVAL, size_t, 1, "How often do we print run status information?"),
-  VALUE(SNAPSHOT_INTERVAL, size_t, 100, "How often should we snapshot?")
+  VALUE(SNAPSHOT_INTERVAL, size_t, 100, "How often should we snapshot?"),
+
+  GROUP(MUTATION_ANALYSIS, "Mutation analysis settings"),
+  VALUE(MUTATION_ANALYSIS_MODE, bool, false, "Run in mutation analysis mode?"),
+  VALUE(NUM_MUTANTS, size_t, 100, "How many mutants to sample?"),
+  VALUE(FOCAL_GENOTYPES_FPATH, std::string, "programs.sgp", "Path to genotype file")
 
 )
 

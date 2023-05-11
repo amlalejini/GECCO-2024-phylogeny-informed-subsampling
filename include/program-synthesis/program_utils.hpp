@@ -168,6 +168,85 @@ sgp::cpu::lfunprg::LinearFunctionsProgram<emp::BitSet<TAG_WIDTH>, int> LoadLinea
   return program;
 }
 
+/// Load linear functions program from print format
+/// Example:
+template<typename INST_LIB_T, size_t TAG_WIDTH>
+emp::vector<
+  sgp::cpu::lfunprg::LinearFunctionsProgram<emp::BitSet<TAG_WIDTH>, int>
+> LoadLinearFunctionsPrograms_PrintFormat(
+  std::istream& input,
+  const INST_LIB_T& inst_lib
+) {
+  using program_t = sgp::cpu::lfunprg::LinearFunctionsProgram<emp::BitSet<TAG_WIDTH>, int>;
+  using tag_t = emp::BitSet<TAG_WIDTH>;
+
+  emp::vector<program_t> programs(1);
+
+  std::string cur_line;
+  emp::vector<std::string> line_components;
+  while (!input.eof()) {
+    emp_assert(programs.size() > 0);
+    std::getline(input, cur_line);
+
+    // Remove all whitespace
+    emp::remove_whitespace(cur_line);
+
+    // Handle comments
+    cur_line = emp::string_get(cur_line, "#");
+
+    // If line is empty, skip.
+    if (cur_line == emp::empty_string()) {
+      continue;
+    }
+
+    // If line denotes end of previous program, make new program and continue
+    if (cur_line == "~~") {
+      programs.emplace_back(program_t());
+      continue;
+    }
+
+    // Collect tags
+    emp::vector<tag_t> tags;
+    // Grab tags
+    std::string tags_str = emp::string_pop(
+      cur_line,
+      ")"
+    );
+    // Pop () off tags list
+    emp::remove_chars(tags_str, "()");
+    emp::slice(tags_str, line_components, ',');
+    for (const auto& tag_str : line_components) {
+      tags.emplace_back(FromString_BitSet<TAG_WIDTH>(tag_str));
+    }
+    // Function definition or instruction definition?
+    emp::slice(cur_line, line_components, '-');
+    if (emp::to_lower(line_components[0]) == "fn" && line_components.size() > 1) {
+      // Function definition
+      programs.back().PushFunction(tags);
+    } else {
+      // Instruction definition
+      // Get instruction name
+      std::string inst_name = emp::string_get(cur_line, "[");
+      // Isolate and parse instruction arguments
+      emp::string_pop(cur_line, "[");
+      emp::remove_chars(cur_line, "[]");
+      emp::vector<int> args;
+      emp::slice(cur_line, line_components, ',');
+      for (const auto& arg_str : line_components) {
+        args.emplace_back(emp::from_string<int>(arg_str));
+      }
+      programs.back().PushInst(
+        inst_lib,
+        inst_name,
+        args,
+        tags
+      );
+    }
+  }
+  return programs;
+}
+
+
 /// Load linear functions program from JSON format
 void LoadLinearFunctionsProgram_JSONFormat(
   std::istream& input
