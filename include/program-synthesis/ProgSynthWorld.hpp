@@ -238,6 +238,7 @@ protected:
 
   void SnapshotConfig();
   void SnapshotSolution();
+  void SnapshotPhyloGenotypes();
 
 public:
 
@@ -434,6 +435,9 @@ void ProgSynthWorld::DoUpdate() {
 
   if (snapshot_interval) {
     systematics_ptr->Snapshot(output_dir + "phylo_" + emp::to_string(GetUpdate()) + ".csv");
+    if (config.RECORD_PHYLO_GENOTYPES()) {
+      SnapshotPhyloGenotypes();
+    }
   }
 
   if (found_solution) {
@@ -1821,6 +1825,55 @@ void ProgSynthWorld::SnapshotSolution() {
   outfile.close();
 }
 
+void ProgSynthWorld::SnapshotPhyloGenotypes() {
+  std::ofstream outfile;
+  outfile.open(output_dir + "phylo_genotypes_" + emp::to_string(GetUpdate()) + ".sgp");
+
+  const auto& active_taxa = systematics_ptr->GetActive();
+  const auto& ancestor_taxa = systematics_ptr->GetActive();
+  const auto& outside_taxa = systematics_ptr->GetActive();
+  std::unordered_set<size_t> ids_output;
+
+  // Write active taxa genotypes
+  for (const emp::Ptr<taxon_t>& taxon : active_taxa) {
+    const size_t taxon_id = taxon->GetID();
+    if (emp::Has(ids_output, taxon_id)) continue;
+    outfile << "!" << taxon_id << "\n";
+    taxon->GetInfo().GetProgram().Print(
+      outfile,
+      inst_lib
+    );
+    outfile << "\n";
+    ids_output.emplace(taxon_id);
+  }
+
+  // Write ancestor taxa genotypes
+  for (const emp::Ptr<taxon_t>& taxon : ancestor_taxa) {
+    const size_t taxon_id = taxon->GetID();
+    if (emp::Has(ids_output, taxon_id)) continue;
+    outfile << "!" << taxon_id << "\n";
+    taxon->GetInfo().GetProgram().Print(
+      outfile,
+      inst_lib
+    );
+    outfile << "\n";
+    ids_output.emplace(taxon_id);
+  }
+
+  // Write outside taxa genotypes
+  for (const emp::Ptr<taxon_t>& taxon : outside_taxa) {
+    const size_t taxon_id = taxon->GetID();
+    if (emp::Has(ids_output, taxon_id)) continue;
+    outfile << "!" << taxon_id << "\n";
+    taxon->GetInfo().GetProgram().Print(
+      outfile,
+      inst_lib
+    );
+    outfile << "\n";
+    ids_output.emplace(taxon_id);
+  }
+}
+
 void ProgSynthWorld::RunMutationAnalysis() {
   std::cout << "Running a mutation analysis on the focal genotypes." << std::endl;
 
@@ -1895,9 +1948,11 @@ void ProgSynthWorld::RunMutationAnalysis() {
     inst_lib
   );
 
+  std::cout << "Generating " << config.NUM_MUTANTS() << " mutants for " << focal_programs.size() << " genotypes." << std::endl;
+
   // Run analysis on each focal genotype
   for (size_t prog_i = 0; prog_i < focal_programs.size(); ++prog_i) {
-
+    std::cout << "  Analyzing genotype " << prog_i << " / " << focal_programs.size() - 1 << std::endl;
     genotype_id = focal_programs[prog_i].second;
     // Clear out existing population.
     Clear();
@@ -1910,8 +1965,6 @@ void ProgSynthWorld::RunMutationAnalysis() {
 
     // Ensure uniqueness.
     std::set<program_t> mutants({focal_program});
-
-    std::cout << "Generating " << config.NUM_MUTANTS() << " mutants." << std::endl;
 
     ////////////////////////////////////////////////
     // Generate N unique mutants
