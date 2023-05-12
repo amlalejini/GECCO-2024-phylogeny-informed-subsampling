@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <utility>
 
 #include "emp/base/vector.hpp"
 #include "emp/bits/BitSet.hpp"
@@ -169,10 +170,13 @@ sgp::cpu::lfunprg::LinearFunctionsProgram<emp::BitSet<TAG_WIDTH>, int> LoadLinea
 }
 
 /// Load linear functions program from print format
-/// Example:
+/// - Each program is ID'd
 template<typename INST_LIB_T, size_t TAG_WIDTH>
 emp::vector<
-  sgp::cpu::lfunprg::LinearFunctionsProgram<emp::BitSet<TAG_WIDTH>, int>
+  std::pair<
+    sgp::cpu::lfunprg::LinearFunctionsProgram<emp::BitSet<TAG_WIDTH>, int>,
+    std::string
+  >
 > LoadLinearFunctionsPrograms_PrintFormat(
   std::istream& input,
   const INST_LIB_T& inst_lib
@@ -180,12 +184,11 @@ emp::vector<
   using program_t = sgp::cpu::lfunprg::LinearFunctionsProgram<emp::BitSet<TAG_WIDTH>, int>;
   using tag_t = emp::BitSet<TAG_WIDTH>;
 
-  emp::vector<program_t> programs(1);
+  emp::vector< std::pair<program_t, std::string> > programs;
 
   std::string cur_line;
   emp::vector<std::string> line_components;
   while (!input.eof()) {
-    emp_assert(programs.size() > 0);
     std::getline(input, cur_line);
 
     // Remove all whitespace
@@ -199,10 +202,26 @@ emp::vector<
       continue;
     }
 
-    // If line denotes end of previous program, make new program and continue
-    if (cur_line == "~~") {
-      programs.emplace_back(program_t());
+    // New program, collect id
+    if (emp::has_prefix(cur_line, "!")) {
+      emp::string_pop_fixed(cur_line, 1);
+      programs.emplace_back(
+        std::make_pair(
+          program_t(),
+          cur_line
+        )
+      );
       continue;
+    }
+
+    // Program wasn't denoted by id
+    if (programs.size() == 0) {
+      programs.emplace_back(
+        std::make_pair(
+          program_t(),
+          "unknown"
+        )
+      );
     }
 
     // Collect tags
@@ -222,7 +241,7 @@ emp::vector<
     emp::slice(cur_line, line_components, '-');
     if (emp::to_lower(line_components[0]) == "fn" && line_components.size() > 1) {
       // Function definition
-      programs.back().PushFunction(tags);
+      programs.back().first.PushFunction(tags);
     } else {
       // Instruction definition
       // Get instruction name
@@ -235,7 +254,7 @@ emp::vector<
       for (const auto& arg_str : line_components) {
         args.emplace_back(emp::from_string<int>(arg_str));
       }
-      programs.back().PushInst(
+      programs.back().first.PushInst(
         inst_lib,
         inst_name,
         args,

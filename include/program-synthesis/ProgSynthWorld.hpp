@@ -1824,7 +1824,7 @@ void ProgSynthWorld::SnapshotSolution() {
 void ProgSynthWorld::RunMutationAnalysis() {
   std::cout << "Running a mutation analysis on the focal genotypes." << std::endl;
 
-  size_t genotype_id = 0; // Tracks current focal genotype
+  std::string genotype_id = ""; // Tracks current focal genotype
   size_t mutant_id = 0;   // Tracks current mutant id
 
   ////////////////////////////////////////////////
@@ -1888,19 +1888,22 @@ void ProgSynthWorld::RunMutationAnalysis() {
     std::cout << "Failed to open focal genotypes file: " << config.FOCAL_GENOTYPES_FPATH() << std::endl;
     exit(-1);
   }
-  emp::vector<program_t> focal_programs = LoadLinearFunctionsPrograms_PrintFormat<inst_lib_t, TAG_SIZE>(
+  emp::vector<
+    std::pair<program_t, std::string>
+  > focal_programs = LoadLinearFunctionsPrograms_PrintFormat<inst_lib_t, TAG_SIZE>(
     prg_fstream,
     inst_lib
   );
 
   // Run analysis on each focal genotype
-  for (genotype_id = 0; genotype_id < focal_programs.size(); ++genotype_id) {
+  for (size_t prog_i = 0; prog_i < focal_programs.size(); ++prog_i) {
 
+    genotype_id = focal_programs[prog_i].second;
     // Clear out existing population.
     Clear();
     emp_assert(GetSize() == 0);
 
-    auto& focal_program = focal_programs[genotype_id];
+    auto& focal_program = focal_programs[prog_i].first;
 
     // Inject focal program into population at position 0.
     Inject({focal_program});
@@ -2000,5 +2003,4 @@ void ProgSynthWorld::RunMutationAnalysis() {
   }
 
 }
-
 }
