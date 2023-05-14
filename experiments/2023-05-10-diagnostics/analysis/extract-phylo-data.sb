@@ -9,8 +9,9 @@
 ########## Command Lines to Run ##########
 
 EXP_SLUG=2023-05-10-diagnostics
-REPO_DIR=/Users/lalejina/devo_ws/phylogeny-informed-evaluation
-SCRIPT_DIR=/Users/lalejina/devo_ws/phylogeny-informed-evaluation/experiments/${EXP_SLUG}/analysis
+PROJECT_NAME=phylogeny-informed-evaluation
+REPO_DIR=/mnt/home/lalejini/devo_ws/${PROJECT_NAME}
+SCRIPT_DIR=${REPO_DIR}/experiments/${EXP_SLUG}/analysis
 
 # Load correct environment
 cd ${REPO_DIR}
