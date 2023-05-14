@@ -8,5 +8,17 @@
 
 ########## Command Lines to Run ##########
 
-python3 extract_phylo_data.py "/mnt/scratch/lalejini/data/phylogeny-informed-evaluation/2023-05-10-diagnostics/RUN_C*/output/" phylo-est-info
+EXP_SLUG=2023-05-10-diagnostics
+REPO_DIR=/Users/lalejina/devo_ws/phylogeny-informed-evaluation
+SCRIPT_DIR=/Users/lalejina/devo_ws/phylogeny-informed-evaluation/experiments/${EXP_SLUG}/analysis
+
+# Load correct environment
+cd ${REPO_DIR}
+module load GCCcore/11.2.0
+module load Python/3.9.6
+# Activate python virtual environment
+source ${REPO_DIR}/pyenv/bin/activate
+
+cd ${SCRIPT_DIR}
+python3 extract_phylo_data.py "/mnt/scratch/lalejini/data/phylogeny-informed-evaluation/${EXP_SLUG}/RUN_C*/output/" phylo-est-info
 
