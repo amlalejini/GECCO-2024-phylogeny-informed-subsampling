@@ -1,0 +1,12 @@
+#!/bin/bash
+########## Define Resources Needed with SBATCH Lines ##########
+
+#SBATCH --time=24:00:00          # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --mem=8G        # memory required per node - amount of memory (in bytes)
+#SBATCH --job-name 05-10         # you can give your job a name for easier identification (same as -J)
+#SBATCH --account=devolab
+
+########## Command Lines to Run ##########
+
+python3 extract_phylo_data.py "/mnt/scratch/lalejini/data/phylogeny-informed-evaluation/2023-05-10-diagnostics/RUN_C*/output/" phylo-est-info
+
