@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 5 Program synthesis experiments | Supplemental Material for Phylogeny-informed fitness estimation</title>
+  <meta name="description" content="Supplemental material" />
+  <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 5 Program synthesis experiments | Supplemental Material for Phylogeny-informed fitness estimation" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Supplemental material" />
+  <meta name="github-repo" content="amlalejini/phylogeny-informed-evaluation" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 5 Program synthesis experiments | Supplemental Material for Phylogeny-informed fitness estimation" />
+  
+  <meta name="twitter:description" content="Supplemental material" />
+  
+
+<meta name="author" content="Alexander Lalejini, Matthew Andres Moreno, Jose Guadalupe Hernandez, and Emily Dolson" />
+
+
+<meta name="date" content="2023-05-15" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="selection-scheme-diagnostic-experiments.html"/>
+<link rel="next" href="references.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Supplemental material</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#about-our-supplemental-material"><i class="fa fa-check"></i><b>1.1</b> About our supplemental material</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#contributing-authors"><i class="fa fa-check"></i><b>1.2</b> Contributing authors</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="data-availability.html"><a href="data-availability.html"><i class="fa fa-check"></i><b>2</b> Data Availability</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="data-availability.html"><a href="data-availability.html#source-code"><i class="fa fa-check"></i><b>2.1</b> Source code</a>
+<ul>
+<li class="chapter" data-level="2.1.1" data-path="data-availability.html"><a href="data-availability.html#experiment-software-dependencies"><i class="fa fa-check"></i><b>2.1.1</b> Experiment software dependencies</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="data-availability.html"><a href="data-availability.html#training-and-testing-sets"><i class="fa fa-check"></i><b>2.2</b> Training and testing sets</a></li>
+<li class="chapter" data-level="2.3" data-path="data-availability.html"><a href="data-availability.html#experimental-results"><i class="fa fa-check"></i><b>2.3</b> Experimental results</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html"><i class="fa fa-check"></i><b>3</b> SignalGP instruction set</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#default-instructions"><i class="fa fa-check"></i><b>3.1</b> Default Instructions</a></li>
+<li class="chapter" data-level="3.2" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#problem-specific-instructions"><i class="fa fa-check"></i><b>3.2</b> Problem-specific instructions</a>
+<ul>
+<li class="chapter" data-level="3.2.1" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#fizz-buzz"><i class="fa fa-check"></i><b>3.2.1</b> Fizz Buzz</a></li>
+<li class="chapter" data-level="3.2.2" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#median"><i class="fa fa-check"></i><b>3.2.2</b> Median</a></li>
+<li class="chapter" data-level="3.2.3" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#grade"><i class="fa fa-check"></i><b>3.2.3</b> Grade</a></li>
+<li class="chapter" data-level="3.2.4" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#small-or-large"><i class="fa fa-check"></i><b>3.2.4</b> Small or large</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html"><i class="fa fa-check"></i><b>4</b> Selection scheme diagnostic experiments</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#dependencies"><i class="fa fa-check"></i><b>4.1</b> Dependencies</a></li>
+<li class="chapter" data-level="4.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#setup"><i class="fa fa-check"></i><b>4.2</b> Setup</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#load-experiment-summary-data"><i class="fa fa-check"></i><b>4.2.1</b> Load experiment summary data</a></li>
+<li class="chapter" data-level="4.2.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#load-experiment-time-series-data"><i class="fa fa-check"></i><b>4.2.2</b> Load experiment time series data</a></li>
+<li class="chapter" data-level="4.2.3" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#load-estimate-source-distributions"><i class="fa fa-check"></i><b>4.2.3</b> Load estimate source distributions</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#contradictory-objectives-diagnostic"><i class="fa fa-check"></i><b>4.3</b> Contradictory objectives diagnostic</a>
+<ul>
+<li class="chapter" data-level="4.3.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#population-wide-satisfactory-trait-coverage-final"><i class="fa fa-check"></i><b>4.3.1</b> Population-wide satisfactory trait coverage (final)</a></li>
+<li class="chapter" data-level="4.3.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#population-wide-satisfactory-trait-coverage-over-time"><i class="fa fa-check"></i><b>4.3.2</b> Population-wide satisfactory trait coverage (over time)</a></li>
+<li class="chapter" data-level="4.3.3" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#phylogeny-estimate-source-distributions"><i class="fa fa-check"></i><b>4.3.3</b> Phylogeny estimate source distributions</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#multi-path-exploration-diagnostic"><i class="fa fa-check"></i><b>4.4</b> Multi-path exploration diagnostic</a>
+<ul>
+<li class="chapter" data-level="4.4.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#maximum-aggregate-score-final"><i class="fa fa-check"></i><b>4.4.1</b> Maximum aggregate score (final)</a></li>
+<li class="chapter" data-level="4.4.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#maximum-aggregate-score-over-time"><i class="fa fa-check"></i><b>4.4.2</b> Maximum aggregate score (over time)</a></li>
+<li class="chapter" data-level="4.4.3" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#phylogeny-estimate-source-distributions-1"><i class="fa fa-check"></i><b>4.4.3</b> Phylogeny estimate source distributions</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#manuscript-figures"><i class="fa fa-check"></i><b>4.5</b> Manuscript figures</a>
+<ul>
+<li class="chapter" data-level="4.5.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#contradictory-objectives"><i class="fa fa-check"></i><b>4.5.1</b> Contradictory objectives</a></li>
+<li class="chapter" data-level="4.5.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#multi-path-exploration"><i class="fa fa-check"></i><b>4.5.2</b> Multi-path exploration</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html"><i class="fa fa-check"></i><b>5</b> Program synthesis experiments</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#dependencies-1"><i class="fa fa-check"></i><b>5.1</b> Dependencies</a></li>
+<li class="chapter" data-level="5.2" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#setup-1"><i class="fa fa-check"></i><b>5.2</b> Setup</a>
+<ul>
+<li class="chapter" data-level="5.2.1" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#load-summary-data"><i class="fa fa-check"></i><b>5.2.1</b> Load summary data</a></li>
+<li class="chapter" data-level="5.2.2" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#load-time-series-data"><i class="fa fa-check"></i><b>5.2.2</b> Load time series data</a></li>
+</ul></li>
+<li class="chapter" data-level="5.3" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#problem-solving-success"><i class="fa fa-check"></i><b>5.3</b> Problem-solving success</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with ❤ and bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Supplemental Material for Phylogeny-informed fitness estimation</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="program-synthesis-experiments" class="section level1 hasAnchor" number="5">
+<h1><span class="header-section-number">Chapter 5</span> Program synthesis experiments<a href="program-synthesis-experiments.html#program-synthesis-experiments" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="program-synthesis-experiments.html#cb74-1" aria-hidden="true" tabindex="-1"></a>experiment_slug <span class="ot">&lt;-</span> <span class="st">&quot;2023-05-08-psynth&quot;</span></span>
+<span id="cb74-2"><a href="program-synthesis-experiments.html#cb74-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-3"><a href="program-synthesis-experiments.html#cb74-3" aria-hidden="true" tabindex="-1"></a>working_directory <span class="ot">&lt;-</span> <span class="fu">paste0</span>(</span>
+<span id="cb74-4"><a href="program-synthesis-experiments.html#cb74-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;experiments/&quot;</span>,</span>
+<span id="cb74-5"><a href="program-synthesis-experiments.html#cb74-5" aria-hidden="true" tabindex="-1"></a>  experiment_slug,</span>
+<span id="cb74-6"><a href="program-synthesis-experiments.html#cb74-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;/analysis/&quot;</span></span>
+<span id="cb74-7"><a href="program-synthesis-experiments.html#cb74-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb74-8"><a href="program-synthesis-experiments.html#cb74-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-9"><a href="program-synthesis-experiments.html#cb74-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">exists</span>(<span class="st">&quot;bookdown_wd_prefix&quot;</span>)) {</span>
+<span id="cb74-10"><a href="program-synthesis-experiments.html#cb74-10" aria-hidden="true" tabindex="-1"></a>  working_directory <span class="ot">&lt;-</span> <span class="fu">paste0</span>(</span>
+<span id="cb74-11"><a href="program-synthesis-experiments.html#cb74-11" aria-hidden="true" tabindex="-1"></a>    bookdown_wd_prefix,</span>
+<span id="cb74-12"><a href="program-synthesis-experiments.html#cb74-12" aria-hidden="true" tabindex="-1"></a>    working_directory</span>
+<span id="cb74-13"><a href="program-synthesis-experiments.html#cb74-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb74-14"><a href="program-synthesis-experiments.html#cb74-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div id="dependencies-1" class="section level2 hasAnchor" number="5.1">
+<h2><span class="header-section-number">5.1</span> Dependencies<a href="program-synthesis-experiments.html#dependencies-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="program-synthesis-experiments.html#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb75-2"><a href="program-synthesis-experiments.html#cb75-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb75-3"><a href="program-synthesis-experiments.html#cb75-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb75-4"><a href="program-synthesis-experiments.html#cb75-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
+<span id="cb75-5"><a href="program-synthesis-experiments.html#cb75-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(khroma)</span>
+<span id="cb75-6"><a href="program-synthesis-experiments.html#cb75-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstatix)</span>
+<span id="cb75-7"><a href="program-synthesis-experiments.html#cb75-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb75-8"><a href="program-synthesis-experiments.html#cb75-8" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb76"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb76-1"><a href="program-synthesis-experiments.html#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(version)</span></code></pre></div>
+<pre><code>##                _                           
+## platform       aarch64-apple-darwin20      
+## arch           aarch64                     
+## os             darwin20                    
+## system         aarch64, darwin20           
+## status                                     
+## major          4                           
+## minor          2.1                         
+## year           2022                        
+## month          06                          
+## day            23                          
+## svn rev        82513                       
+## language       R                           
+## version.string R version 4.2.1 (2022-06-23)
+## nickname       Funny-Looking Kid</code></pre>
+</div>
+<div id="setup-1" class="section level2 hasAnchor" number="5.2">
+<h2><span class="header-section-number">5.2</span> Setup<a href="program-synthesis-experiments.html#setup-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb78"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb78-1"><a href="program-synthesis-experiments.html#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure our default graphing theme</span></span>
+<span id="cb78-2"><a href="program-synthesis-experiments.html#cb78-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_cowplot</span>())</span>
+<span id="cb78-3"><a href="program-synthesis-experiments.html#cb78-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a directory to store plots</span></span>
+<span id="cb78-4"><a href="program-synthesis-experiments.html#cb78-4" aria-hidden="true" tabindex="-1"></a>plot_directory <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;plots/&quot;</span>)</span>
+<span id="cb78-5"><a href="program-synthesis-experiments.html#cb78-5" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(plot_directory, <span class="at">showWarnings=</span><span class="cn">FALSE</span>)</span></code></pre></div>
+<div id="load-summary-data" class="section level3 hasAnchor" number="5.2.1">
+<h3><span class="header-section-number">5.2.1</span> Load summary data<a href="program-synthesis-experiments.html#load-summary-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="program-synthesis-experiments.html#cb79-1" aria-hidden="true" tabindex="-1"></a>summary_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/aggregate.csv&quot;</span>)</span>
+<span id="cb79-2"><a href="program-synthesis-experiments.html#cb79-2" aria-hidden="true" tabindex="-1"></a>summary_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(summary_data_loc)</span></code></pre></div>
+<pre><code>## Rows: 3120 Columns: 73
+## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (11): ANCESTOR_FILE_PATH, EVAL_FIT_EST_MODE, EVAL_MODE, POP_INIT_MODE, P...
+## dbl (62): EVAL_CPU_CYCLES_PER_TEST, EVAL_MAX_PHYLO_SEARCH_DEPTH, MAX_ACTIVE_...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="program-synthesis-experiments.html#cb81-1" aria-hidden="true" tabindex="-1"></a>summary_data <span class="ot">&lt;-</span> summary_data <span class="sc">%&gt;%</span></span>
+<span id="cb81-2"><a href="program-synthesis-experiments.html#cb81-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb81-3"><a href="program-synthesis-experiments.html#cb81-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">eval_mode_row =</span> <span class="fu">case_when</span>(</span>
+<span id="cb81-4"><a href="program-synthesis-experiments.html#cb81-4" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> TEST_DOWNSAMPLE_RATE <span class="sc">==</span> <span class="st">&quot;1&quot;</span> <span class="sc">~</span> <span class="st">&quot;down-sample&quot;</span>,</span>
+<span id="cb81-5"><a href="program-synthesis-experiments.html#cb81-5" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> NUM_COHORTS <span class="sc">==</span> <span class="st">&quot;1&quot;</span> <span class="sc">~</span> <span class="st">&quot;cohort&quot;</span>,</span>
+<span id="cb81-6"><a href="program-synthesis-experiments.html#cb81-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> EVAL_MODE</span>
+<span id="cb81-7"><a href="program-synthesis-experiments.html#cb81-7" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb81-8"><a href="program-synthesis-experiments.html#cb81-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">evals_per_gen =</span> <span class="fu">case_when</span>(</span>
+<span id="cb81-9"><a href="program-synthesis-experiments.html#cb81-9" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;cohort&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span> <span class="sc">/</span> NUM_COHORTS,</span>
+<span id="cb81-10"><a href="program-synthesis-experiments.html#cb81-10" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;down-sample&quot;</span> <span class="sc">~</span> TEST_DOWNSAMPLE_RATE,</span>
+<span id="cb81-11"><a href="program-synthesis-experiments.html#cb81-11" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span></span>
+<span id="cb81-12"><a href="program-synthesis-experiments.html#cb81-12" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb81-13"><a href="program-synthesis-experiments.html#cb81-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_FIT_EST_MODE =</span> <span class="fu">case_when</span>(</span>
+<span id="cb81-14"><a href="program-synthesis-experiments.html#cb81-14" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE <span class="sc">==</span> <span class="st">&quot;ancestor-opt&quot;</span> <span class="sc">~</span> <span class="st">&quot;ancestor&quot;</span>,</span>
+<span id="cb81-15"><a href="program-synthesis-experiments.html#cb81-15" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE <span class="sc">==</span> <span class="st">&quot;relative-opt&quot;</span> <span class="sc">~</span> <span class="st">&quot;relative&quot;</span>,</span>
+<span id="cb81-16"><a href="program-synthesis-experiments.html#cb81-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> EVAL_FIT_EST_MODE</span>
+<span id="cb81-17"><a href="program-synthesis-experiments.html#cb81-17" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb81-18"><a href="program-synthesis-experiments.html#cb81-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">.keep =</span> <span class="st">&quot;all&quot;</span></span>
+<span id="cb81-19"><a href="program-synthesis-experiments.html#cb81-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb81-20"><a href="program-synthesis-experiments.html#cb81-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb81-21"><a href="program-synthesis-experiments.html#cb81-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">evals_per_gen =</span> <span class="fu">as.factor</span>(evals_per_gen),</span>
+<span id="cb81-22"><a href="program-synthesis-experiments.html#cb81-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">PROBLEM =</span> <span class="fu">as.factor</span>(PROBLEM),</span>
+<span id="cb81-23"><a href="program-synthesis-experiments.html#cb81-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">SELECTION =</span> <span class="fu">as.factor</span>(SELECTION),</span>
+<span id="cb81-24"><a href="program-synthesis-experiments.html#cb81-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_MODE =</span> <span class="fu">as.factor</span>(EVAL_MODE),</span>
+<span id="cb81-25"><a href="program-synthesis-experiments.html#cb81-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">NUM_COHORTS =</span> <span class="fu">as.factor</span>(NUM_COHORTS),</span>
+<span id="cb81-26"><a href="program-synthesis-experiments.html#cb81-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">TEST_DOWNSAMPLE_RATE =</span> <span class="fu">as.factor</span>(TEST_DOWNSAMPLE_RATE),</span>
+<span id="cb81-27"><a href="program-synthesis-experiments.html#cb81-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_FIT_EST_MODE =</span> <span class="fu">factor</span>(</span>
+<span id="cb81-28"><a href="program-synthesis-experiments.html#cb81-28" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE,</span>
+<span id="cb81-29"><a href="program-synthesis-experiments.html#cb81-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(</span>
+<span id="cb81-30"><a href="program-synthesis-experiments.html#cb81-30" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb81-31"><a href="program-synthesis-experiments.html#cb81-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;ancestor&quot;</span>,</span>
+<span id="cb81-32"><a href="program-synthesis-experiments.html#cb81-32" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;relative&quot;</span></span>
+<span id="cb81-33"><a href="program-synthesis-experiments.html#cb81-33" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb81-34"><a href="program-synthesis-experiments.html#cb81-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(</span>
+<span id="cb81-35"><a href="program-synthesis-experiments.html#cb81-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;None&quot;</span>,</span>
+<span id="cb81-36"><a href="program-synthesis-experiments.html#cb81-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Ancestor&quot;</span>,</span>
+<span id="cb81-37"><a href="program-synthesis-experiments.html#cb81-37" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Relative&quot;</span></span>
+<span id="cb81-38"><a href="program-synthesis-experiments.html#cb81-38" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb81-39"><a href="program-synthesis-experiments.html#cb81-39" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb81-40"><a href="program-synthesis-experiments.html#cb81-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">.keep =</span> <span class="st">&quot;all&quot;</span></span>
+<span id="cb81-41"><a href="program-synthesis-experiments.html#cb81-41" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb81-42"><a href="program-synthesis-experiments.html#cb81-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-43"><a href="program-synthesis-experiments.html#cb81-43" aria-hidden="true" tabindex="-1"></a>solution_counts <span class="ot">&lt;-</span> summary_data <span class="sc">%&gt;%</span></span>
+<span id="cb81-44"><a href="program-synthesis-experiments.html#cb81-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(</span>
+<span id="cb81-45"><a href="program-synthesis-experiments.html#cb81-45" aria-hidden="true" tabindex="-1"></a>    PROBLEM,</span>
+<span id="cb81-46"><a href="program-synthesis-experiments.html#cb81-46" aria-hidden="true" tabindex="-1"></a>    evals_per_gen,</span>
+<span id="cb81-47"><a href="program-synthesis-experiments.html#cb81-47" aria-hidden="true" tabindex="-1"></a>    eval_mode_row,</span>
+<span id="cb81-48"><a href="program-synthesis-experiments.html#cb81-48" aria-hidden="true" tabindex="-1"></a>    EVAL_FIT_EST_MODE,</span>
+<span id="cb81-49"><a href="program-synthesis-experiments.html#cb81-49" aria-hidden="true" tabindex="-1"></a>    EVAL_MODE</span>
+<span id="cb81-50"><a href="program-synthesis-experiments.html#cb81-50" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb81-51"><a href="program-synthesis-experiments.html#cb81-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb81-52"><a href="program-synthesis-experiments.html#cb81-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">solution_count =</span> <span class="fu">sum</span>(found_solution <span class="sc">==</span> <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb81-53"><a href="program-synthesis-experiments.html#cb81-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">replicates =</span> <span class="fu">n</span>(),</span>
+<span id="cb81-54"><a href="program-synthesis-experiments.html#cb81-54" aria-hidden="true" tabindex="-1"></a>    <span class="at">no_solution_count =</span> <span class="fu">n</span>() <span class="sc">-</span> <span class="fu">sum</span>(found_solution <span class="sc">==</span> <span class="st">&quot;1&quot;</span>)</span>
+<span id="cb81-55"><a href="program-synthesis-experiments.html#cb81-55" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<pre><code>## `summarise()` has grouped output by &#39;PROBLEM&#39;, &#39;evals_per_gen&#39;, &#39;eval_mode_row&#39;,
+## &#39;EVAL_FIT_EST_MODE&#39;. You can override using the `.groups` argument.</code></pre>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="program-synthesis-experiments.html#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(solution_counts, <span class="at">n=</span><span class="dv">140</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 104 × 8
+## # Groups:   PROBLEM, evals_per_gen, eval_mode_row, EVAL_FIT_EST_MODE [104]
+##     PROBLEM        evals_per_gen eval_…¹ EVAL_…² EVAL_…³ solut…⁴ repli…⁵ no_so…⁶
+##     &lt;fct&gt;          &lt;fct&gt;         &lt;chr&gt;   &lt;fct&gt;   &lt;fct&gt;     &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
+##   1 fizz-buzz      0.01          cohort  None    cohort        0      30      30
+##   2 fizz-buzz      0.01          cohort  Ancest… cohort        2      30      28
+##   3 fizz-buzz      0.01          cohort  Relati… cohort        3      30      27
+##   4 fizz-buzz      0.01          down-s… None    down-s…       0      30      30
+##   5 fizz-buzz      0.01          down-s… Ancest… down-s…       0      30      30
+##   6 fizz-buzz      0.01          down-s… Relati… down-s…       0      30      30
+##   7 fizz-buzz      0.05          cohort  None    cohort        5      30      25
+##   8 fizz-buzz      0.05          cohort  Ancest… cohort        3      30      27
+##   9 fizz-buzz      0.05          cohort  Relati… cohort        7      30      23
+##  10 fizz-buzz      0.05          down-s… None    down-s…      20      30      10
+##  11 fizz-buzz      0.05          down-s… Ancest… down-s…       2      30      28
+##  12 fizz-buzz      0.05          down-s… Relati… down-s…       2      30      28
+##  13 fizz-buzz      0.1           cohort  None    cohort        1      30      29
+##  14 fizz-buzz      0.1           cohort  Ancest… cohort        3      30      27
+##  15 fizz-buzz      0.1           cohort  Relati… cohort        9      30      21
+##  16 fizz-buzz      0.1           down-s… None    down-s…       8      30      22
+##  17 fizz-buzz      0.1           down-s… Ancest… down-s…       8      30      22
+##  18 fizz-buzz      0.1           down-s… Relati… down-s…       7      30      23
+##  19 fizz-buzz      0.5           cohort  None    cohort        0      30      30
+##  20 fizz-buzz      0.5           cohort  Ancest… cohort        9      30      21
+##  21 fizz-buzz      0.5           cohort  Relati… cohort        6      30      24
+##  22 fizz-buzz      0.5           down-s… None    down-s…       0      30      30
+##  23 fizz-buzz      0.5           down-s… Ancest… down-s…       7      30      23
+##  24 fizz-buzz      0.5           down-s… Relati… down-s…       7      30      23
+##  25 fizz-buzz      1             cohort  None    full          0      30      30
+##  26 fizz-buzz      1             down-s… None    full          0      30      30
+##  27 grade          0.01          cohort  None    cohort       20      30      10
+##  28 grade          0.01          cohort  Ancest… cohort       18      30      12
+##  29 grade          0.01          cohort  Relati… cohort       23      30       7
+##  30 grade          0.01          down-s… None    down-s…       1      30      29
+##  31 grade          0.01          down-s… Ancest… down-s…      10      30      20
+##  32 grade          0.01          down-s… Relati… down-s…      11      30      19
+##  33 grade          0.05          cohort  None    cohort       18      30      12
+##  34 grade          0.05          cohort  Ancest… cohort       13      30      17
+##  35 grade          0.05          cohort  Relati… cohort       19      30      11
+##  36 grade          0.05          down-s… None    down-s…      22      30       8
+##  37 grade          0.05          down-s… Ancest… down-s…      12      30      18
+##  38 grade          0.05          down-s… Relati… down-s…      11      30      19
+##  39 grade          0.1           cohort  None    cohort       12      30      18
+##  40 grade          0.1           cohort  Ancest… cohort       20      30      10
+##  41 grade          0.1           cohort  Relati… cohort       15      30      15
+##  42 grade          0.1           down-s… None    down-s…      22      30       8
+##  43 grade          0.1           down-s… Ancest… down-s…      13      30      17
+##  44 grade          0.1           down-s… Relati… down-s…      11      30      19
+##  45 grade          0.5           cohort  None    cohort        4      30      26
+##  46 grade          0.5           cohort  Ancest… cohort        2      30      28
+##  47 grade          0.5           cohort  Relati… cohort        4      30      26
+##  48 grade          0.5           down-s… None    down-s…       5      30      25
+##  49 grade          0.5           down-s… Ancest… down-s…       9      30      21
+##  50 grade          0.5           down-s… Relati… down-s…       4      30      26
+##  51 grade          1             cohort  None    full          1      30      29
+##  52 grade          1             down-s… None    full          1      30      29
+##  53 median         0.01          cohort  None    cohort        0      30      30
+##  54 median         0.01          cohort  Ancest… cohort       22      30       8
+##  55 median         0.01          cohort  Relati… cohort       27      30       3
+##  56 median         0.01          down-s… None    down-s…       8      30      22
+##  57 median         0.01          down-s… Ancest… down-s…      13      30      17
+##  58 median         0.01          down-s… Relati… down-s…      14      30      16
+##  59 median         0.05          cohort  None    cohort       12      30      18
+##  60 median         0.05          cohort  Ancest… cohort       23      30       7
+##  61 median         0.05          cohort  Relati… cohort       25      30       5
+##  62 median         0.05          down-s… None    down-s…       4      30      26
+##  63 median         0.05          down-s… Ancest… down-s…      19      30      11
+##  64 median         0.05          down-s… Relati… down-s…      23      30       7
+##  65 median         0.1           cohort  None    cohort       15      30      15
+##  66 median         0.1           cohort  Ancest… cohort       26      30       4
+##  67 median         0.1           cohort  Relati… cohort       24      30       6
+##  68 median         0.1           down-s… None    down-s…      16      30      14
+##  69 median         0.1           down-s… Ancest… down-s…      21      30       9
+##  70 median         0.1           down-s… Relati… down-s…      22      30       8
+##  71 median         0.5           cohort  None    cohort        5      30      25
+##  72 median         0.5           cohort  Ancest… cohort       12      30      18
+##  73 median         0.5           cohort  Relati… cohort       13      30      17
+##  74 median         0.5           down-s… None    down-s…       2      30      28
+##  75 median         0.5           down-s… Ancest… down-s…      15      30      15
+##  76 median         0.5           down-s… Relati… down-s…      13      30      17
+##  77 median         1             cohort  None    full          1      30      29
+##  78 median         1             down-s… None    full          1      30      29
+##  79 small-or-large 0.01          cohort  None    cohort        0      30      30
+##  80 small-or-large 0.01          cohort  Ancest… cohort        1      30      29
+##  81 small-or-large 0.01          cohort  Relati… cohort        0      30      30
+##  82 small-or-large 0.01          down-s… None    down-s…       0      30      30
+##  83 small-or-large 0.01          down-s… Ancest… down-s…       0      30      30
+##  84 small-or-large 0.01          down-s… Relati… down-s…       0      30      30
+##  85 small-or-large 0.05          cohort  None    cohort        0      30      30
+##  86 small-or-large 0.05          cohort  Ancest… cohort        0      30      30
+##  87 small-or-large 0.05          cohort  Relati… cohort        1      30      29
+##  88 small-or-large 0.05          down-s… None    down-s…       0      30      30
+##  89 small-or-large 0.05          down-s… Ancest… down-s…       0      30      30
+##  90 small-or-large 0.05          down-s… Relati… down-s…       0      30      30
+##  91 small-or-large 0.1           cohort  None    cohort        0      30      30
+##  92 small-or-large 0.1           cohort  Ancest… cohort        0      30      30
+##  93 small-or-large 0.1           cohort  Relati… cohort        0      30      30
+##  94 small-or-large 0.1           down-s… None    down-s…       0      30      30
+##  95 small-or-large 0.1           down-s… Ancest… down-s…       0      30      30
+##  96 small-or-large 0.1           down-s… Relati… down-s…       0      30      30
+##  97 small-or-large 0.5           cohort  None    cohort        0      30      30
+##  98 small-or-large 0.5           cohort  Ancest… cohort        0      30      30
+##  99 small-or-large 0.5           cohort  Relati… cohort        0      30      30
+## 100 small-or-large 0.5           down-s… None    down-s…       0      30      30
+## 101 small-or-large 0.5           down-s… Ancest… down-s…       0      30      30
+## 102 small-or-large 0.5           down-s… Relati… down-s…       0      30      30
+## 103 small-or-large 1             cohort  None    full          0      30      30
+## 104 small-or-large 1             down-s… None    full          0      30      30
+## # … with abbreviated variable names ¹​eval_mode_row, ²​EVAL_FIT_EST_MODE,
+## #   ³​EVAL_MODE, ⁴​solution_count, ⁵​replicates, ⁶​no_solution_count</code></pre>
+</div>
+<div id="load-time-series-data" class="section level3 hasAnchor" number="5.2.2">
+<h3><span class="header-section-number">5.2.2</span> Load time series data<a href="program-synthesis-experiments.html#load-time-series-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Because runs stop when a solution is found, the over time data aren’t completely fair to compare across replicates.</p>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="program-synthesis-experiments.html#cb85-1" aria-hidden="true" tabindex="-1"></a>ts_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/time_series.csv&quot;</span>)</span>
+<span id="cb85-2"><a href="program-synthesis-experiments.html#cb85-2" aria-hidden="true" tabindex="-1"></a>ts_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(ts_data_loc)</span></code></pre></div>
+<pre><code>## Rows: 262694 Columns: 24
+## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (6): EVAL_FIT_EST_MODE, EVAL_MODE, PROBLEM, SELECTION, TESTING_SET_PATH...
+## dbl (18): EVAL_MAX_PHYLO_SEARCH_DEPTH, NUM_COHORTS, SEED, TEST_DOWNSAMPLE_RA...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="program-synthesis-experiments.html#cb87-1" aria-hidden="true" tabindex="-1"></a>ts_data <span class="ot">&lt;-</span> ts_data <span class="sc">%&gt;%</span></span>
+<span id="cb87-2"><a href="program-synthesis-experiments.html#cb87-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb87-3"><a href="program-synthesis-experiments.html#cb87-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">eval_mode_row =</span> <span class="fu">case_when</span>(</span>
+<span id="cb87-4"><a href="program-synthesis-experiments.html#cb87-4" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> TEST_DOWNSAMPLE_RATE <span class="sc">==</span> <span class="st">&quot;1&quot;</span> <span class="sc">~</span> <span class="st">&quot;down-sample&quot;</span>,</span>
+<span id="cb87-5"><a href="program-synthesis-experiments.html#cb87-5" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> NUM_COHORTS <span class="sc">==</span> <span class="st">&quot;1&quot;</span> <span class="sc">~</span> <span class="st">&quot;cohort&quot;</span>,</span>
+<span id="cb87-6"><a href="program-synthesis-experiments.html#cb87-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> EVAL_MODE</span>
+<span id="cb87-7"><a href="program-synthesis-experiments.html#cb87-7" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb87-8"><a href="program-synthesis-experiments.html#cb87-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">evals_per_gen =</span> <span class="fu">case_when</span>(</span>
+<span id="cb87-9"><a href="program-synthesis-experiments.html#cb87-9" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;cohort&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span> <span class="sc">/</span> NUM_COHORTS,</span>
+<span id="cb87-10"><a href="program-synthesis-experiments.html#cb87-10" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;down-sample&quot;</span> <span class="sc">~</span> TEST_DOWNSAMPLE_RATE,</span>
+<span id="cb87-11"><a href="program-synthesis-experiments.html#cb87-11" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span></span>
+<span id="cb87-12"><a href="program-synthesis-experiments.html#cb87-12" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb87-13"><a href="program-synthesis-experiments.html#cb87-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_FIT_EST_MODE =</span> <span class="fu">case_when</span>(</span>
+<span id="cb87-14"><a href="program-synthesis-experiments.html#cb87-14" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE <span class="sc">==</span> <span class="st">&quot;ancestor-opt&quot;</span> <span class="sc">~</span> <span class="st">&quot;ancestor&quot;</span>,</span>
+<span id="cb87-15"><a href="program-synthesis-experiments.html#cb87-15" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE <span class="sc">==</span> <span class="st">&quot;relative-opt&quot;</span> <span class="sc">~</span> <span class="st">&quot;relative&quot;</span>,</span>
+<span id="cb87-16"><a href="program-synthesis-experiments.html#cb87-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> EVAL_FIT_EST_MODE</span>
+<span id="cb87-17"><a href="program-synthesis-experiments.html#cb87-17" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb87-18"><a href="program-synthesis-experiments.html#cb87-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">.keep =</span> <span class="st">&quot;all&quot;</span></span>
+<span id="cb87-19"><a href="program-synthesis-experiments.html#cb87-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb87-20"><a href="program-synthesis-experiments.html#cb87-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb87-21"><a href="program-synthesis-experiments.html#cb87-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">evals_per_gen =</span> <span class="fu">as.factor</span>(evals_per_gen),</span>
+<span id="cb87-22"><a href="program-synthesis-experiments.html#cb87-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">PROBLEM =</span> <span class="fu">as.factor</span>(PROBLEM),</span>
+<span id="cb87-23"><a href="program-synthesis-experiments.html#cb87-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">SELECTION =</span> <span class="fu">as.factor</span>(SELECTION),</span>
+<span id="cb87-24"><a href="program-synthesis-experiments.html#cb87-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_MODE =</span> <span class="fu">as.factor</span>(EVAL_MODE),</span>
+<span id="cb87-25"><a href="program-synthesis-experiments.html#cb87-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">NUM_COHORTS =</span> <span class="fu">as.factor</span>(NUM_COHORTS),</span>
+<span id="cb87-26"><a href="program-synthesis-experiments.html#cb87-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">TEST_DOWNSAMPLE_RATE =</span> <span class="fu">as.factor</span>(TEST_DOWNSAMPLE_RATE),</span>
+<span id="cb87-27"><a href="program-synthesis-experiments.html#cb87-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_FIT_EST_MODE =</span> <span class="fu">factor</span>(</span>
+<span id="cb87-28"><a href="program-synthesis-experiments.html#cb87-28" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE,</span>
+<span id="cb87-29"><a href="program-synthesis-experiments.html#cb87-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(</span>
+<span id="cb87-30"><a href="program-synthesis-experiments.html#cb87-30" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb87-31"><a href="program-synthesis-experiments.html#cb87-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;ancestor&quot;</span>,</span>
+<span id="cb87-32"><a href="program-synthesis-experiments.html#cb87-32" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;relative&quot;</span></span>
+<span id="cb87-33"><a href="program-synthesis-experiments.html#cb87-33" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb87-34"><a href="program-synthesis-experiments.html#cb87-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(</span>
+<span id="cb87-35"><a href="program-synthesis-experiments.html#cb87-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;None&quot;</span>,</span>
+<span id="cb87-36"><a href="program-synthesis-experiments.html#cb87-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Ancestor&quot;</span>,</span>
+<span id="cb87-37"><a href="program-synthesis-experiments.html#cb87-37" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Relative&quot;</span></span>
+<span id="cb87-38"><a href="program-synthesis-experiments.html#cb87-38" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb87-39"><a href="program-synthesis-experiments.html#cb87-39" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb87-40"><a href="program-synthesis-experiments.html#cb87-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">.keep =</span> <span class="st">&quot;all&quot;</span></span>
+<span id="cb87-41"><a href="program-synthesis-experiments.html#cb87-41" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb87-42"><a href="program-synthesis-experiments.html#cb87-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb87-43"><a href="program-synthesis-experiments.html#cb87-43" aria-hidden="true" tabindex="-1"></a>avg_across_time_data <span class="ot">&lt;-</span> ts_data <span class="sc">%&gt;%</span></span>
+<span id="cb87-44"><a href="program-synthesis-experiments.html#cb87-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(</span>
+<span id="cb87-45"><a href="program-synthesis-experiments.html#cb87-45" aria-hidden="true" tabindex="-1"></a>    PROBLEM,</span>
+<span id="cb87-46"><a href="program-synthesis-experiments.html#cb87-46" aria-hidden="true" tabindex="-1"></a>    evals_per_gen,</span>
+<span id="cb87-47"><a href="program-synthesis-experiments.html#cb87-47" aria-hidden="true" tabindex="-1"></a>    eval_mode_row,</span>
+<span id="cb87-48"><a href="program-synthesis-experiments.html#cb87-48" aria-hidden="true" tabindex="-1"></a>    EVAL_FIT_EST_MODE,</span>
+<span id="cb87-49"><a href="program-synthesis-experiments.html#cb87-49" aria-hidden="true" tabindex="-1"></a>    EVAL_MODE,</span>
+<span id="cb87-50"><a href="program-synthesis-experiments.html#cb87-50" aria-hidden="true" tabindex="-1"></a>    SEED</span>
+<span id="cb87-51"><a href="program-synthesis-experiments.html#cb87-51" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb87-52"><a href="program-synthesis-experiments.html#cb87-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb87-53"><a href="program-synthesis-experiments.html#cb87-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_entropy_selected_ids =</span> <span class="fu">mean</span>(entropy_selected_ids),</span>
+<span id="cb87-54"><a href="program-synthesis-experiments.html#cb87-54" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_genotype_pairwise_distance =</span> <span class="fu">mean</span>(mean_genotype_pairwise_distance),</span>
+<span id="cb87-55"><a href="program-synthesis-experiments.html#cb87-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_num_unique_selected =</span> <span class="fu">mean</span>(num_unique_selected),</span>
+<span id="cb87-56"><a href="program-synthesis-experiments.html#cb87-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">max_genotype_pairwise_distance =</span> <span class="fu">max</span>(mean_genotype_pairwise_distance)</span>
+<span id="cb87-57"><a href="program-synthesis-experiments.html#cb87-57" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<pre><code>## `summarise()` has grouped output by &#39;PROBLEM&#39;, &#39;evals_per_gen&#39;, &#39;eval_mode_row&#39;,
+## &#39;EVAL_FIT_EST_MODE&#39;, &#39;EVAL_MODE&#39;. You can override using the `.groups` argument.</code></pre>
+</div>
+</div>
+<div id="problem-solving-success" class="section level2 hasAnchor" number="5.3">
+<h2><span class="header-section-number">5.3</span> Problem-solving success<a href="program-synthesis-experiments.html#problem-solving-success" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb89-1"><a href="program-synthesis-experiments.html#cb89-1" aria-hidden="true" tabindex="-1"></a>plt_solutions <span class="ot">&lt;-</span> <span class="cf">function</span>(data, problem) {</span>
+<span id="cb89-2"><a href="program-synthesis-experiments.html#cb89-2" aria-hidden="true" tabindex="-1"></a>  data <span class="sc">%&gt;%</span></span>
+<span id="cb89-3"><a href="program-synthesis-experiments.html#cb89-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(PROBLEM <span class="sc">==</span> problem) <span class="sc">%&gt;%</span></span>
+<span id="cb89-4"><a href="program-synthesis-experiments.html#cb89-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(</span>
+<span id="cb89-5"><a href="program-synthesis-experiments.html#cb89-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(</span>
+<span id="cb89-6"><a href="program-synthesis-experiments.html#cb89-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">x =</span> EVAL_FIT_EST_MODE,</span>
+<span id="cb89-7"><a href="program-synthesis-experiments.html#cb89-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">y =</span> solution_count,</span>
+<span id="cb89-8"><a href="program-synthesis-experiments.html#cb89-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">fill =</span> EVAL_FIT_EST_MODE</span>
+<span id="cb89-9"><a href="program-synthesis-experiments.html#cb89-9" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb89-10"><a href="program-synthesis-experiments.html#cb89-10" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb89-11"><a href="program-synthesis-experiments.html#cb89-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb89-12"><a href="program-synthesis-experiments.html#cb89-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb89-13"><a href="program-synthesis-experiments.html#cb89-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">30</span>),</span>
+<span id="cb89-14"><a href="program-synthesis-experiments.html#cb89-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">30</span>),</span>
+<span id="cb89-15"><a href="program-synthesis-experiments.html#cb89-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">30</span>)</span>
+<span id="cb89-16"><a href="program-synthesis-experiments.html#cb89-16" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb89-17"><a href="program-synthesis-experiments.html#cb89-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_bright</span>() <span class="sc">+</span></span>
+<span id="cb89-18"><a href="program-synthesis-experiments.html#cb89-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_bright</span>() <span class="sc">+</span></span>
+<span id="cb89-19"><a href="program-synthesis-experiments.html#cb89-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(</span>
+<span id="cb89-20"><a href="program-synthesis-experiments.html#cb89-20" aria-hidden="true" tabindex="-1"></a>       eval_mode_row <span class="sc">~</span> evals_per_gen</span>
+<span id="cb89-21"><a href="program-synthesis-experiments.html#cb89-21" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb89-22"><a href="program-synthesis-experiments.html#cb89-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> problem) <span class="sc">+</span></span>
+<span id="cb89-23"><a href="program-synthesis-experiments.html#cb89-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb89-24"><a href="program-synthesis-experiments.html#cb89-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb89-25"><a href="program-synthesis-experiments.html#cb89-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>)</span>
+<span id="cb89-26"><a href="program-synthesis-experiments.html#cb89-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb89-27"><a href="program-synthesis-experiments.html#cb89-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggsave</span>(</span>
+<span id="cb89-28"><a href="program-synthesis-experiments.html#cb89-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">filename =</span> <span class="fu">paste0</span>(plot_directory, problem, <span class="st">&quot;-final.pdf&quot;</span>),</span>
+<span id="cb89-29"><a href="program-synthesis-experiments.html#cb89-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">height =</span> <span class="dv">15</span>,</span>
+<span id="cb89-30"><a href="program-synthesis-experiments.html#cb89-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="dv">7</span></span>
+<span id="cb89-31"><a href="program-synthesis-experiments.html#cb89-31" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb89-32"><a href="program-synthesis-experiments.html#cb89-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb89-33"><a href="program-synthesis-experiments.html#cb89-33" aria-hidden="true" tabindex="-1"></a><span class="co"># plt_solutions(solution_counts, &quot;small-or-large&quot;)</span></span>
+<span id="cb89-34"><a href="program-synthesis-experiments.html#cb89-34" aria-hidden="true" tabindex="-1"></a><span class="fu">plt_solutions</span>(solution_counts, <span class="st">&quot;median&quot;</span>)</span>
+<span id="cb89-35"><a href="program-synthesis-experiments.html#cb89-35" aria-hidden="true" tabindex="-1"></a><span class="fu">plt_solutions</span>(solution_counts, <span class="st">&quot;grade&quot;</span>)</span>
+<span id="cb89-36"><a href="program-synthesis-experiments.html#cb89-36" aria-hidden="true" tabindex="-1"></a><span class="fu">plt_solutions</span>(solution_counts, <span class="st">&quot;fizz-buzz&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="program-synthesis-experiments.html#cb90-1" aria-hidden="true" tabindex="-1"></a>sol_stats_data <span class="ot">&lt;-</span> summary_data <span class="sc">%&gt;%</span></span>
+<span id="cb90-2"><a href="program-synthesis-experiments.html#cb90-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(EVAL_MODE <span class="sc">!=</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> EVAL_MODE <span class="sc">!=</span> <span class="st">&quot;cohort-full-compete&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb90-3"><a href="program-synthesis-experiments.html#cb90-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter(PROBLEM != &quot;small-or-large&quot;) %&gt;%</span></span>
+<span id="cb90-4"><a href="program-synthesis-experiments.html#cb90-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(</span>
+<span id="cb90-5"><a href="program-synthesis-experiments.html#cb90-5" aria-hidden="true" tabindex="-1"></a>    PROBLEM,</span>
+<span id="cb90-6"><a href="program-synthesis-experiments.html#cb90-6" aria-hidden="true" tabindex="-1"></a>    evals_per_gen,</span>
+<span id="cb90-7"><a href="program-synthesis-experiments.html#cb90-7" aria-hidden="true" tabindex="-1"></a>    EVAL_FIT_EST_MODE,</span>
+<span id="cb90-8"><a href="program-synthesis-experiments.html#cb90-8" aria-hidden="true" tabindex="-1"></a>    EVAL_MODE</span>
+<span id="cb90-9"><a href="program-synthesis-experiments.html#cb90-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb90-10"><a href="program-synthesis-experiments.html#cb90-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb90-11"><a href="program-synthesis-experiments.html#cb90-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">solution_count =</span> <span class="fu">sum</span>(found_solution <span class="sc">==</span> <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb90-12"><a href="program-synthesis-experiments.html#cb90-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">replicates =</span> <span class="fu">n</span>(),</span>
+<span id="cb90-13"><a href="program-synthesis-experiments.html#cb90-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">no_solution_count =</span> <span class="fu">n</span>() <span class="sc">-</span> <span class="fu">sum</span>(found_solution <span class="sc">==</span> <span class="st">&quot;1&quot;</span>)</span>
+<span id="cb90-14"><a href="program-synthesis-experiments.html#cb90-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb90-15"><a href="program-synthesis-experiments.html#cb90-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(</span>
+<span id="cb90-16"><a href="program-synthesis-experiments.html#cb90-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;grouping&quot;</span>,</span>
+<span id="cb90-17"><a href="program-synthesis-experiments.html#cb90-17" aria-hidden="true" tabindex="-1"></a>    PROBLEM,</span>
+<span id="cb90-18"><a href="program-synthesis-experiments.html#cb90-18" aria-hidden="true" tabindex="-1"></a>    EVAL_MODE,</span>
+<span id="cb90-19"><a href="program-synthesis-experiments.html#cb90-19" aria-hidden="true" tabindex="-1"></a>    evals_per_gen,</span>
+<span id="cb90-20"><a href="program-synthesis-experiments.html#cb90-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">sep =</span> <span class="st">&quot;__&quot;</span></span>
+<span id="cb90-21"><a href="program-synthesis-experiments.html#cb90-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb90-22"><a href="program-synthesis-experiments.html#cb90-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb90-23"><a href="program-synthesis-experiments.html#cb90-23" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span>replicates,</span>
+<span id="cb90-24"><a href="program-synthesis-experiments.html#cb90-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb90-25"><a href="program-synthesis-experiments.html#cb90-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb90-26"><a href="program-synthesis-experiments.html#cb90-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">grouping =</span> <span class="fu">as.factor</span>(grouping)</span>
+<span id="cb90-27"><a href="program-synthesis-experiments.html#cb90-27" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<pre><code>## `summarise()` has grouped output by &#39;PROBLEM&#39;, &#39;evals_per_gen&#39;,
+## &#39;EVAL_FIT_EST_MODE&#39;. You can override using the `.groups` argument.</code></pre>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="program-synthesis-experiments.html#cb92-1" aria-hidden="true" tabindex="-1"></a>fisher_results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb92-2"><a href="program-synthesis-experiments.html#cb92-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">comparison =</span> <span class="fu">character</span>(),</span>
+<span id="cb92-3"><a href="program-synthesis-experiments.html#cb92-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">group1 =</span> <span class="fu">character</span>(),</span>
+<span id="cb92-4"><a href="program-synthesis-experiments.html#cb92-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">group2 =</span> <span class="fu">character</span>(),</span>
+<span id="cb92-5"><a href="program-synthesis-experiments.html#cb92-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">integer</span>(),</span>
+<span id="cb92-6"><a href="program-synthesis-experiments.html#cb92-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">p =</span> <span class="fu">double</span>(),</span>
+<span id="cb92-7"><a href="program-synthesis-experiments.html#cb92-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">p.adj =</span> <span class="fu">double</span>(),</span>
+<span id="cb92-8"><a href="program-synthesis-experiments.html#cb92-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">p.adj.signif =</span> <span class="fu">character</span>()</span>
+<span id="cb92-9"><a href="program-synthesis-experiments.html#cb92-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb92-10"><a href="program-synthesis-experiments.html#cb92-10" aria-hidden="true" tabindex="-1"></a>groupings <span class="ot">&lt;-</span> <span class="fu">levels</span>(sol_stats_data<span class="sc">$</span>grouping)</span>
+<span id="cb92-11"><a href="program-synthesis-experiments.html#cb92-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (g <span class="cf">in</span> groupings) {</span>
+<span id="cb92-12"><a href="program-synthesis-experiments.html#cb92-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb92-13"><a href="program-synthesis-experiments.html#cb92-13" aria-hidden="true" tabindex="-1"></a>  ft_results <span class="ot">&lt;-</span> sol_stats_data <span class="sc">%&gt;%</span></span>
+<span id="cb92-14"><a href="program-synthesis-experiments.html#cb92-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(grouping <span class="sc">==</span> g) <span class="sc">%&gt;%</span></span>
+<span id="cb92-15"><a href="program-synthesis-experiments.html#cb92-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>grouping) <span class="sc">%&gt;%</span></span>
+<span id="cb92-16"><a href="program-synthesis-experiments.html#cb92-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">column_to_rownames</span>(<span class="at">var =</span> <span class="st">&quot;EVAL_FIT_EST_MODE&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb92-17"><a href="program-synthesis-experiments.html#cb92-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pairwise_fisher_test</span>(</span>
+<span id="cb92-18"><a href="program-synthesis-experiments.html#cb92-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">p.adjust.method =</span> <span class="st">&quot;holm&quot;</span></span>
+<span id="cb92-19"><a href="program-synthesis-experiments.html#cb92-19" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb92-20"><a href="program-synthesis-experiments.html#cb92-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_significance</span>(<span class="st">&quot;p.adj&quot;</span>)</span>
+<span id="cb92-21"><a href="program-synthesis-experiments.html#cb92-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb92-22"><a href="program-synthesis-experiments.html#cb92-22" aria-hidden="true" tabindex="-1"></a>  ft_results <span class="ot">&lt;-</span> ft_results <span class="sc">%&gt;%</span></span>
+<span id="cb92-23"><a href="program-synthesis-experiments.html#cb92-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb92-24"><a href="program-synthesis-experiments.html#cb92-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">comparison =</span> <span class="fu">rep</span>(g, <span class="fu">nrow</span>(ft_results)),</span>
+<span id="cb92-25"><a href="program-synthesis-experiments.html#cb92-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">.keep =</span> <span class="st">&quot;all&quot;</span></span>
+<span id="cb92-26"><a href="program-synthesis-experiments.html#cb92-26" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb92-27"><a href="program-synthesis-experiments.html#cb92-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(comparison)</span>
+<span id="cb92-28"><a href="program-synthesis-experiments.html#cb92-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb92-29"><a href="program-synthesis-experiments.html#cb92-29" aria-hidden="true" tabindex="-1"></a>  fisher_results <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb92-30"><a href="program-synthesis-experiments.html#cb92-30" aria-hidden="true" tabindex="-1"></a>    fisher_results,</span>
+<span id="cb92-31"><a href="program-synthesis-experiments.html#cb92-31" aria-hidden="true" tabindex="-1"></a>    ft_results</span>
+<span id="cb92-32"><a href="program-synthesis-experiments.html#cb92-32" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb92-33"><a href="program-synthesis-experiments.html#cb92-33" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb92-34"><a href="program-synthesis-experiments.html#cb92-34" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(fisher_results)</span></code></pre></div>
+<table style="width:100%;">
+<colgroup>
+<col width="39%" />
+<col width="10%" />
+<col width="10%" />
+<col width="3%" />
+<col width="10%" />
+<col width="10%" />
+<col width="15%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">comparison</th>
+<th align="left">group1</th>
+<th align="left">group2</th>
+<th align="right">n</th>
+<th align="right">p</th>
+<th align="right">p.adj</th>
+<th align="left">p.adj.signif</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">fizz-buzz__cohort__0.01</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">4.92e-01</td>
+<td align="right">9.84e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__cohort__0.01</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">2.37e-01</td>
+<td align="right">7.11e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__cohort__0.01</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__cohort__0.05</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">7.06e-01</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__cohort__0.05</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">7.48e-01</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__cohort__0.05</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">2.99e-01</td>
+<td align="right">8.97e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__cohort__0.1</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">6.12e-01</td>
+<td align="right">6.12e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__cohort__0.1</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.22e-02</td>
+<td align="right">3.66e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__cohort__0.1</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.04e-01</td>
+<td align="right">2.08e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__cohort__0.5</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.94e-03</td>
+<td align="right">5.82e-03</td>
+<td align="left">**</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__cohort__0.5</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">2.37e-02</td>
+<td align="right">4.74e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__cohort__0.5</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">5.52e-01</td>
+<td align="right">5.52e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__down-sample__0.01</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__down-sample__0.01</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__down-sample__0.01</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__down-sample__0.05</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.90e-06</td>
+<td align="right">5.70e-06</td>
+<td align="left">****</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__down-sample__0.05</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.90e-06</td>
+<td align="right">5.70e-06</td>
+<td align="left">****</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__down-sample__0.05</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__down-sample__0.1</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__down-sample__0.1</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__down-sample__0.1</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__down-sample__0.5</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.05e-02</td>
+<td align="right">3.15e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="odd">
+<td align="left">fizz-buzz__down-sample__0.5</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.05e-02</td>
+<td align="right">3.15e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="even">
+<td align="left">fizz-buzz__down-sample__0.5</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__cohort__0.01</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">7.89e-01</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__cohort__0.01</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">5.67e-01</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__cohort__0.01</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">2.67e-01</td>
+<td align="right">8.01e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__cohort__0.05</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">3.01e-01</td>
+<td align="right">6.02e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__cohort__0.05</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__cohort__0.05</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.95e-01</td>
+<td align="right">5.85e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__cohort__0.1</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">6.92e-02</td>
+<td align="right">2.08e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__cohort__0.1</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">6.04e-01</td>
+<td align="right">6.04e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__cohort__0.1</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">2.95e-01</td>
+<td align="right">5.90e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__cohort__0.5</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">6.71e-01</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__cohort__0.5</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__cohort__0.5</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">6.71e-01</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__down-sample__0.01</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">5.58e-03</td>
+<td align="right">1.12e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="even">
+<td align="left">grade__down-sample__0.01</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">2.47e-03</td>
+<td align="right">7.41e-03</td>
+<td align="left">**</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__down-sample__0.01</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__down-sample__0.05</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.82e-02</td>
+<td align="right">3.64e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__down-sample__0.05</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">8.87e-03</td>
+<td align="right">2.66e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="even">
+<td align="left">grade__down-sample__0.05</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__down-sample__0.1</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">3.52e-02</td>
+<td align="right">7.04e-02</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__down-sample__0.1</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">8.87e-03</td>
+<td align="right">2.66e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__down-sample__0.1</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">7.92e-01</td>
+<td align="right">7.92e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__down-sample__0.5</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">3.60e-01</td>
+<td align="right">7.20e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">grade__down-sample__0.5</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">grade__down-sample__0.5</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">2.09e-01</td>
+<td align="right">6.27e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">median__cohort__0.01</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">0.00e+00</td>
+<td align="right">0.00e+00</td>
+<td align="left">****</td>
+</tr>
+<tr class="even">
+<td align="left">median__cohort__0.01</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">0.00e+00</td>
+<td align="right">0.00e+00</td>
+<td align="left">****</td>
+</tr>
+<tr class="odd">
+<td align="left">median__cohort__0.01</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.81e-01</td>
+<td align="right">1.81e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">median__cohort__0.05</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">8.21e-03</td>
+<td align="right">1.64e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="odd">
+<td align="left">median__cohort__0.05</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.19e-03</td>
+<td align="right">3.57e-03</td>
+<td align="left">**</td>
+</tr>
+<tr class="even">
+<td align="left">median__cohort__0.05</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">7.48e-01</td>
+<td align="right">7.48e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">median__cohort__0.1</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">4.79e-03</td>
+<td align="right">1.44e-02</td>
+<td align="left">*</td>
+</tr>
+<tr class="even">
+<td align="left">median__cohort__0.1</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">2.92e-02</td>
+<td align="right">5.84e-02</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">median__cohort__0.1</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">7.31e-01</td>
+<td align="right">7.31e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">median__cohort__0.5</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">8.40e-02</td>
+<td align="right">1.68e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">median__cohort__0.5</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">4.70e-02</td>
+<td align="right">1.41e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">median__cohort__0.5</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">median__down-sample__0.01</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">2.79e-01</td>
+<td align="right">5.58e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">median__down-sample__0.01</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.80e-01</td>
+<td align="right">5.40e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">median__down-sample__0.01</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">median__down-sample__0.05</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.39e-04</td>
+<td align="right">2.78e-04</td>
+<td align="left">***</td>
+</tr>
+<tr class="odd">
+<td align="left">median__down-sample__0.05</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.30e-06</td>
+<td align="right">4.00e-06</td>
+<td align="left">****</td>
+</tr>
+<tr class="even">
+<td align="left">median__down-sample__0.05</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">3.99e-01</td>
+<td align="right">3.99e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">median__down-sample__0.1</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">2.88e-01</td>
+<td align="right">5.76e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">median__down-sample__0.1</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.80e-01</td>
+<td align="right">5.40e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">median__down-sample__0.1</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">median__down-sample__0.5</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">3.72e-04</td>
+<td align="right">1.12e-03</td>
+<td align="left">**</td>
+</tr>
+<tr class="odd">
+<td align="left">median__down-sample__0.5</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">2.13e-03</td>
+<td align="right">4.26e-03</td>
+<td align="left">**</td>
+</tr>
+<tr class="even">
+<td align="left">median__down-sample__0.5</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">7.96e-01</td>
+<td align="right">7.96e-01</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__cohort__0.01</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__cohort__0.01</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__cohort__0.01</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__cohort__0.05</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__cohort__0.05</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__cohort__0.05</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__cohort__0.1</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__cohort__0.1</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__cohort__0.1</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__cohort__0.5</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__cohort__0.5</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__cohort__0.5</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__down-sample__0.01</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__down-sample__0.01</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__down-sample__0.01</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__down-sample__0.05</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__down-sample__0.05</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__down-sample__0.05</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__down-sample__0.1</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__down-sample__0.1</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__down-sample__0.1</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__down-sample__0.5</td>
+<td align="left">None</td>
+<td align="left">Ancestor</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">small-or-large__down-sample__0.5</td>
+<td align="left">None</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="even">
+<td align="left">small-or-large__down-sample__0.5</td>
+<td align="left">Ancestor</td>
+<td align="left">Relative</td>
+<td align="right">60</td>
+<td align="right">1.00e+00</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="program-synthesis-experiments.html#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="co"># temp &lt;- sol_stats_data %&gt;%</span></span>
+<span id="cb93-2"><a href="program-synthesis-experiments.html#cb93-2" aria-hidden="true" tabindex="-1"></a><span class="co">#     filter(grouping == &quot;fizz-buzz__cohort__0.5&quot;) %&gt;%</span></span>
+<span id="cb93-3"><a href="program-synthesis-experiments.html#cb93-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     select(!grouping) %&gt;%</span></span>
+<span id="cb93-4"><a href="program-synthesis-experiments.html#cb93-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     column_to_rownames(var = &quot;EVAL_FIT_EST_MODE&quot;)</span></span>
+<span id="cb93-5"><a href="program-synthesis-experiments.html#cb93-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-6"><a href="program-synthesis-experiments.html#cb93-6" aria-hidden="true" tabindex="-1"></a><span class="co"># pairwise_fisher_test(temp, p.adjust.method = &quot;holm&quot;)</span></span>
+<span id="cb93-7"><a href="program-synthesis-experiments.html#cb93-7" aria-hidden="true" tabindex="-1"></a><span class="co"># print(</span></span>
+<span id="cb93-8"><a href="program-synthesis-experiments.html#cb93-8" aria-hidden="true" tabindex="-1"></a><span class="co">#   solution_counts %&gt;% filter(eval_mode_row == &quot;cohort&quot; &amp; PROBLEM == &quot;fizz-buzz&quot;),</span></span>
+<span id="cb93-9"><a href="program-synthesis-experiments.html#cb93-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   n = 150</span></span>
+<span id="cb93-10"><a href="program-synthesis-experiments.html#cb93-10" aria-hidden="true" tabindex="-1"></a><span class="co"># )</span></span>
+<span id="cb93-11"><a href="program-synthesis-experiments.html#cb93-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-12"><a href="program-synthesis-experiments.html#cb93-12" aria-hidden="true" tabindex="-1"></a><span class="co"># kable(</span></span>
+<span id="cb93-13"><a href="program-synthesis-experiments.html#cb93-13" aria-hidden="true" tabindex="-1"></a><span class="co">#   fisher_results %&gt;%</span></span>
+<span id="cb93-14"><a href="program-synthesis-experiments.html#cb93-14" aria-hidden="true" tabindex="-1"></a><span class="co">#     filter(grepl(&quot;cohort&quot;, comparison) &amp; grepl(&quot;fizz-buzz&quot;, comparison))</span></span>
+<span id="cb93-15"><a href="program-synthesis-experiments.html#cb93-15" aria-hidden="true" tabindex="-1"></a><span class="co"># )</span></span></code></pre></div>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="selection-scheme-diagnostic-experiments.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="references.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/amlalejini/phylogeny-informed-evalution/tree/main/../experiments/2023-05-08-psynth/analysis/2023-05-08-psynth.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["phylogeny-informed-estimation-supplemental.pdf"],
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>
