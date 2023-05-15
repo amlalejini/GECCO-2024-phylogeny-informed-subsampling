@@ -1,4 +1,4 @@
-# 2023-05-08 - Program synthesis experiments
+# Program synthesis experiments
 
 ```{r}
 experiment_slug <- "2023-05-08-psynth"
@@ -8,6 +8,13 @@ working_directory <- paste0(
   experiment_slug,
   "/analysis/"
 )
+
+if (exists("bookdown_wd_prefix")) {
+  working_directory <- paste0(
+    bookdown_wd_prefix,
+    working_directory
+  )
+}
 ```
 
 ## Dependencies
