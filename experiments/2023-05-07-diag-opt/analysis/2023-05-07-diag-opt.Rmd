@@ -1,0 +1,188 @@
+# 2023-05-02 - Diagnostics experiments
+
+```{r}
+experiment_slug <- "2023-05-07-diag-opt"
+
+working_directory <- paste0(
+  "experiments/",
+  experiment_slug,
+  "/analysis/"
+)
+```
+
+## Dependencies
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(khroma)
+library(rstatix)
+library(knitr)
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+```
+
+```{r}
+print(version)
+```
+
+## Setup
+
+```{r}
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_directory <- paste0(working_directory, "plots/")
+dir.create(plot_directory, showWarnings=FALSE)
+```
+
+```{r}
+summary_data_loc <- paste0(working_directory, "data/aggregate.csv")
+summary_data <- read_csv(summary_data_loc)
+
+eval_reduction_fun <- function(eval_mode, cohort_param, ds_param) {
+  if (eval_mode == "cohort") {
+    return(1.0 / cohort_param)
+  } else if (eval_mode == "down-sample") {
+    return(ds_param)
+  } else if (eval_mode == "full") {
+    return(1.0)
+  }
+}
+
+plot_row_fun <- function(eval_mode, cohort_param, ds_param) {
+  if (eval_mode == "full" && ds_param == "1") {
+    return("down-sample")
+  } else if (eval_mode == "full" && cohort_param == "1") {
+    return("cohort")
+  } else {
+    return(eval_mode)
+  }
+}
+
+# fit_est_mode_fun <- function(est_mode) {
+#   if (est_mode == "ancestor-opt") {
+#     return("ancestor")
+#   } else if (est_mode == "relative-opt") {
+#     return("relative")
+#   }
+#   return(est_mode)
+# }
+
+summary_data$evals_per_gen <- mapply(
+  eval_reduction_fun,
+  summary_data$EVAL_MODE,
+  summary_data$NUM_COHORTS,
+  summary_data$TEST_DOWNSAMPLE_RATE
+)
+
+summary_data$eval_mode_row <- mapply(
+  plot_row_fun,
+  summary_data$EVAL_MODE,
+  summary_data$NUM_COHORTS,
+  summary_data$TEST_DOWNSAMPLE_RATE
+)
+
+# summary_data$EVAL_FIT_EST_MODE <- mapply(
+#   fit_est_mode_fun,
+#   summary_data$EVAL_FIT_EST_MODE
+# )
+
+summary_data <- summary_data %>% mutate(
+  evals_per_gen = as.factor(evals_per_gen),
+  eval_mode_row = as.factor(eval_mode_row),
+  DIAGNOSTIC = as.factor(DIAGNOSTIC),
+  SELECTION = as.factor(SELECTION),
+  EVAL_MODE = as.factor(EVAL_MODE),
+  NUM_COHORTS = as.factor(NUM_COHORTS),
+  TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE)
+)
+
+summary_data$EVAL_FIT_EST_MODE <- factor(
+  summary_data$EVAL_FIT_EST_MODE,
+  levels = c(
+    "none",
+    "ancestor",
+    "ancestor-opt",
+    "relative",
+    "relative-opt"
+  ),
+  labels = c(
+    "None",
+    "Ancestor",
+    "Ancestor-Opt",
+    "Relative",
+    "Relative-Opt"
+  )
+)
+
+# Split summary data on diagnostic
+# con_obj_summary_data <- filter(
+#   summary_data,
+#   DIAGNOSTIC == "contradictory-objectives"
+# )
+# exploit_summary_data <- filter(
+#   summary_data,
+#   DIAGNOSTIC == "exploitation-rate"
+# )
+explore_summary_data <- filter(
+  summary_data,
+  DIAGNOSTIC == "multipath-exploration"
+)
+```
+
+## Multi-path exploration diagnostic
+
+```{r}
+explore_final_score_plt <- ggplot(
+    explore_summary_data,
+    aes(
+      x = EVAL_FIT_EST_MODE,
+      y = max_agg_score,
+      fill = EVAL_FIT_EST_MODE
+    )
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8,
+    adjust=1.5
+  ) +
+  geom_point(
+    mapping=aes(color=EVAL_FIT_EST_MODE),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_y_continuous(
+    # limits = c(-0.5, 100)
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_grid(
+    eval_mode_row ~ evals_per_gen,
+    # nrow=2,
+    labeller=label_both
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    ),
+    panel.border = element_rect(color="gray", size=2)
+  )
+explore_final_score_plt
+ggsave(
+  filename = paste0(plot_directory, "explore-final.pdf"),
+  plot = explore_final_score_plt + labs(title="Multi-path exploration"),
+  width = 15,
+  height = 10
+)
+```
+

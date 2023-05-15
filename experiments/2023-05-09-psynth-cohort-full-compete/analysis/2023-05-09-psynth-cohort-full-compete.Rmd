@@ -1,0 +1,252 @@
+```{r}
+experiment_slug <- "2023-05-09-psynth-cohort-full-compete"
+
+working_directory <- paste0(
+  "experiments/",
+  experiment_slug,
+  "/analysis/"
+)
+```
+
+## Dependencies
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(khroma)
+library(rstatix)
+library(knitr)
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+```
+
+```{r}
+print(version)
+```
+
+## Setup
+
+```{r}
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_directory <- paste0(working_directory, "plots/")
+dir.create(plot_directory, showWarnings=FALSE)
+```
+
+```{r}
+summary_data_loc <- paste0(working_directory, "data/aggregate.csv")
+summary_data <- read_csv(summary_data_loc)
+
+summary_data <- summary_data %>%
+  mutate(
+    eval_mode_row = case_when(
+      EVAL_MODE == "full" & TEST_DOWNSAMPLE_RATE == "1" ~ "down-sample",
+      EVAL_MODE == "full" & NUM_COHORTS == "1" ~ "cohort",
+      .default = EVAL_MODE
+    ),
+    evals_per_gen = case_when(
+      EVAL_MODE == "cohort-full-compete" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "cohort" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "down-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "full" ~ 1.0
+    ),
+    EVAL_FIT_EST_MODE = case_when(
+      EVAL_FIT_EST_MODE == "ancestor-opt" ~ "ancestor",
+      EVAL_FIT_EST_MODE == "relative-opt" ~ "relative",
+      .default = EVAL_FIT_EST_MODE
+    ),
+    .keep = "all"
+  ) %>%
+  mutate(
+    EVAL_FIT_EST_MODE = case_when(
+      EVAL_MODE == "cohort-full-compete" ~ paste0(EVAL_FIT_EST_MODE, "-fc"),
+      .default = EVAL_FIT_EST_MODE
+    )
+  ) %>%
+  mutate(
+    evals_per_gen = as.factor(evals_per_gen),
+    PROBLEM = as.factor(PROBLEM),
+    SELECTION = as.factor(SELECTION),
+    EVAL_MODE = as.factor(EVAL_MODE),
+    NUM_COHORTS = as.factor(NUM_COHORTS),
+    TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE),
+    EVAL_FIT_EST_MODE = factor(
+      EVAL_FIT_EST_MODE,
+      levels = c(
+        "none",
+        "ancestor",
+        "ancestor-fc",
+        "relative",
+        "relative-fc"
+      ),
+      labels = c(
+        "None",
+        "Ancestor",
+        "Ancestor (FC)",
+        "Relative",
+        "Relative (FC)"
+      )
+    ),
+    .keep = "all"
+  )
+# summary_data$EVAL_FIT_EST_MODE
+solution_counts <- summary_data %>%
+  group_by(
+    PROBLEM,
+    evals_per_gen,
+    eval_mode_row,
+    EVAL_FIT_EST_MODE,
+    EVAL_MODE
+  ) %>%
+  summarize(
+    solution_count = sum(found_solution == "1"),
+    replicates = n(),
+    no_solution_count = n() - sum(found_solution == "1")
+  )
+print(solution_counts, n=140)
+```
+
+## Solutions
+
+```{r}
+plt_solutions <- function(data, problem) {
+  data %>%
+    filter(PROBLEM == problem) %>%
+    ggplot(
+      aes(
+        x = EVAL_FIT_EST_MODE,
+        y = solution_count,
+        fill = EVAL_FIT_EST_MODE
+      )
+    ) +
+    geom_col() +
+    scale_y_continuous(
+      limits = c(0, 30),
+      breaks = seq(0, 30),
+      labels = seq(0, 30)
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    facet_grid(
+       eval_mode_row ~ evals_per_gen
+    ) +
+    labs(title = problem) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+  ggsave(
+    filename = paste0(plot_directory, problem, "-final.pdf"),
+    height = 15,
+    width = 7
+  )
+}
+# plt_solutions(solution_counts, "small-or-large")
+plt_solutions(solution_counts, "median")
+plt_solutions(solution_counts, "grade")
+plt_solutions(solution_counts, "fizz-buzz")
+```
+
+```{r}
+# sol_cnt_stats_data <- summary_data %>%
+#   filter(EVAL_MODE != "full" & EVAL_MODE != "cohort-full-compete") %>%
+#   group_by(
+#     PROBLEM,
+#     evals_per_gen,
+#     # eval_mode_row,
+#     EVAL_FIT_EST_MODE,
+#     EVAL_MODE
+#   ) %>%
+#   summarize(
+#     solution_count = sum(found_solution == "1"),
+#     replicates = n(),
+#     no_solution_count = n() - sum(found_solution == "1")
+#   )
+
+
+sol_stats_data <- summary_data %>%
+  filter(EVAL_MODE != "full" & EVAL_MODE != "cohort-full-compete") %>%
+  # filter(PROBLEM != "small-or-large") %>%
+  group_by(
+    PROBLEM,
+    evals_per_gen,
+    EVAL_FIT_EST_MODE,
+    EVAL_MODE
+  ) %>%
+  summarize(
+    solution_count = sum(found_solution == "1"),
+    replicates = n(),
+    no_solution_count = n() - sum(found_solution == "1")
+  ) %>%
+  unite(
+    "grouping",
+    PROBLEM,
+    EVAL_MODE,
+    evals_per_gen,
+    sep = "__"
+  ) %>%
+  select(
+    !replicates,
+  ) %>%
+  mutate(
+    grouping = as.factor(grouping)
+  )
+
+fisher_results <- data.frame(
+  comparison = character(),
+  group1 = character(),
+  group2 = character(),
+  n = integer(),
+  p = double(),
+  p.adj = double(),
+  p.adj.signif = character()
+)
+groupings <- levels(sol_stats_data$grouping)
+for (g in groupings) {
+  # print(g)
+  ft_results <- sol_stats_data %>%
+    filter(grouping == g) %>%
+    select(!grouping) %>%
+    column_to_rownames(var = "EVAL_FIT_EST_MODE") %>%
+    pairwise_fisher_test(
+      p.adjust.method = "holm"
+    ) %>%
+    add_significance("p.adj") %>%
+    mutate(
+      comparison = rep(g, nrow(ft_results)),
+      .keep = "all"
+    ) %>%
+    relocate(comparison)
+
+  fisher_results <- rbind(
+    fisher_results,
+    ft_results
+  )
+}
+
+kable(fisher_results)
+
+```
+
+```{r}
+# temp <- sol_stats_data %>%
+#     filter(grouping == "fizz-buzz__cohort__0.5") %>%
+#     select(!grouping) %>%
+#     column_to_rownames(var = "EVAL_FIT_EST_MODE")
+
+# pairwise_fisher_test(temp, p.adjust.method = "holm")
+```
+
+```{r}
+print(
+  solution_counts %>% filter(eval_mode_row == "cohort" & PROBLEM == "fizz-buzz"),
+  n = 150
+)
+
+kable(
+  fisher_results %>%
+    filter(grepl("cohort", comparison) & grepl("fizz-buzz", comparison))
+)
+```

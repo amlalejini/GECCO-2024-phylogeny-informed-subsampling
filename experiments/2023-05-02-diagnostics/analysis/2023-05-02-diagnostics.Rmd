@@ -1,0 +1,801 @@
+# 2023-05-02 - Diagnostics experiments
+
+```{r}
+experiment_slug <- "2023-05-02-diagnostics"
+
+working_directory <- paste0(
+  "experiments/",
+  experiment_slug,
+  "/analysis/"
+)
+```
+
+## Dependencies
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(khroma)
+library(rstatix)
+library(knitr)
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+```
+
+```{r}
+print(version)
+```
+
+## Setup
+
+```{r}
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_directory <- paste0(working_directory, "plots/")
+dir.create(plot_directory, showWarnings=FALSE)
+```
+
+```{r}
+summary_data_loc <- paste0(working_directory, "data/aggregate.csv")
+summary_data <- read_csv(summary_data_loc)
+
+eval_reduction_fun <- function(eval_mode, cohort_param, ds_param) {
+  if (eval_mode == "cohort") {
+    return(1.0 / cohort_param)
+  } else if (eval_mode == "down-sample") {
+    return(ds_param)
+  } else if (eval_mode == "full") {
+    return(1.0)
+  }
+}
+
+plot_row_fun <- function(eval_mode, cohort_param, ds_param) {
+  if (eval_mode == "full" && ds_param == "1") {
+    return("down-sample")
+  } else if (eval_mode == "full" && cohort_param == "1") {
+    return("cohort")
+  } else {
+    return(eval_mode)
+  }
+}
+
+fit_est_mode_fun <- function(est_mode) {
+  if (est_mode == "ancestor-opt") {
+    return("ancestor")
+  } else if (est_mode == "relative-opt") {
+    return("relative")
+  }
+  return(est_mode)
+}
+
+summary_data$evals_per_gen <- mapply(
+  eval_reduction_fun,
+  summary_data$EVAL_MODE,
+  summary_data$NUM_COHORTS,
+  summary_data$TEST_DOWNSAMPLE_RATE
+)
+
+summary_data$eval_mode_row <- mapply(
+  plot_row_fun,
+  summary_data$EVAL_MODE,
+  summary_data$NUM_COHORTS,
+  summary_data$TEST_DOWNSAMPLE_RATE
+)
+
+summary_data$EVAL_FIT_EST_MODE <- mapply(
+  fit_est_mode_fun,
+  summary_data$EVAL_FIT_EST_MODE
+)
+
+summary_data <- summary_data %>% mutate(
+  evals_per_gen = as.factor(evals_per_gen),
+  eval_mode_row = as.factor(eval_mode_row),
+  DIAGNOSTIC = as.factor(DIAGNOSTIC),
+  SELECTION = as.factor(SELECTION),
+  EVAL_MODE = as.factor(EVAL_MODE),
+  NUM_COHORTS = as.factor(NUM_COHORTS),
+  TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE)
+)
+
+summary_data$EVAL_FIT_EST_MODE <- factor(
+  summary_data$EVAL_FIT_EST_MODE,
+  levels = c(
+    "none",
+    "ancestor",
+    "relative"
+  ),
+  labels = c(
+    "None",
+    "Ancestor",
+    "Relative"
+  )
+)
+
+# Split summary data on diagnostic
+con_obj_summary_data <- filter(
+  summary_data,
+  DIAGNOSTIC == "contradictory-objectives"
+)
+exploit_summary_data <- filter(
+  summary_data,
+  DIAGNOSTIC == "exploitation-rate"
+)
+explore_summary_data <- filter(
+  summary_data,
+  DIAGNOSTIC == "multipath-exploration"
+)
+```
+
+Load time series data
+
+
+```{r}
+ts_data_loc <- paste0(working_directory, "data/time_series.csv")
+ts_data <- read_csv(ts_data_loc)
+
+ts_data$evals_per_gen <- mapply(
+  eval_reduction_fun,
+  ts_data$EVAL_MODE,
+  ts_data$NUM_COHORTS,
+  ts_data$TEST_DOWNSAMPLE_RATE
+)
+
+ts_data$EVAL_FIT_EST_MODE <- mapply(
+  fit_est_mode_fun,
+  ts_data$EVAL_FIT_EST_MODE
+)
+
+ts_data <- ts_data %>% mutate(
+  evals_per_gen = as.factor(evals_per_gen),
+  DIAGNOSTIC = as.factor(DIAGNOSTIC),
+  SELECTION = as.factor(SELECTION),
+  EVAL_MODE = as.factor(EVAL_MODE),
+  NUM_COHORTS = as.factor(NUM_COHORTS),
+  TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE),
+  EVAL_FIT_EST_MODE = factor(
+    EVAL_FIT_EST_MODE,
+    levels = c(
+      "none",
+      "ancestor",
+      "relative"
+    ),
+    labels = c(
+      "none",
+      "ancestor",
+      "relative"
+    )
+  )
+)
+
+con_obj_ts_data <- ts_data %>%
+  filter(DIAGNOSTIC == "contradictory-objectives")
+exploit_ts_data <- ts_data %>%
+  filter(DIAGNOSTIC == "exploitation-rate")
+explore_ts_data <- ts_data %>%
+  filter(DIAGNOSTIC == "multipath-exploration")
+```
+
+## Contradictory objectives diagnostic
+
+```{r}
+contradictory_obj_final_plt <- ggplot(
+    con_obj_summary_data,
+    aes(
+      x = EVAL_FIT_EST_MODE,
+      y = pop_optimal_trait_coverage,
+      fill = EVAL_FIT_EST_MODE
+    )
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8,
+    adjust=1.5
+  ) +
+  geom_point(
+    mapping=aes(color=EVAL_FIT_EST_MODE),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_y_continuous(
+    # limits = c(-0.5, 100)
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_grid(
+    eval_mode_row~evals_per_gen,
+    # nrow=2,
+    labeller=label_both
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    ),
+    panel.border = element_rect(color="gray", size=2)
+  )
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-final.pdf"),
+  plot = contradictory_obj_final_plt + labs(title="Contradictory objectives"),
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+contradictory_obj_pop_cov_ts <- ggplot(
+    con_obj_ts_data,
+    aes(
+      x=ts_step,
+      y=pop_optimal_trait_coverage,
+      fill=EVAL_FIT_EST_MODE,
+      color=EVAL_FIT_EST_MODE
+    )
+  ) +
+  stat_summary(geom="line", fun=mean) +
+  stat_summary(
+    geom="ribbon",
+    fun.data="mean_cl_boot",
+    fun.args=list(conf.int=0.95),
+    alpha=0.2,
+    linetype=0
+  ) +
+  facet_wrap(
+    EVAL_MODE~evals_per_gen,
+    ncol=1,
+    labeller=label_both
+  )
+# contradictory_obj_pop_cov_ts
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-ts.pdf"),
+  plot = contradictory_obj_pop_cov_ts + labs(title="Contradictory objectives"),
+  width = 10,
+  height = 15
+)
+```
+
+```{r}
+con_obj_kw_test <- con_obj_summary_data %>%
+  filter(EVAL_MODE != "full") %>%
+  group_by(EVAL_MODE, evals_per_gen) %>%
+  kruskal_test(pop_optimal_trait_coverage ~ EVAL_FIT_EST_MODE)
+kable(con_obj_kw_test)
+```
+
+```{r}
+con_obj_stats <- con_obj_summary_data %>%
+  filter(EVAL_MODE != "full") %>%
+  group_by(EVAL_MODE, evals_per_gen) %>%
+  pairwise_wilcox_test(pop_optimal_trait_coverage ~ EVAL_FIT_EST_MODE) %>%
+  adjust_pvalue(method = "holm")
+
+kable(con_obj_stats)
+```
+
+
+## Multi-path exploration diagnostic
+
+```{r}
+explore_final_score_plt <- ggplot(
+    explore_summary_data,
+    aes(
+      x = EVAL_FIT_EST_MODE,
+      y = max_agg_score,
+      fill = EVAL_FIT_EST_MODE
+    )
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8,
+    adjust=1.5
+  ) +
+  geom_point(
+    mapping=aes(color=EVAL_FIT_EST_MODE),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_y_continuous(
+    # limits = c(-0.5, 100)
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_grid(
+    eval_mode_row~evals_per_gen,
+    # nrow=2,
+    labeller=label_both
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    ),
+    panel.border = element_rect(color="gray", size=2)
+  )
+ggsave(
+  filename = paste0(plot_directory, "explore-final.pdf"),
+  plot = explore_final_score_plt + labs(title="Multi-path exploration"),
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+explore_kw_test <- explore_summary_data %>%
+  filter(EVAL_MODE != "full") %>%
+  group_by(EVAL_MODE, evals_per_gen) %>%
+  kruskal_test(max_agg_score ~ EVAL_FIT_EST_MODE)
+kable(explore_kw_test)
+```
+
+```{r}
+explore_stats <- explore_summary_data %>%
+  filter(EVAL_MODE != "full") %>%
+  group_by(EVAL_MODE, evals_per_gen) %>%
+  pairwise_wilcox_test(max_agg_score ~ EVAL_FIT_EST_MODE) %>%
+  adjust_pvalue(method = "holm")
+
+kable(explore_stats)
+```
+
+## Exploitation rate diagnostic
+
+```{r}
+exploit_final_score_plt <- ggplot(
+    exploit_summary_data,
+    aes(
+      x = EVAL_FIT_EST_MODE,
+      y = max_agg_score,
+      fill = EVAL_FIT_EST_MODE
+    )
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8,
+    adjust=1.5
+  ) +
+  geom_point(
+    mapping=aes(color=EVAL_FIT_EST_MODE),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_y_continuous(
+    # limits = c(-0.5, 100)
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_grid(
+    eval_mode_row~evals_per_gen,
+    # nrow=2,
+    labeller=label_both
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    ),
+    panel.border = element_rect(color="gray", size=2)
+  )
+ggsave(
+  filename = paste0(plot_directory, "exploit-final.pdf"),
+  plot = exploit_final_score_plt + labs(title="Exploitation rate"),
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+exploit_stats <- exploit_summary_data %>%
+  filter(EVAL_MODE != "full") %>%
+  group_by(EVAL_MODE, evals_per_gen) %>%
+  pairwise_wilcox_test(max_agg_score ~ EVAL_FIT_EST_MODE) %>%
+  adjust_pvalue(method = "holm")
+
+kable(exploit_stats)
+```
+
+## Manuscript figures
+
+```{r}
+full_median_size = 1.5
+
+subsample_labeller <- function(subsample_level) {
+  return(paste("Subsample level:", subsample_level))
+}
+```
+
+### Contradictory objectives
+
+Build plot panels (1 cohort, 1 down-sample)
+
+```{r}
+
+build_con_obj_plot <- function(eval_mode) {
+
+  full_median <- median(
+    filter(
+      con_obj_summary_data,
+      eval_mode_row == eval_mode & EVAL_MODE == "full"
+    )$pop_optimal_trait_coverage
+  )
+
+  p <- con_obj_summary_data %>%
+    filter(eval_mode_row == eval_mode & EVAL_MODE != "full") %>%
+    ggplot(
+      aes(
+        x = EVAL_FIT_EST_MODE,
+        y = pop_optimal_trait_coverage,
+        fill = EVAL_FIT_EST_MODE
+      )
+    ) +
+    geom_hline(
+      yintercept = full_median,
+      size = full_median_size,
+      alpha = 0.7,
+      color = "black"
+    ) +
+    geom_flat_violin(
+      position = position_nudge(x = .2, y = 0),
+      alpha = .8,
+      adjust=1.5
+    ) +
+    geom_point(
+      mapping=aes(color=EVAL_FIT_EST_MODE),
+      position = position_jitter(width = .15),
+      size = .5,
+      alpha = 0.8
+    ) +
+    geom_boxplot(
+      width = .1,
+      outlier.shape = NA,
+      alpha = 0.5
+    ) +
+    scale_y_continuous(
+      limits = c(-0.5, 50)
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    facet_wrap(
+    ~ evals_per_gen,
+    nrow = 1,
+    labeller = as_labeller(
+      subsample_labeller
+    )
+    ) +
+    labs(
+      x = "Estimation mode",
+      y = "Satisfactory trait coverage"
+    ) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(
+        angle = 30,
+        hjust = 1
+      ),
+      panel.border = element_rect(color="gray", size=2)
+    )
+
+  return(p)
+}
+
+con_obj_ds_plot <- build_con_obj_plot("down-sample")
+con_obj_cohort_plot <- build_con_obj_plot("cohort")
+```
+
+Combine panels into single plot.
+
+```{r}
+# Joint title: https://wilkelab.org/cowplot/articles/plot_grid.html
+con_obj_title <- ggdraw() +
+  draw_label(
+    "Contradictory objectives diagnostic",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+
+con_obj_grid <- plot_grid(
+  con_obj_title,
+  con_obj_ds_plot +
+    labs(
+      title = "Down-sampled lexicase"
+    ) +
+    theme(axis.title.x = element_blank()),
+  con_obj_cohort_plot +
+    labs(
+      title = "Cohort lexicase"
+    ),
+  nrow = 3,
+  ncol = 1,
+  # align = "h",
+  labels = c("", "a", "b"),
+  rel_heights = c(0.075, 1, 1)
+)
+con_obj_grid
+```
+
+```{r}
+save_plot(
+  filename = paste0(plot_directory, "2023-05-02-diagnostics-con-obj-final-fig.pdf"),
+  plot = con_obj_grid,
+  base_width = 10,
+  base_height = 8,
+  dpi = 600
+)
+```
+
+## Multi-path exploration
+
+```{r}
+build_explore_plot <- function(eval_mode) {
+
+  full_median <- median(
+    filter(
+      explore_summary_data,
+      eval_mode_row == eval_mode & EVAL_MODE == "full"
+    )$max_agg_score
+  )
+
+  p <- explore_summary_data %>%
+    filter(eval_mode_row == eval_mode & EVAL_MODE != "full") %>%
+    ggplot(
+      aes(
+        x = EVAL_FIT_EST_MODE,
+        y = max_agg_score,
+        fill = EVAL_FIT_EST_MODE
+      )
+    ) +
+    geom_hline(
+      yintercept = full_median,
+      size = full_median_size,
+      alpha = 0.7,
+      color = "black"
+    ) +
+    geom_flat_violin(
+      position = position_nudge(x = .2, y = 0),
+      alpha = .8,
+      adjust=1.5
+    ) +
+    geom_point(
+      mapping=aes(color=EVAL_FIT_EST_MODE),
+      position = position_jitter(width = .15),
+      size = .5,
+      alpha = 0.8
+    ) +
+    geom_boxplot(
+      width = .1,
+      outlier.shape = NA,
+      alpha = 0.5
+    ) +
+    scale_y_continuous(
+      limits = c(-0.5, 10005)
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    facet_wrap(
+    ~ evals_per_gen,
+    nrow = 1,
+    labeller = as_labeller(
+      subsample_labeller
+    )
+    ) +
+    labs(
+      x = "Estimation mode",
+      y = "Max aggregate score"
+    ) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(
+        angle = 30,
+        hjust = 1
+      ),
+      panel.border = element_rect(color="gray", size=2)
+    )
+
+  return(p)
+}
+
+explore_ds_plot <- build_explore_plot("down-sample")
+explore_cohort_plot <- build_explore_plot("cohort")
+
+explore_ds_plot
+explore_cohort_plot
+```
+
+Combine panels into single plot.
+
+```{r}
+# Joint title: https://wilkelab.org/cowplot/articles/plot_grid.html
+explore_title <- ggdraw() +
+  draw_label(
+    "Multi-path exploration diagnostic",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+
+explore_grid <- plot_grid(
+  explore_title,
+  explore_ds_plot +
+    labs(
+      title = "Down-sampled lexicase"
+    ) +
+    theme(axis.title.x = element_blank()),
+  explore_cohort_plot +
+    labs(
+      title = "Cohort lexicase"
+    ),
+  nrow = 3,
+  ncol = 1,
+  # align = "h",
+  labels = c("", "a", "b"),
+  rel_heights = c(0.075, 1, 1)
+)
+explore_grid
+```
+
+```{r}
+save_plot(
+  filename = paste0(plot_directory, "2023-05-02-diagnostics-explore-final-fig.pdf"),
+  plot = explore_grid,
+  base_width = 10,
+  base_height = 8,
+  dpi = 600
+)
+```
+
+## Exploitation rate
+
+```{r}
+build_exploit_plot <- function(eval_mode) {
+
+  full_median <- median(
+    filter(
+      exploit_summary_data,
+      eval_mode_row == eval_mode & EVAL_MODE == "full"
+    )$max_agg_score
+  )
+
+  p <- exploit_summary_data %>%
+    filter(eval_mode_row == eval_mode & EVAL_MODE != "full") %>%
+    ggplot(
+      aes(
+        x = EVAL_FIT_EST_MODE,
+        y = max_agg_score,
+        fill = EVAL_FIT_EST_MODE
+      )
+    ) +
+    geom_hline(
+      yintercept = full_median,
+      size = full_median_size,
+      alpha = 0.7,
+      color = "black"
+    ) +
+    geom_flat_violin(
+      position = position_nudge(x = .2, y = 0),
+      alpha = .8,
+      adjust=1.5
+    ) +
+    geom_point(
+      mapping=aes(color=EVAL_FIT_EST_MODE),
+      position = position_jitter(width = .15),
+      size = .5,
+      alpha = 0.8
+    ) +
+    geom_boxplot(
+      width = .1,
+      outlier.shape = NA,
+      alpha = 0.5
+    ) +
+    scale_y_continuous(
+      limits = c(5000, 10005)
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    facet_wrap(
+    ~ evals_per_gen,
+    nrow = 1,
+    labeller = as_labeller(
+      subsample_labeller
+    )
+    ) +
+    labs(
+      x = "Estimation mode",
+      y = "Max aggregate score"
+    ) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(
+        angle = 30,
+        hjust = 1
+      ),
+      panel.border = element_rect(color="gray", size=2)
+    )
+
+  return(p)
+}
+
+exploit_ds_plot <- build_exploit_plot("down-sample")
+exploit_cohort_plot <- build_exploit_plot("cohort")
+
+exploit_ds_plot
+exploit_cohort_plot
+```
+
+Combine panels into single plot.
+
+```{r}
+# Joint title: https://wilkelab.org/cowplot/articles/plot_grid.html
+exploit_title <- ggdraw() +
+  draw_label(
+    "Exploitation rate diagnostic",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+
+exploit_grid <- plot_grid(
+  exploit_title,
+  exploit_ds_plot +
+    labs(
+      title = "Down-sampled lexicase"
+    ) +
+    theme(axis.title.x = element_blank()),
+  exploit_cohort_plot +
+    labs(
+      title = "Cohort lexicase"
+    ),
+  nrow = 3,
+  ncol = 1,
+  # align = "h",
+  labels = c("", "a", "b"),
+  rel_heights = c(0.075, 1, 1)
+)
+exploit_grid
+```
+
+```{r}
+save_plot(
+  filename = paste0(plot_directory, "2023-05-02-diagnostics-exploit-final-fig.pdf"),
+  plot = exploit_grid,
+  base_width = 10,
+  base_height = 8,
+  dpi = 600
+)
+```

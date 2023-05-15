@@ -17,53 +17,183 @@ First, we load in the data and create a column containing the number of fitness 
 library(readr)
 library(ggplot2)
 library(dplyr)
+```
 
-phylo_informed_all_phylo_data <- read_csv("phylo_informed_all_phylo_data.csv")
-phylo_informed_all_phylo_data <- phylo_informed_all_phylo_data %>% mutate(evals_per_gen = case_when(
-    EVAL_MODE == "cohort" ~ 1.0/NUM_COHORTS, 
-    EVAL_MODE=="down-sample" ~ TEST_DOWNSAMPLE_RATE, 
-    EVAL_MODE=="full"~1.0)
+
+```{r}
+experiment_slug <- "2023-05-07-diag-opt"
+
+working_directory <- paste0(
+  "experiments/",
+  experiment_slug,
+  "/analysis/"
+)
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_directory <- paste0(working_directory, "plots/")
+dir.create(plot_directory, showWarnings=FALSE)
+```
+
+```{r}
+
+phylo_informed_all_phylo_data <- read_csv(
+  paste0(working_directory, "data/phylo-est-info.csv")
+)
+
+phylo_informed_all_phylo_data <- phylo_informed_all_phylo_data %>%
+  mutate(
+    evals_per_gen = case_when(
+      EVAL_MODE == "cohort" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "down-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "full" ~ 1.0
+    )
   )
 
 ```
 
 # Relative-bassed estimation
 
-The first question is where estimated scores are most commonly being pulled from under relative-based estimation. 
+The first question is where estimated scores are most commonly being pulled from under relative-based estimation.
 
 Proportion of estimations where the estimate was pulled from the focal taxon itself:
 
 ```{r relative_self}
-ggplot(phylo_informed_all_phylo_data %>% filter(EVAL_FIT_EST_MODE == "relative-opt", EVAL_MODE!="full")) + geom_boxplot(aes(x=as.factor(evals_per_gen), y=self_count/(other_count+ancestor_count+descendant_count+self_count+outside_count), color=EVAL_MODE, group=as.factor(evals_per_gen))) + facet_grid(cols=vars(DIAGNOSTIC), rows=vars(EVAL_MODE)) + theme_bw() + scale_y_continuous("Proportion of self lookups") + scale_x_discrete() + theme(legend.position = "none") + xlab("Evaluations per generation")
-
+ggplot(
+  phylo_informed_all_phylo_data %>%
+    filter(EVAL_MODE!="full")
+  ) +
+  geom_boxplot(
+    aes(
+      x = as.factor(EVAL_FIT_EST_MODE),
+      y = self_count /(other_count+ancestor_count+descendant_count+self_count+outside_count),
+      color = EVAL_MODE,
+      # group=as.factor(evals_per_gen)
+    )
+  ) +
+  facet_grid(
+    cols = vars(DIAGNOSTIC),
+    rows = vars(EVAL_MODE)
+  ) +
+  theme_bw() +
+  scale_y_continuous("Proportion of self lookups") +
+  scale_x_discrete() +
+  theme(legend.position = "none") + xlab("Evaluations per generation")
+ggsave(
+   filename=paste0(plot_directory, "self-lookups.pdf")
+)
 ```
 
 Proportion of estimations where the estimate was pulled from an ancestor:
 
 ```{r relative_ancestor}
-ggplot(phylo_informed_all_phylo_data %>% filter(EVAL_FIT_EST_MODE == "relative-opt", EVAL_MODE!="full")) + geom_boxplot(aes(x=as.factor(evals_per_gen), y=ancestor_count/(other_count+ancestor_count+descendant_count+self_count+outside_count), color=EVAL_MODE, group=as.factor(evals_per_gen))) + facet_grid(cols=vars(DIAGNOSTIC), rows=vars(EVAL_MODE)) + theme_bw() + scale_y_continuous("Proportion of ancestor lookups") + scale_x_discrete() + theme(legend.position = "none") + xlab("Evaluations per generation")
-
+ggplot(
+  phylo_informed_all_phylo_data %>%
+    filter(EVAL_MODE!="full")
+  ) +
+  geom_boxplot(
+    aes(
+      x = as.factor(EVAL_FIT_EST_MODE),
+      y = ancestor_count /(other_count+ancestor_count+descendant_count+self_count+outside_count),
+      color = EVAL_MODE,
+      # group=as.factor(evals_per_gen)
+    )
+  ) +
+  facet_grid(
+    cols = vars(DIAGNOSTIC),
+    rows = vars(EVAL_MODE)
+  ) +
+  theme_bw() +
+  scale_y_continuous("Proportion of ancestor lookups") +
+  scale_x_discrete() +
+  theme(legend.position = "none") + xlab("Evaluations per generation")
+ggsave(
+   filename=paste0(plot_directory, "ancestor-lookups.pdf")
+)
 ```
 
 Proportion of estimations where the estimate was pulled from an descendant:
 
 ```{r relative_descendant}
-ggplot(phylo_informed_all_phylo_data %>% filter(EVAL_FIT_EST_MODE == "relative-opt", EVAL_MODE!="full")) + geom_boxplot(aes(x=as.factor(evals_per_gen), y=descendant_count/(other_count+ancestor_count+descendant_count+self_count+outside_count), color=EVAL_MODE, group=as.factor(evals_per_gen))) + facet_grid(cols=vars(DIAGNOSTIC), rows=vars(EVAL_MODE)) + theme_bw() + scale_y_continuous("Proportion of descendant lookups") + scale_x_discrete() + theme(legend.position = "none") + xlab("Evaluations per generation")
-
+ggplot(
+  phylo_informed_all_phylo_data %>%
+    filter(EVAL_MODE!="full")
+  ) +
+  geom_boxplot(
+    aes(
+      x = as.factor(EVAL_FIT_EST_MODE),
+      y = descendant_count /(other_count+ancestor_count+descendant_count+self_count+outside_count),
+      color = EVAL_MODE,
+      # group=as.factor(evals_per_gen)
+    )
+  ) +
+  facet_grid(
+    cols = vars(DIAGNOSTIC),
+    rows = vars(EVAL_MODE)
+  ) +
+  theme_bw() +
+  scale_y_continuous("Proportion of descendant lookups") +
+  scale_x_discrete() +
+  theme(legend.position = "none") + xlab("Evaluations per generation")
+ggsave(
+   filename=paste0(plot_directory, "descendant-lookups.pdf")
+)
 ```
 
 Proportion of estimations where the estimate was pulled from a non-ancestor, non-descendant relative:
 
 ```{r relative_relative}
-ggplot(phylo_informed_all_phylo_data %>% filter(EVAL_FIT_EST_MODE == "relative-opt", EVAL_MODE!="full")) + geom_boxplot(aes(x=as.factor(evals_per_gen), y=other_count/(other_count+ancestor_count+descendant_count+self_count+outside_count), color=EVAL_MODE, group=as.factor(evals_per_gen))) + facet_grid(cols=vars(DIAGNOSTIC), rows=vars(EVAL_MODE)) + theme_bw() + scale_y_continuous("Proportion of relative lookups") + scale_x_discrete() + theme(legend.position = "none") + xlab("Evaluations per generation")
-
+ggplot(
+  phylo_informed_all_phylo_data %>%
+    filter(EVAL_MODE!="full")
+  ) +
+  geom_boxplot(
+    aes(
+      x = as.factor(EVAL_FIT_EST_MODE),
+      y = other_count /(other_count+ancestor_count+descendant_count+self_count+outside_count),
+      color = EVAL_MODE,
+      # group=as.factor(evals_per_gen)
+    )
+  ) +
+  facet_grid(
+    cols = vars(DIAGNOSTIC),
+    rows = vars(EVAL_MODE)
+  ) +
+  theme_bw() +
+  scale_y_continuous("Proportion of other lookups") +
+  scale_x_discrete() +
+  theme(legend.position = "none") + xlab("Evaluations per generation")
+ggsave(
+   filename=paste0(plot_directory, "other-lookups.pdf")
+)
 ```
 
 Proportion of estimations where the estimate was pulled from taxon that has since been pruned from the phylogeny (these should all be either relatives or descendants):
 
 ```{r relative_outside}
-ggplot(phylo_informed_all_phylo_data %>% filter(EVAL_FIT_EST_MODE == "relative-opt", EVAL_MODE!="full")) + geom_boxplot(aes(x=as.factor(evals_per_gen), y=outside_count/(other_count+ancestor_count+descendant_count+self_count+outside_count), color=EVAL_MODE, group=as.factor(evals_per_gen))) + facet_grid(cols=vars(DIAGNOSTIC), rows=vars(EVAL_MODE)) + theme_bw() + scale_y_continuous("Proportion of outside lookups") + scale_x_discrete() + theme(legend.position = "none") + xlab("Evaluations per generation")
-
+ggplot(
+  phylo_informed_all_phylo_data %>%
+    filter(EVAL_MODE!="full")
+  ) +
+  geom_boxplot(
+    aes(
+      x = as.factor(EVAL_FIT_EST_MODE),
+      y = outside_count /(other_count+ancestor_count+descendant_count+self_count+outside_count),
+      color = EVAL_MODE,
+      # group=as.factor(evals_per_gen)
+    )
+  ) +
+  facet_grid(
+    cols = vars(DIAGNOSTIC),
+    rows = vars(EVAL_MODE)
+  ) +
+  theme_bw() +
+  scale_y_continuous("Proportion of outside lookups") +
+  scale_x_discrete() +
+  theme(legend.position = "none") + xlab("Evaluations per generation")
+ggsave(
+   filename=paste0(plot_directory, "outside-lookups.pdf")
+)
 ```
 
 # Comparison between ancesstor-based and relative-based estimation
