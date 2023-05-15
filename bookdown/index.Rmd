@@ -34,7 +34,7 @@ Our supplemental material includes the following:
 - GP instruction set (Section \@ref(signalgp-instruction-set))
 - Analysis notebooks for each experiment (including source code)
   - Selection scheme diagnostics (Section \@ref(selection-scheme-diagnostic-experiments))
-  - Program synthesis problems (Section TODO)
+  - Program synthesis problems (Section \@ref(program-synthesis-experiments))
 
 ## Contributing authors
 
