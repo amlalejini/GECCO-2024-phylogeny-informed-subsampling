@@ -1,3 +1,5 @@
+# 2023-05-08 - Program synthesis experiments
+
 ```{r}
 experiment_slug <- "2023-05-08-psynth"
 
@@ -34,6 +36,8 @@ theme_set(theme_cowplot())
 plot_directory <- paste0(working_directory, "plots/")
 dir.create(plot_directory, showWarnings=FALSE)
 ```
+
+### Load summary data
 
 ```{r}
 summary_data_loc <- paste0(working_directory, "data/aggregate.csv")
@@ -97,7 +101,74 @@ solution_counts <- summary_data %>%
 print(solution_counts, n=140)
 ```
 
-## Solutions
+### Load time series data
+
+Because runs stop when a solution is found, the over time data aren't completely fair to compare across replicates.
+
+```{r}
+ts_data_loc <- paste0(working_directory, "data/time_series.csv")
+ts_data <- read_csv(ts_data_loc)
+
+ts_data <- ts_data %>%
+  mutate(
+    eval_mode_row = case_when(
+      EVAL_MODE == "full" & TEST_DOWNSAMPLE_RATE == "1" ~ "down-sample",
+      EVAL_MODE == "full" & NUM_COHORTS == "1" ~ "cohort",
+      .default = EVAL_MODE
+    ),
+    evals_per_gen = case_when(
+      EVAL_MODE == "cohort" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "down-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "full" ~ 1.0
+    ),
+    EVAL_FIT_EST_MODE = case_when(
+      EVAL_FIT_EST_MODE == "ancestor-opt" ~ "ancestor",
+      EVAL_FIT_EST_MODE == "relative-opt" ~ "relative",
+      .default = EVAL_FIT_EST_MODE
+    ),
+    .keep = "all"
+  ) %>%
+  mutate(
+    evals_per_gen = as.factor(evals_per_gen),
+    PROBLEM = as.factor(PROBLEM),
+    SELECTION = as.factor(SELECTION),
+    EVAL_MODE = as.factor(EVAL_MODE),
+    NUM_COHORTS = as.factor(NUM_COHORTS),
+    TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE),
+    EVAL_FIT_EST_MODE = factor(
+      EVAL_FIT_EST_MODE,
+      levels = c(
+        "none",
+        "ancestor",
+        "relative"
+      ),
+      labels = c(
+        "None",
+        "Ancestor",
+        "Relative"
+      )
+    ),
+    .keep = "all"
+  )
+
+avg_across_time_data <- ts_data %>%
+  group_by(
+    PROBLEM,
+    evals_per_gen,
+    eval_mode_row,
+    EVAL_FIT_EST_MODE,
+    EVAL_MODE,
+    SEED
+  ) %>%
+  summarize(
+    avg_entropy_selected_ids = mean(entropy_selected_ids),
+    avg_genotype_pairwise_distance = mean(mean_genotype_pairwise_distance),
+    avg_num_unique_selected = mean(num_unique_selected),
+    max_genotype_pairwise_distance = max(mean_genotype_pairwise_distance)
+  )
+```
+
+## Problem-solving success
 
 ```{r}
 plt_solutions <- function(data, problem) {
@@ -211,16 +282,13 @@ kable(fisher_results)
 #     column_to_rownames(var = "EVAL_FIT_EST_MODE")
 
 # pairwise_fisher_test(temp, p.adjust.method = "holm")
-```
+# print(
+#   solution_counts %>% filter(eval_mode_row == "cohort" & PROBLEM == "fizz-buzz"),
+#   n = 150
+# )
 
-```{r}
-print(
-  solution_counts %>% filter(eval_mode_row == "cohort" & PROBLEM == "fizz-buzz"),
-  n = 150
-)
-
-kable(
-  fisher_results %>%
-    filter(grepl("cohort", comparison) & grepl("fizz-buzz", comparison))
-)
+# kable(
+#   fisher_results %>%
+#     filter(grepl("cohort", comparison) & grepl("fizz-buzz", comparison))
+# )
 ```
