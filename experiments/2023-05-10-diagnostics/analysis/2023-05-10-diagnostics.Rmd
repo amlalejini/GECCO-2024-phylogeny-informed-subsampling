@@ -1,4 +1,4 @@
-# 2023-05-10 - Diagnostics experiments
+# Selection scheme diagnostic experiments
 
 ```{r}
 experiment_slug <- "2023-05-10-diagnostics"
@@ -8,6 +8,13 @@ working_directory <- paste0(
   experiment_slug,
   "/analysis/"
 )
+
+if (exists("bookdown_wd_prefix")) {
+  working_directory <- paste0(
+    bookdown_wd_prefix,
+    working_directory
+  )
+}
 ```
 
 ## Dependencies
@@ -972,7 +979,7 @@ save_plot(
 )
 ```
 
-## Multi-path exploration
+### Multi-path exploration
 
 ```{r}
 build_explore_plot <- function(eval_mode) {
