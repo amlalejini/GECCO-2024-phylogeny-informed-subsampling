@@ -20,7 +20,7 @@ Abbreviations:
 
 Instructions that would produce undefined behavior (e.g., division by zero) are treated as no operations.
 
-### Default Instructions
+## Default Instructions
 
 I.e., instructions used across all diagnostic tasks.
 
@@ -63,22 +63,22 @@ I.e., instructions used across all diagnostic tasks.
 
 Note that `Nand` performs a bitwise operation.
 
-### Problem-specific instructions
+## Problem-specific instructions
 
 Each problem has problem-specific instructions for producing output.
 
-#### Fizz Buzz
+### Fizz Buzz
 
 - SubmitFizz
 - SubmitBuzz
 - SubmitFizzBuzz
 - SubmitEcho
 
-#### Median
+### Median
 
 - SubmitOutput
 
-#### Grade
+### Grade
 
 - SubmitA
 - SubmitB
@@ -86,7 +86,7 @@ Each problem has problem-specific instructions for producing output.
 - SubmitD
 - SubmitF
 
-#### Small or large
+### Small or large
 
 - SubmitSmall
 - SubmitLarge
