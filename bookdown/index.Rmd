@@ -1,0 +1,44 @@
+---
+title: "Supplemental Material for Phylogeny-informed fitness estimation"
+author: "Alexander Lalejini, Matthew Andres Moreno, Jose Guadalupe Hernandez, and Emily Dolson"
+date: "`r Sys.Date()`"
+output: bookdown::gitbook
+documentclass: book
+bibliography: ["packages.bib", "supplemental.bib"]
+biblio-style: apalike
+nocite: '@*'
+link-citations: yes
+github-repo: amlalejini/phylogeny-informed-evaluation
+description: "Supplemental material"
+---
+
+```{r, include=FALSE}
+bookdown_wd_prefix <- "../"
+```
+
+# Introduction
+
+This is the supplemental material for our submission to Genetic Programming Theory and Practice XX.
+This is not intended as a stand-alone document, but as a companion to our manuscript.
+
+## About our supplemental material
+
+As you may have noticed (unless you're reading a pdf version of this), our supplemental material is hosted using [GitHub pages](https://pages.github.com/).
+We compiled our data analyses and supplemental documentation into this nifty web-accessible book using [bookdown](https://bookdown.org).
+
+The source code/configuration files for this supplemental material can be found in [this GitHub repository](https://github.com/amlalejini/phylogeny-informed-evaluation).
+
+Our supplemental material includes the following:
+
+- Data availability (Section \@ref(data-availability))
+- GP instruction set (Section \@ref(signalgp-instruction-set))
+- Analysis notebooks for each experiment (including source code)
+  - Selection scheme diagnostics (Section \@ref(selection-scheme-diagnostic-experiments))
+  - Program synthesis problems (Section TODO)
+
+## Contributing authors
+
+- Alexander Lalejini
+- Matthew Andres Moreno
+- Jose Guadalupe Hernandez
+- Emily Dolson
