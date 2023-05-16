@@ -10,7 +10,7 @@ def identify_file(directory, contains_substrs, identifier_fun):
 def id_fun(candidates):
     updates = [int(cand.split("_")[-1].split(".")[0]) for cand in candidates]
     max_update = max(updates)
-    return f"phylo_genoetypes_{max_update}.sgp"
+    return f"phylo_genotypes_{max_update}.sgp"
 
 def main():
     parser = argparse.ArgumentParser(description="Find genotype file")
