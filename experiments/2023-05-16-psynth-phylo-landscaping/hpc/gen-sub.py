@@ -34,7 +34,8 @@ fixed_parameters = {
     "PRINT_INTERVAL": "10",
     "SNAPSHOT_INTERVAL": "1000",
     "NUM_MUTANTS": "10000",
-    "FOCAL_GENOTYPES_FPATH": "output/${GENOTYPES}"
+    "FOCAL_GENOTYPES_FPATH": "output/${GENOTYPES}",
+    "RECORD_PHYLO_GENOTYPES": "1"
 }
 
 special_decorators = ["__DYNAMIC", "__COPY_OVER"]
