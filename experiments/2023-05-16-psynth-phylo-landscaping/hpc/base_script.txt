@@ -33,6 +33,7 @@ cp ${CONFIG_DIR}/${TRAINING_SET} .
 cp ${CONFIG_DIR}/${TESTING_SET} .
 cp ${CONFIG_DIR}/*.cfg .
 cp ${CONFIG_DIR}/${EXEC} .
+cp ${CONFIG_DIR}/id_genotypes_file.py .
 
 ######## Run experiment ########
 cd ${RUN_DIR}
@@ -43,6 +44,7 @@ cd ${RUN_DIR}
 
 ######## Clean up ########
 rm ${RUN_DIR}/*.cfg
+rm ${RUN_DIR}/*.py
 rm ${RUN_DIR}/${TRAINING_SET}
 rm ${RUN_DIR}/${TESTING_SET}
 rm ${RUN_DIR}/${EXEC}

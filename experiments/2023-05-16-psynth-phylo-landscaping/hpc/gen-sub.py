@@ -34,7 +34,7 @@ fixed_parameters = {
     "PRINT_INTERVAL": "10",
     "SNAPSHOT_INTERVAL": "1000",
     "NUM_MUTANTS": "10000",
-    "FOCAL_GENOTYPES_FPATH": "output/phylo-programs.sgp"
+    "FOCAL_GENOTYPES_FPATH": "output/${GENOTYPES}"
 }
 
 special_decorators = ["__DYNAMIC", "__COPY_OVER"]
@@ -200,6 +200,7 @@ def main():
 
             # (2) Post-hoc analysis
             analysis_commands = ''
+            analysis_commands += "GENOTYPES=$(python3 id_genotypes_file.py --dir output/)"
             analysis_commands += 'echo "./${EXEC} ${ANALYSIS_PARAMS}" >> cmd.log\n'
             analysis_commands += './${EXEC} ${ANALYSIS_PARAMS} > analysis.log\n'
             run_logic += analysis_commands
