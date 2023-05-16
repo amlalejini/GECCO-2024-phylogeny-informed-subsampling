@@ -1408,6 +1408,10 @@ void ProgSynthWorld::InitializePopulation_Random() {
 }
 
 void ProgSynthWorld::SetupPhylogenyTracking() {
+  if (config.MUTATION_ANALYSIS_MODE()) {
+    return;
+  }
+
   std::cout << "Configure phylogeny tracking" << std::endl;
   emp_assert(systematics_ptr == nullptr);
   // Create new systematics tracker
@@ -1550,10 +1554,12 @@ void ProgSynthWorld::SetupPhylogenyTracking() {
     output_dir + "systematics.csv"
   ).SetTimingRepeat(config.OUTPUT_SUMMARY_DATA_INTERVAL());
 
-
 }
 
 void ProgSynthWorld::SetupDataCollection() {
+  if (config.MUTATION_ANALYSIS_MODE()) {
+    return;
+  }
   std::cout << "Configure data tracking" << std::endl;
   SetupDataCollection_Phylodiversity();
   SetupDataCollection_Summary();
