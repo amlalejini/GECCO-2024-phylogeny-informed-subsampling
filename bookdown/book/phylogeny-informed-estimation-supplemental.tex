@@ -117,7 +117,7 @@
 
 \title{Supplemental Material for Phylogeny-informed fitness estimation}
 \author{Alexander Lalejini, Matthew Andres Moreno, Jose Guadalupe Hernandez, and Emily Dolson}
-\date{2023-05-15}
+\date{2023-06-06}
 
 \begin{document}
 \maketitle
@@ -138,7 +138,7 @@ This is not intended as a stand-alone document, but as a companion to our manusc
 As you may have noticed (unless you're reading a pdf version of this), our supplemental material is hosted using \href{https://pages.github.com/}{GitHub pages}.
 We compiled our data analyses and supplemental documentation into this nifty web-accessible book using \href{https://bookdown.org}{bookdown}.
 
-The source code/configuration files for this supplemental material can be found in \href{https://github.com/amlalejini/phylogeny-informed-evaluation}{this GitHub repository}.
+The source code/configuration files for this supplemental material can be found in \href{https://github.com/amlalejini/GPTP-2023-phylogeny-informed-evaluation}{this GitHub repository}.
 
 Our supplemental material includes the following:
 
@@ -156,7 +156,7 @@ Our supplemental material includes the following:
   \item
     Selection scheme diagnostics (Section \ref{selection-scheme-diagnostic-experiments})
   \item
-    Program synthesis problems (Section TODO)
+    Program synthesis problems (Section \ref{program-synthesis-experiments})
   \end{itemize}
 \end{itemize}
 
@@ -181,7 +181,7 @@ Our supplemental material includes the following:
 \hypertarget{source-code}{%
 \section{Source code}\label{source-code}}
 
-The source code for this work is publicly accessible on GitHub: \url{https://github.com/amlalejini/phylogeny-informed-evaluation}.
+The source code for this work is publicly accessible on GitHub: \url{https://github.com/amlalejini/GPTP-2023-phylogeny-informed-evaluation}.
 
 \hypertarget{experiment-software-dependencies}{%
 \subsection{Experiment software dependencies}\label{experiment-software-dependencies}}
@@ -209,7 +209,7 @@ The source code for this work is publicly accessible on GitHub: \url{https://git
 \hypertarget{training-and-testing-sets}{%
 \section{Training and testing sets}\label{training-and-testing-sets}}
 
-The training and testing sets used for program synthesis problems can be found on GitHub: \url{https://github.com/amlalejini/phylogeny-informed-evaluation/tree/main/experiments/2023-05-08-psynth/hpc/config}.
+The training and testing sets used for program synthesis problems can be found on GitHub: \url{https://github.com/amlalejini/GPTP-2023-phylogeny-informed-evaluation/tree/main/experiments/2023-05-08-psynth/hpc/config}.
 
 \hypertarget{experimental-results}{%
 \section{Experimental results}\label{experimental-results}}
@@ -423,12 +423,12 @@ Each problem has problem-specific instructions for producing output.
 \end{Shaded}
 
 \begin{verbatim}
-## -- Attaching packages ----------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse 1.3.2 --
+## -- Attaching packages ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse 1.3.2 --
 ## v ggplot2 3.3.6     v purrr   1.0.1
 ## v tibble  3.1.8     v dplyr   1.1.0
 ## v tidyr   1.3.0     v stringr 1.5.0
 ## v readr   2.1.3     v forcats 0.5.2
-## -- Conflicts -------------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
+## -- Conflicts ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()
 \end{verbatim}
@@ -508,7 +508,7 @@ Each problem has problem-specific instructions for producing output.
 
 \begin{verbatim}
 ## Rows: 520 Columns: 49
-## -- Column specification ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## -- Column specification ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Delimiter: ","
 ## chr  (5): DIAGNOSTIC, EVAL_FIT_EST_MODE, EVAL_MODE, SELECTION, STOP_MODE
 ## dbl (44): ACCURACY, CREDIT, DIAGNOSTIC_DIMENSIONALITY, GENE_LOWER_BND, GENE_...
@@ -587,7 +587,7 @@ Each problem has problem-specific instructions for producing output.
 
 \begin{verbatim}
 ## Rows: 104000 Columns: 19
-## -- Column specification ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## -- Column specification ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Delimiter: ","
 ## chr  (4): DIAGNOSTIC, EVAL_FIT_EST_MODE, EVAL_MODE, SELECTION
 ## dbl (15): NUM_COHORTS, SEED, TEST_DOWNSAMPLE_RATE, entropy_selected_ids, eva...
@@ -661,7 +661,7 @@ Each problem has problem-specific instructions for producing output.
 
 \begin{verbatim}
 ## Rows: 520 Columns: 38
-## -- Column specification ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## -- Column specification ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Delimiter: ","
 ## chr  (6): OUTPUT_DIR, DIAGNOSTIC, STOP_MODE, SELECTION, EVAL_MODE, EVAL_FIT_...
 ## dbl (32): SNAPSHOT_INTERVAL, OUTPUT_SUMMARY_DATA_INTERVAL, MUTATE_STD, TARGE...
@@ -2148,7 +2148,7 @@ Combine panels into single plot.
 
 \begin{verbatim}
 ## Rows: 3120 Columns: 73
-## -- Column specification ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## -- Column specification ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Delimiter: ","
 ## chr (11): ANCESTOR_FILE_PATH, EVAL_FIT_EST_MODE, EVAL_MODE, POP_INIT_MODE, P...
 ## dbl (62): EVAL_CPU_CYCLES_PER_TEST, EVAL_MAX_PHYLO_SEARCH_DEPTH, MAX_ACTIVE_...
@@ -2355,7 +2355,7 @@ Because runs stop when a solution is found, the over time data aren't completely
 
 \begin{verbatim}
 ## Rows: 262694 Columns: 24
-## -- Column specification ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## -- Column specification ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Delimiter: ","
 ## chr  (6): EVAL_FIT_EST_MODE, EVAL_MODE, PROBLEM, SELECTION, TESTING_SET_PATH...
 ## dbl (18): EVAL_MAX_PHYLO_SEARCH_DEPTH, NUM_COHORTS, SEED, TEST_DOWNSAMPLE_RA...

@@ -12,7 +12,7 @@
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="Supplemental material" />
-  <meta name="github-repo" content="amlalejini/phylogeny-informed-evaluation" />
+  <meta name="github-repo" content="amlalejini/GPTP-2023-phylogeny-informed-evaluation" />
 
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Chapter 4 Selection scheme diagnostic experiments | Supplemental Material for Phylogeny-informed fitness estimation" />
@@ -23,7 +23,7 @@
 <meta name="author" content="Alexander Lalejini, Matthew Andres Moreno, Jose Guadalupe Hernandez, and Emily Dolson" />
 
 
-<meta name="date" content="2023-05-15" />
+<meta name="date" content="2023-06-06" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -260,12 +260,12 @@ div.csl-indent {
 <div id="dependencies" class="section level2 hasAnchor" number="4.1">
 <h2><span class="header-section-number">4.1</span> Dependencies<a href="selection-scheme-diagnostic-experiments.html#dependencies" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="selection-scheme-diagnostic-experiments.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div>
-<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.2 ──
+<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.2 ──
 ## ✔ ggplot2 3.3.6     ✔ purrr   1.0.1
 ## ✔ tibble  3.1.8     ✔ dplyr   1.1.0
 ## ✔ tidyr   1.3.0     ✔ stringr 1.5.0
 ## ✔ readr   2.1.3     ✔ forcats 0.5.2
-## ── Conflicts ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ── Conflicts ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="selection-scheme-diagnostic-experiments.html#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
@@ -310,7 +310,7 @@ div.csl-indent {
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="selection-scheme-diagnostic-experiments.html#cb10-1" aria-hidden="true" tabindex="-1"></a>summary_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/aggregate.csv&quot;</span>)</span>
 <span id="cb10-2"><a href="selection-scheme-diagnostic-experiments.html#cb10-2" aria-hidden="true" tabindex="-1"></a>summary_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(summary_data_loc)</span></code></pre></div>
 <pre><code>## Rows: 520 Columns: 49
-## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (5): DIAGNOSTIC, EVAL_FIT_EST_MODE, EVAL_MODE, SELECTION, STOP_MODE
 ## dbl (44): ACCURACY, CREDIT, DIAGNOSTIC_DIMENSIONALITY, GENE_LOWER_BND, GENE_...
@@ -376,7 +376,7 @@ div.csl-indent {
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="selection-scheme-diagnostic-experiments.html#cb13-1" aria-hidden="true" tabindex="-1"></a>ts_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/time_series.csv&quot;</span>)</span>
 <span id="cb13-2"><a href="selection-scheme-diagnostic-experiments.html#cb13-2" aria-hidden="true" tabindex="-1"></a>ts_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(ts_data_loc)</span></code></pre></div>
 <pre><code>## Rows: 104000 Columns: 19
-## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (4): DIAGNOSTIC, EVAL_FIT_EST_MODE, EVAL_MODE, SELECTION
 ## dbl (15): NUM_COHORTS, SEED, TEST_DOWNSAMPLE_RATE, entropy_selected_ids, eva...
@@ -437,7 +437,7 @@ div.csl-indent {
 <span id="cb16-2"><a href="selection-scheme-diagnostic-experiments.html#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/phylo-est-info.csv&quot;</span>)</span>
 <span id="cb16-3"><a href="selection-scheme-diagnostic-experiments.html#cb16-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <pre><code>## Rows: 520 Columns: 38
-## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (6): OUTPUT_DIR, DIAGNOSTIC, STOP_MODE, SELECTION, EVAL_MODE, EVAL_FIT_...
 ## dbl (32): SNAPSHOT_INTERVAL, OUTPUT_SUMMARY_DATA_INTERVAL, MUTATE_STD, TARGE...
@@ -2595,7 +2595,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/amlalejini/phylogeny-informed-evalution/tree/main/../experiments/2023-05-10-diagnostics/analysis/2023-05-10-diagnostics.Rmd",
+"link": "https://github.com/amlalejini/GPTP-2023-phylogeny-informed-evaluation/tree/main/../experiments/2023-05-10-diagnostics/analysis/2023-05-10-diagnostics.Rmd",
 "text": "Edit"
 },
 "history": {
