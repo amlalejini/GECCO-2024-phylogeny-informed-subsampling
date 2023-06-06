@@ -8,7 +8,7 @@ bibliography: ["packages.bib", "supplemental.bib"]
 biblio-style: apalike
 nocite: '@*'
 link-citations: yes
-github-repo: amlalejini/phylogeny-informed-evaluation
+github-repo: amlalejini/GPTP-2023-phylogeny-informed-evaluation
 description: "Supplemental material"
 ---
 
@@ -26,7 +26,7 @@ This is not intended as a stand-alone document, but as a companion to our manusc
 As you may have noticed (unless you're reading a pdf version of this), our supplemental material is hosted using [GitHub pages](https://pages.github.com/).
 We compiled our data analyses and supplemental documentation into this nifty web-accessible book using [bookdown](https://bookdown.org).
 
-The source code/configuration files for this supplemental material can be found in [this GitHub repository](https://github.com/amlalejini/phylogeny-informed-evaluation).
+The source code/configuration files for this supplemental material can be found in [this GitHub repository](https://github.com/amlalejini/GPTP-2023-phylogeny-informed-evaluation).
 
 Our supplemental material includes the following:
 

@@ -2,7 +2,7 @@
 
 ## Source code
 
-The source code for this work is publicly accessible on GitHub: <https://github.com/amlalejini/phylogeny-informed-evaluation>.
+The source code for this work is publicly accessible on GitHub: <https://github.com/amlalejini/GPTP-2023-phylogeny-informed-evaluation>.
 
 ### Experiment software dependencies
 
@@ -13,7 +13,7 @@ The source code for this work is publicly accessible on GitHub: <https://github.
 
 ## Training and testing sets
 
-The training and testing sets used for program synthesis problems can be found on GitHub: <https://github.com/amlalejini/phylogeny-informed-evaluation/tree/main/experiments/2023-05-08-psynth/hpc/config>.
+The training and testing sets used for program synthesis problems can be found on GitHub: <https://github.com/amlalejini/GPTP-2023-phylogeny-informed-evaluation/tree/main/experiments/2023-05-08-psynth/hpc/config>.
 
 ## Experimental results
 
