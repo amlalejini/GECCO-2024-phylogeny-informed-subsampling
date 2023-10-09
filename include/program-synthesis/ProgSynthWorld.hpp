@@ -208,6 +208,8 @@ protected:
   void SetupEvaluation_Full();
   void SetupEvaluation_Cohort();
   void SetupEvaluation_DownSample();
+  void SetupEvaluation_IndivRandomSample();
+  void SetupEvaluation_PhyloInformedSample();
 
   void SetupSelection_Lexicase();
   void SetupSelection_Tournament();
@@ -886,6 +888,10 @@ void ProgSynthWorld::SetupEvaluation() {
   } else if (config.EVAL_MODE() == "cohort-full-compete") {
     SetupEvaluation_Cohort();
     force_full_compete = true;
+  } else if (config.EVAL_MODE() == "indiv-rand-sample") {
+    SetupEvaluation_IndivRandomSample();
+  } else if (config.EVAL_MODE() == "phylo-informed-sample") {
+    SetupEvaluation_PhyloInformedSample();
   } else {
     std::cout << "Unknown EVAL_MODE: " << config.EVAL_MODE() << std::endl;
     exit(-1);
@@ -1047,6 +1053,54 @@ void ProgSynthWorld::SetupEvaluation_DownSample() {
       }
     }
   );
+}
+
+void ProgSynthWorld::SetupEvaluation_IndivRandomSample() {
+  std::cout << "Configuring evaluation mode: individualized random sample" << std::endl;
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() > 0);
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() <= 1.0);
+  emp_assert(total_training_cases > 0);
+
+  size_t sample_size = (size_t)(config.TEST_DOWNSAMPLE_RATE() * (double)total_training_cases);
+  sample_size = (sample_size == 0) ? sample_size + 1 : sample_size;
+  emp_assert(sample_size > 0);
+  emp_assert(sample_size <= total_training_cases);
+
+  // Initialize the test groupings with one group that holds all tests.
+  // (we'll randomize on an individual basis)
+  test_groupings->SetSingleGroupMode();
+  // Initialize the organism groupings with one group that holds all organisms.
+  org_groupings->SetSingleGroupMode();
+  emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+
+  // Configure organism evaluation
+  do_org_evaluation_sig.AddAction(
+    [this, sample_size](size_t org_id) {
+      emp_assert(org_id < GetSize());
+      emp_assert(test_groupings->GetNumGroups() == 1);
+      auto& org = GetOrg(org_id);
+      begin_program_eval_sig.Trigger(org);
+      test_groupings->ShuffleMemberIDs(0, *random_ptr);
+      const auto& test_group = test_groupings->GetGroup(0);
+      // test_group.ShuffleMemberIDs(*random_ptr);
+      const auto& test_ids = test_group.GetMembers();
+      // Loop over first `sample_size` training cases (which have been shuffled)
+      for (size_t i = 0; i < sample_size; ++i) {
+        const size_t test_id = test_ids[i]; // Get test id from group.
+        // Handles test input:
+        begin_program_test_sig.Trigger(org, test_id, true);
+        // Runs the program:
+        do_program_test_sig.Trigger(org, test_id);
+        // Handles test output evaluation, updates phenotype:
+        end_program_test_sig.Trigger(org, test_id);
+        ++total_test_evaluations;
+      }
+    }
+  );
+}
+
+void ProgSynthWorld::SetupEvaluation_PhyloInformedSample() {
+  // TODO
 }
 
 void ProgSynthWorld::SetupSelection() {

@@ -94,6 +94,11 @@ public:
     return groupings[group_id];
   }
 
+  void ShuffleMemberIDs(size_t group_id, emp::Random& rnd) {
+    auto& group = groupings[group_id];
+    emp::Shuffle(rnd, group.member_ids);
+  }
+
   size_t GetMemberGroupID(size_t member_id) const {
     emp_assert(member_id < member_group_assignments.size());
     return member_group_assignments[member_id];
