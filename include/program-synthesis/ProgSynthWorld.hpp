@@ -171,6 +171,11 @@ protected:
   emp::Ptr<utils::GroupManager> org_groupings = nullptr;    ///< Manages organism groupings. # org groupings should equal # test groupings
   emp::Ptr<utils::GroupManager> test_groupings = nullptr;   ///< Manages test groupings. # org groupings should equal # organism groupings
 
+  std::function<emp::vector<size_t>(
+    const emp::vector<size_t>& /* choose from */,
+    emp::Ptr<taxon_t> /* taxon sampling for */
+  )> phylo_sample_fun;
+
   emp::vector<size_t> all_org_ids;
   emp::vector<size_t> all_training_case_ids;            ///< Contains ids of all training cases
   emp::Ptr<selection::BaseSelect> selector = nullptr;   ///< Pointer to selector
@@ -1100,7 +1105,66 @@ void ProgSynthWorld::SetupEvaluation_IndivRandomSample() {
 }
 
 void ProgSynthWorld::SetupEvaluation_PhyloInformedSample() {
-  // TODO
+  std::cout << "Configuring evaluation mode: phylogeny-informed sample" << std::endl;
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() > 0);
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() <= 1.0);
+  emp_assert(total_training_cases > 0);
+
+  size_t sample_size = (size_t)(config.TEST_DOWNSAMPLE_RATE() * (double)total_training_cases);
+  sample_size = (sample_size == 0) ? sample_size + 1 : sample_size;
+  emp_assert(sample_size > 0);
+  emp_assert(sample_size <= total_training_cases);
+  const bool ancestors_only = config.EVAL_FIT_EST_MODE() != "relative";
+
+  // Initialize the test groupings with one group that holds all tests.
+  // (we'll sample on an individual basis)
+  test_groupings->SetSingleGroupMode();
+  // Initialize the organism groupings with one group that holds all organisms.
+  org_groupings->SetSingleGroupMode();
+  emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+
+  // Configure phylogeny-informed sampling function
+  phylo_sample_fun = [this, sample_size, ancestors_only](
+    const emp::vector<size_t>& sample_from,
+    emp::Ptr<taxon_t> taxon_ptr
+  ) {
+    return phylo::PhyloInformedSample(
+      *random_ptr,
+      sample_size,
+      sample_from,
+      taxon_ptr,
+      ancestors_only,
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+    );
+  };
+
+  // Configure organism evaluation
+  do_org_evaluation_sig.AddAction(
+    [this, sample_size](size_t org_id) {
+      emp_assert(org_id < GetSize());
+      emp_assert(test_groupings->GetNumGroups() == 1);
+      auto& org = GetOrg(org_id);
+      emp::Ptr<taxon_t> taxon = systematics_ptr->GetTaxonAt(org_id);
+      begin_program_eval_sig.Trigger(org);
+      const auto& test_group = test_groupings->GetGroup(0);
+      const auto& test_ids = test_group.GetMembers();
+      emp::vector<size_t> sample_test_ids(
+        phylo_sample_fun(test_ids, taxon)
+      );
+      emp_assert(sample_test_ids.size() == sample_size);
+      // Loop over first `sample_size` training cases (which have been shuffled)
+      for (size_t i = 0; i < sample_size; ++i) {
+        const size_t test_id = sample_test_ids[i]; // Get test id from sample.
+        // Handles test input:
+        begin_program_test_sig.Trigger(org, test_id, true);
+        // Runs the program:
+        do_program_test_sig.Trigger(org, test_id);
+        // Handles test output evaluation, updates phenotype:
+        end_program_test_sig.Trigger(org, test_id);
+        ++total_test_evaluations;
+      }
+    }
+  );
 }
 
 void ProgSynthWorld::SetupSelection() {

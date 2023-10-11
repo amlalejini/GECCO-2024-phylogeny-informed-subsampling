@@ -156,6 +156,102 @@ struct phenotype_info {
 
 };
 
+namespace impl {
+
+template<typename TAXON>
+emp::vector<size_t> PhyloInformedSample_Ancestors(
+  emp::Random& rnd,
+  size_t sample_size,
+  const emp::vector<size_t>& trait_ids,
+  emp::Ptr<TAXON> tax,
+  size_t max_dist = (size_t)-1
+) {
+  emp_assert(trait_ids.size() > 0);
+  emp_assert(sample_size <= trait_ids.size(), "Number of choices must be at least as large as requested sample size");
+  emp_assert(tax != nullptr);
+
+  // Construct set of available choices
+  emp::vector<size_t> available(trait_ids);
+  emp::Shuffle(rnd, available);
+  // Maintain vector of excluded traits (in order of their exclusion)
+  emp::vector<size_t> excluded;
+
+  // Keep winnowing down available choices until left with sample size
+  size_t dist = 0;
+  emp::Ptr<TAXON> cur_tax = tax;
+  while (cur_tax != nullptr && dist <= max_dist) {
+    // Localize relevant taxon information
+    const auto& taxon_info = cur_tax->GetData();
+    const auto& traits_evaluated = taxon_info.GetTraitsEvaluated();
+    // If this taxon hasn't been evaluated yet, skip over
+    if (traits_evaluated.size() == 0) {
+      cur_tax = cur_tax->GetParent();
+      ++dist;
+      continue;
+    }
+
+    for (int i = available.size() - 1; i <= 0 && available.size() > sample_size; --i) {
+      // std::cout << "--- i=" << i << "; avail.size()=" << available.size() << std::endl;
+      emp_assert(i < available.size(), i, available.size());
+      const size_t trait_id = available[(size_t)i];
+      emp_assert(trait_id < traits_evaluated.size());
+      if (traits_evaluated[trait_id]) {
+        // If trait has been evaluated on this taxon:
+        // - remove it from available
+        // - add it to excluded
+        available.pop_back();
+        excluded.emplace_back(trait_id);
+      }
+    }
+
+    emp_assert(available.size() >= sample_size);
+    if (available.size() == sample_size) {
+      break;
+    }
+
+    // Move up to parent
+    cur_tax = cur_tax->GetParent();
+    ++dist;
+  }
+  // What happens if we hit max depth or we hit root & available still has too many things?
+  // That means that *everything* in available hasn't been evaluated in an ancestor
+  // => Resize down to sample size (random selection because we shuffled earlier)
+  if (available.size() > sample_size) {
+    available.resize(sample_size);
+  }
+
+  emp_assert(available.size() == sample_size);
+  return available;
+}
+
+template<typename TAXON>
+emp::vector<size_t> PhyloInformedSample_Relatives(
+  emp::Random& rnd,
+  size_t sample_size,
+  const emp::vector<size_t>& trait_ids,
+  emp::Ptr<TAXON> tax,
+  size_t max_dist = (size_t)-1
+) {
+  // TODO
+  return {};
+}
+
+}
+
+template<typename TAXON>
+emp::vector<size_t> PhyloInformedSample(
+  emp::Random& rnd,
+  size_t sample_size,
+  const emp::vector<size_t>& trait_ids,
+  emp::Ptr<TAXON> tax,
+  bool ancestors_only = true,
+  size_t max_dist = (size_t)-1
+) {
+  return (ancestors_only) ?
+    impl::PhyloInformedSample_Ancestors(rnd, sample_size, trait_ids, tax, max_dist) :
+    impl::PhyloInformedSample_Relatives(rnd, sample_size, trait_ids, tax, max_dist);
+}
+
 /// Return the nearest ancestor with the given trait evaluated.
 template<typename TAXON>
 TraitEstInfo& NearestAncestorWithTraitEval(
