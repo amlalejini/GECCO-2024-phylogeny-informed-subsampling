@@ -158,6 +158,22 @@ struct phenotype_info {
 
 namespace impl {
 
+void FilterEvaluated(size_t min_pool_size, emp::vector<size_t>& pool, const emp::vector<bool>& evaluated) {
+  // Loop over pool (backwards), removing items in pool that have been evaluated
+  for (int i = pool.size() - 1; i <= 0 && pool.size() > min_pool_size; --i) {
+    emp_assert(i < (int)pool.size(), i, pool.size());
+    const size_t trait_id = pool[(size_t)i];
+    emp_assert(trait_id < evaluated.size());
+    if (evaluated[trait_id]) {
+      // If trait has been evaluated on this taxon:
+      // - remove it from available
+      // - add it to excluded
+      pool.pop_back();
+    }
+  }
+  emp_assert(pool.size() >= min_pool_size);
+}
+
 template<typename TAXON>
 emp::vector<size_t> PhyloInformedSample_Ancestors(
   emp::Random& rnd,
@@ -190,19 +206,7 @@ emp::vector<size_t> PhyloInformedSample_Ancestors(
       continue;
     }
 
-    for (int i = available.size() - 1; i <= 0 && available.size() > sample_size; --i) {
-      // std::cout << "--- i=" << i << "; avail.size()=" << available.size() << std::endl;
-      emp_assert(i < available.size(), i, available.size());
-      const size_t trait_id = available[(size_t)i];
-      emp_assert(trait_id < traits_evaluated.size());
-      if (traits_evaluated[trait_id]) {
-        // If trait has been evaluated on this taxon:
-        // - remove it from available
-        // - add it to excluded
-        available.pop_back();
-        excluded.emplace_back(trait_id);
-      }
-    }
+    FilterEvaluated(sample_size, available, traits_evaluated);
 
     emp_assert(available.size() >= sample_size);
     if (available.size() == sample_size) {
@@ -232,12 +236,84 @@ emp::vector<size_t> PhyloInformedSample_Relatives(
   emp::Ptr<TAXON> tax,
   size_t max_dist = (size_t)-1
 ) {
-  // TODO
-  return {};
+  emp_assert(trait_ids.size() > 0);
+  emp_assert(sample_size <= trait_ids.size(), "Number of choices must be at least as large as requested sample size");
+  emp_assert(tax != nullptr);
+
+  // Construct set of available choices
+  emp::vector<size_t> available(trait_ids);
+  // Shuffle to eliminate bias
+  emp::Shuffle(rnd, available);
+
+  // Perform a breadth first search in phylogeny, winnowing down the
+  // available choices until left with appropriate sample size
+
+  // Track discovered taxa. Start with current taxon.
+  std::unordered_set<size_t> discovered_taxa({tax->GetID()});
+  std::deque<
+    std::pair<emp::Ptr<TAXON>, size_t>
+  > search_queue;
+  search_queue.emplace_back(tax, 0);
+  while (!search_queue.empty()) {
+    // Grab current taxon and its distance from search source
+    emp::Ptr<TAXON> cur_tax = search_queue.front().first;
+    const size_t cur_dist = search_queue.front().second;
+    // Pop current taxon from front of search queuej
+    search_queue.pop_front();
+    // Localize relevant taxon info
+    const auto& taxon_info = cur_tax->GetData();
+    const auto& traits_evaluated = taxon_info.GetTraitsEvaluated();
+
+    // If this taxon has been evaluated, filter available choices
+    if (traits_evaluated.size() > 0) {
+      FilterEvaluated(sample_size, available, traits_evaluated);
+      emp_assert(available.size() >= sample_size);
+      if (available.size() == sample_size) {
+        break;
+      }
+    }
+
+    // Add next set of relatives to search queue if they aren't too far away
+    if (cur_dist + 1 > max_dist) {
+      continue;
+    }
+
+    // Add ancestors not already search and not too far away
+    emp::Ptr<TAXON> ancestor_tax = cur_tax->GetParent();
+    if (ancestor_tax != nullptr && !emp::Has(discovered_taxa, ancestor_tax->GetID())) {
+      discovered_taxa.emplace(ancestor_tax->GetID());
+      search_queue.emplace_back(
+        std::make_pair(ancestor_tax, cur_dist + 1)
+      );
+    }
+    // Add any descendants not already searched and not too far away
+    std::set<emp::Ptr<TAXON>> descendants(cur_tax->GetOffspring());
+    for (emp::Ptr<TAXON> descendant_tax : descendants) {
+      emp_assert(descendant_tax != nullptr);
+      if (!emp::Has(discovered_taxa, descendant_tax->GetID())) {
+        discovered_taxa.emplace(descendant_tax->GetID());
+        search_queue.emplace_back(std::make_pair(descendant_tax, cur_dist + 1));
+      }
+    }
+  }
+
+  // What happens if we hit max depth or we hit root & available still has too many things?
+  // That means that *everything* in available hasn't been evaluated in a relative
+  // => Resize down to sample size (random selection because we shuffled earlier)
+  if (available.size() > sample_size) {
+    available.resize(sample_size);
+  }
+  emp_assert(available.size() == sample_size);
+  return available;
 }
 
 }
 
+// NOTE: The phylogeny annotations could be tweaked to further optimize the sampling
+//       process. The current implementation is layered on top of pre-existing annotations
+//       to minimize required changes to the tracking system.
+//       If we wanted to refocus experiments on *just* phylogeny-based sampling,
+//       it would be worthwhile to re-implement/re-factor with that in mind.
 template<typename TAXON>
 emp::vector<size_t> PhyloInformedSample(
   emp::Random& rnd,
