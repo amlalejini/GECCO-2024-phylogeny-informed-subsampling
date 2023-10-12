@@ -6,6 +6,7 @@ delete_merged_file: true
 rmd_files: ["index.Rmd",
             "../docs/data-availability.md",
             "../docs/gp-instruction-set.md",
+            "../docs/estimation-distance-analysis.md",
             "../experiments/2023-05-10-diagnostics/analysis/2023-05-10-diagnostics.Rmd",
             "../experiments/2023-05-08-psynth/analysis/2023-05-08-psynth.Rmd",
             "tail.Rmd"
