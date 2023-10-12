@@ -40,7 +40,7 @@ special_decorators = ["__DYNAMIC", "__COPY_OVER"]
 combos.register_var("eval__COPY_OVER")
 combos.register_var("problem__COPY_OVER")
 combos.register_var("SELECTION")
-combos.register_var("TEST_DOWN_SAMPLE_RATE")
+combos.register_var("TEST_DOWNSAMPLE_RATE")
 
 combos.add_val(
     "problem__COPY_OVER",
