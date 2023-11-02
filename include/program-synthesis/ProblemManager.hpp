@@ -51,6 +51,7 @@ protected:
   std::function<void(sgp_hardware_t&, org_t&, size_t)> init_testing_case;
   std::function<TestResult(sgp_hardware_t&, org_t&, size_t)> eval_output_training;
   std::function<TestResult(sgp_hardware_t&, org_t&, size_t)> eval_output_testing;
+  std::function<double(void)> get_max_test_score;
 
   // std::string problem_name;
   bool configured = false;
@@ -160,6 +161,11 @@ protected:
       return problem_util_ptr->EvaluateOutput(hw, org, testing_set_ptr->GetTest(test_id));
     };
 
+    get_max_test_score = [this]() -> double {
+      auto problem_util_ptr = problem_util.Cast<PROBLEM_T>();
+      return problem_util_ptr->max_test_score;
+    };
+
     configured = true;
   }
 
@@ -232,6 +238,11 @@ public:
   TestResult EvaluateOutput(sgp_hardware_t& hw, org_t& org, size_t test_id, bool training) {
     emp_assert(configured);
     return (training) ? eval_output_training(hw, org, test_id) : eval_output_testing(hw, org, test_id);
+  }
+
+  double GetMaxTestScore() {
+    emp_assert(configured);
+    return get_max_test_score();
   }
 
   bool IsValidProblem(const std::string& problem_name) {

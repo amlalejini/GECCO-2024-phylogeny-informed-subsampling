@@ -158,6 +158,7 @@ protected:
   > agg_score_fun_set; ///< Per-organism, aggregate score
 
   std::function<double(size_t, size_t)> estimate_test_score; ///< Estimates test score
+  std::function<double(const phylo::TraitEstInfo&)> adjust_estimate;
 
   emp::vector<bool> pop_training_coverage;    ///< Per-trait population coverage
   double pop_num_training_cases_covered;
@@ -555,6 +556,7 @@ void ProgSynthWorld::SetupInstructionLibrary() {
   );
   // Add problem-specific instructions
   problem_manager.AddProblemInstructions(inst_lib);
+
 }
 
 void ProgSynthWorld::SetupEventLibrary() {
@@ -1244,6 +1246,13 @@ void ProgSynthWorld::SetupFitFunEstimator() {
   // Setup the default estimate_test_score functionality
   std::cout << "Configuring fitness function estimator (mode: " << config.EVAL_FIT_EST_MODE() << ")" << std::endl;
 
+  adjust_estimate = [this](const phylo::TraitEstInfo& info) -> double {
+    emp_assert((int)info.estimation_dist <= config.EVAL_MAX_PHYLO_SEARCH_DEPTH());
+    // Penalize up to 50% of score for estimate distance.
+    const double dist_modifier = 1 - (0.5 * (info.estimation_dist / config.EVAL_MAX_PHYLO_SEARCH_DEPTH()));
+    return info.estimated_score * dist_modifier;
+  };
+
   bool estimation_mode = config.EVAL_FIT_EST_MODE() != "none";
   if (config.EVAL_FIT_EST_MODE() == "none") {
     SetupFitFunEstimator_None();
@@ -1360,7 +1369,7 @@ void ProgSynthWorld::SetupFitFunEstimator_Ancestor() {
 
     if (est_info.estimate_success) {
       ++total_test_estimations;
-      return est_info.estimated_score;
+      return adjust_estimate(est_info); //est_info.estimated_score;
     } else {
       return org_training_scores[org_id][test_id];
     }
@@ -1387,7 +1396,7 @@ void ProgSynthWorld::SetupFitFunEstimator_AncestorOpt() {
 
     if (est_info.estimate_success) {
       ++total_test_estimations;
-      return est_info.estimated_score;
+      return adjust_estimate(est_info); //est_info.estimated_score;
     } else {
       return org_training_scores[org_id][test_id];
     }
@@ -1396,7 +1405,6 @@ void ProgSynthWorld::SetupFitFunEstimator_AncestorOpt() {
 }
 
 void ProgSynthWorld::SetupFitFunEstimator_Relative() {
-  // estimate_test_score
   estimate_test_score = [this](size_t org_id, size_t test_id) {
     emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(org_id);
 
@@ -1408,7 +1416,7 @@ void ProgSynthWorld::SetupFitFunEstimator_Relative() {
 
     if (est_info.estimate_success) {
       ++total_test_estimations;
-      return est_info.estimated_score;
+      return adjust_estimate(est_info); // est_info.estimated_score;
     } else {
       return org_training_scores[org_id][test_id];
     }
@@ -1435,7 +1443,7 @@ void ProgSynthWorld::SetupFitFunEstimator_RelativeOpt() {
 
     if (est_info.estimate_success) {
       ++total_test_estimations;
-      return est_info.estimated_score;
+      return adjust_estimate(est_info); //est_info.estimated_score;
     } else {
       return org_training_scores[org_id][test_id];
     }

@@ -16,7 +16,7 @@ struct Median : public BaseProblem {
   using prob_hw_t = NumericOutputHardware;
 
   size_t input_sig_event_id = 0;
-
+  double max_test_score = 1.0;
   template<typename HARDWARE_T>
   void ConfigureHardware(HARDWARE_T& hw) {
     auto& hw_component = hw.GetCustomComponent();
@@ -75,7 +75,7 @@ struct Median : public BaseProblem {
     const bool has_output = prob_component.HasOutput();
     // Is the output correct?
     const bool correct = has_output && (prob_component.GetOutput() == correct_output);
-    const double partial_credit = (correct) ? 1.0 : 0.0;
+    const double partial_credit = (correct) ? max_test_score : 0.0;
     return {has_output, correct, partial_credit};
   }
 

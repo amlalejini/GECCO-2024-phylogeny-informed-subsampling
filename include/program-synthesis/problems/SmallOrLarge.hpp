@@ -51,6 +51,7 @@ struct SmallOrLarge : public BaseProblem {
   using prob_hw_t = SmallOrLargeHardware;
 
   size_t input_sig_event_id = 0;
+  double max_test_score = 1.0;
   std::unordered_map<
     std::string,
     SmallOrLargeHardware::CATEGORY
@@ -139,7 +140,7 @@ struct SmallOrLarge : public BaseProblem {
     const bool correct = prob_component.GetOutput() == correct_output;
     emp_assert( !correct || (has_output && correct) ); // If it's correct, it must have output.
     // No partial credit on this problem.
-    const double partial_credit = (correct) ? 1.0 : 0.0;
+    const double partial_credit = (correct) ? max_test_score : 0.0;
     return {has_output, correct, partial_credit};
   }
 
