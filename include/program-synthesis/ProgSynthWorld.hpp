@@ -556,7 +556,15 @@ void ProgSynthWorld::SetupInstructionLibrary() {
   );
   // Add problem-specific instructions
   problem_manager.AddProblemInstructions(inst_lib);
-  // Add early exit instruction - TODO
+  // Add early exit instruction
+  inst_lib.AddInst(
+    "Exit",
+    [](hardware_t& hw, const inst_t& inst) {
+      auto& component = hw.GetCustomComponent();
+      component.FlagStopEval();
+    },
+    "Early exit"
+  );
 
 }
 

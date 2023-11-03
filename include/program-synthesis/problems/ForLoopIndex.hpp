@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <unordered_map>
+#include <cmath>
 
 #include "emp/base/Ptr.hpp"
 #include "emp/math/sequence_utils.hpp"
@@ -75,14 +76,14 @@ struct ForLoopIndex : public BaseProblem {
       "Print output"
     );
 
-    inst_lib.AddInst(
-      "ClearOutput",
-      [](hardware_t& hw, const inst_t& inst) {
-        auto& component = hw.GetCustomComponent().template GetProbHW<prob_hw_t>();
-        component.ClearOutput();
-      },
-      "Reset output buffer"
-    );
+    // inst_lib.AddInst(
+    //   "ClearOutput",
+    //   [](hardware_t& hw, const inst_t& inst) {
+    //     auto& component = hw.GetCustomComponent().template GetProbHW<prob_hw_t>();
+    //     component.ClearOutput();
+    //   },
+    //   "Reset output buffer"
+    // );
 
   }
 
@@ -130,10 +131,16 @@ struct ForLoopIndex : public BaseProblem {
 
     // Have output, but not correct.
     const double max_dist = emp::Max(correct_output.size(), output.size());
-    const double dist = emp::calc_edit_distance(correct_output, output);
     emp_assert(max_dist > 0);
-    const double modifier = (max_dist - dist) / max_dist;
-    return {has_output, correct, max_test_score * modifier};
+    const double size_diff = emp::Abs((int)correct_output.size() - (int)output.size());
+    emp_assert(size_diff >= 0);
+    const double size_mod = ((max_dist - size_diff) / max_dist);
+    emp_assert(size_mod >= 0 && size_mod <= 1.0, size_mod, max_dist, size_diff, correct_output.size(), output.size());
+    const double edit_dist = emp::calc_edit_distance(correct_output, output);
+    emp_assert(edit_dist <= max_dist);
+    const double edit_mod = ((max_dist - edit_dist) / max_dist);
+    emp_assert(edit_mod >= 0 && edit_mod <= 1.0);
+    return {has_output, correct, max_test_score * ((0.5*size_mod) + (0.5*edit_mod))};
   }
 
 
