@@ -68,7 +68,8 @@ protected:
     {"snow-day", BuildProblemSetupFunction<problems::SnowDay>()},
     {"smallest", BuildProblemSetupFunction<problems::Smallest>()},
     {"bouncing-balls", BuildProblemSetupFunction<problems::BouncingBalls>()},
-    {"for-loop-index", BuildProblemSetupFunction<problems::ForLoopIndex>()}
+    {"for-loop-index", BuildProblemSetupFunction<problems::ForLoopIndex>()},
+    {"gcd", BuildProblemSetupFunction<problems::GCD>()}
   };
 
   template<typename PROBLEM_T>

@@ -8,6 +8,7 @@
 #include "Smallest.hpp"
 #include "BouncingBalls.hpp"
 #include "ForLoopIndex.hpp"
+#include "GCD.hpp"
 
 // TODO
 // - For loop index

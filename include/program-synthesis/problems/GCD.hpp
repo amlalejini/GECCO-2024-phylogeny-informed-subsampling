@@ -3,13 +3,13 @@
 #include <utility>
 
 #include "BaseProblem.hpp"
-#include "psb/readers/Median.hpp"
+#include "psb/readers/GCD.hpp"
 #include "../TestResult.hpp"
 
 namespace psynth::problems {
 
-struct Median : public BaseProblem {
-  using reader_t = psb::readers::Median;
+struct GCD : public BaseProblem {
+  using reader_t = psb::readers::GCD;
   using input_t = typename reader_t::input_t;
   using output_t = typename reader_t::output_t;
   using test_case_t = std::pair<input_t, output_t>;
@@ -40,7 +40,6 @@ struct Median : public BaseProblem {
       },
       "Submit output"
     );
-
   }
 
   template<typename EVENT_LIB_T>
@@ -59,8 +58,7 @@ struct Median : public BaseProblem {
         hw.GetCustomComponent().GetInputTag(),
         {
           {0, (double)input[0]},
-          {1, (double)input[1]},
-          {2, (double)input[2]}
+          {1, (double)input[1]}
         }
       }
     );
