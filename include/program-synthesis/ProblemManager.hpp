@@ -66,7 +66,9 @@ protected:
     {"grade", BuildProblemSetupFunction<problems::Grade>()},
     {"fizz-buzz", BuildProblemSetupFunction<problems::FizzBuzz>()},
     {"snow-day", BuildProblemSetupFunction<problems::SnowDay>()},
-    {"smallest", BuildProblemSetupFunction<problems::SnowDay>()}
+    {"smallest", BuildProblemSetupFunction<problems::Smallest>()},
+    {"bouncing-balls", BuildProblemSetupFunction<problems::BouncingBalls>()},
+    {"for-loop-index", BuildProblemSetupFunction<problems::ForLoopIndex>()}
   };
 
   template<typename PROBLEM_T>

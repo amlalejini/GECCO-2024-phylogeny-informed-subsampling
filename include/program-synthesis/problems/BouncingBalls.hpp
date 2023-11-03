@@ -1,15 +1,34 @@
 #pragma once
 
 #include <utility>
+#include <unordered_map>
+#include <cmath>
 
-#include "BaseProblem.hpp"
-#include "psb/readers/Median.hpp"
+#include "emp/base/Ptr.hpp"
+#include "emp/datastructs/map_utils.hpp"
+
+#include "psb/readers/BouncingBalls.hpp"
+
+#include "../BaseProblemHardware.hpp"
+#include "../Event.hpp"
 #include "../TestResult.hpp"
+#include "../../utility/math.hpp"
+#include "BaseProblem.hpp"
+
+/* BouncingBalls
+
+Description:
+- Given a starting height and a height after the first bounce of a dropped ball,
+  calculate the bounciness index (height of first bounce / starting height).
+  Then, given a number of bounces, use the bounciness index to calculate the total
+  distance that the ball travels across those bounces.
+
+*/
 
 namespace psynth::problems {
 
-struct Median : public BaseProblem {
-  using reader_t = psb::readers::Median;
+struct BouncingBalls : public BaseProblem {
+  using reader_t = psb::readers::BouncingBalls;
   using input_t = typename reader_t::input_t;
   using output_t = typename reader_t::output_t;
   using test_case_t = std::pair<input_t, output_t>;
@@ -17,6 +36,7 @@ struct Median : public BaseProblem {
 
   size_t input_sig_event_id = 0;
   double max_test_score = 1.0;
+
   template<typename HARDWARE_T>
   void ConfigureHardware(HARDWARE_T& hw) {
     auto& hw_component = hw.GetCustomComponent();
@@ -34,18 +54,18 @@ struct Median : public BaseProblem {
         auto& component = hw.GetCustomComponent().template GetProbHW<prob_hw_t>();
         auto& call_state = hw.GetCurThread().GetExecState().GetTopCallState();
         auto& mem_state = call_state.GetMemory();
-        const double output = mem_state.AccessWorking(inst.GetArg(0));
+        double output = mem_state.AccessWorking(inst.GetArg(0));
         component.SubmitOutput(output);
       },
       "Submit output"
     );
-
   }
 
   template<typename EVENT_LIB_T>
   void AddEvents(EVENT_LIB_T& event_lib) {
     input_sig_event_id = event_lib.GetID("NumericInputSignal");
   }
+
 
   template<typename HARDWARE_T, typename ORG_T>
   void InitTest(HARDWARE_T& hw, ORG_T& org, const test_case_t& test_io) {
@@ -57,9 +77,9 @@ struct Median : public BaseProblem {
         input_sig_event_id,
         hw.GetCustomComponent().GetInputTag(),
         {
-          {0, (double)input[0]},
-          {1, (double)input[1]},
-          {2, (double)input[2]}
+          {0, (double)std::get<0>(input)},
+          {1, (double)std::get<1>(input)},
+          {2, (double)std::get<2>(input)}
         }
       }
     );
@@ -68,16 +88,24 @@ struct Median : public BaseProblem {
   template<typename HARDWARE_T, typename ORG_T>
   TestResult EvaluateOutput(HARDWARE_T& hw, ORG_T& org, const test_case_t& test_io) {
     // Get correct output
-    const int correct_output = test_io.second;
+    const double correct_output = test_io.second;
     // Get reference to problem component
     auto& prob_component = hw.GetCustomComponent().template GetProbHW<prob_hw_t>();
     // Did the program record any output?
     const bool has_output = prob_component.HasOutput();
     // Is the output correct?
-    const bool correct = has_output && (prob_component.GetOutput() == correct_output);
-    const double partial_credit = (correct) ? max_test_score : 0.0;
+    const bool correct = has_output && utils::IsClose(prob_component.GetOutput(), correct_output, 0.001);
+    if (correct) {
+      return {has_output, correct, max_test_score};
+    }
+    const double max_partial_credit_dist = 10 * std::abs(correct_output);
+    const double dist_to_correct = std::abs(correct_output - prob_component.GetOutput());
+    const double partial_credit = (dist_to_correct < max_partial_credit_dist) ?
+      max_test_score * ((max_partial_credit_dist - dist_to_correct) / max_partial_credit_dist) :
+      0;
     return {has_output, correct, partial_credit};
   }
+
 
 };
 

@@ -556,6 +556,7 @@ void ProgSynthWorld::SetupInstructionLibrary() {
   );
   // Add problem-specific instructions
   problem_manager.AddProblemInstructions(inst_lib);
+  // Add early exit instruction - TODO
 
 }
 
@@ -1246,12 +1247,20 @@ void ProgSynthWorld::SetupFitFunEstimator() {
   // Setup the default estimate_test_score functionality
   std::cout << "Configuring fitness function estimator (mode: " << config.EVAL_FIT_EST_MODE() << ")" << std::endl;
 
-  adjust_estimate = [this](const phylo::TraitEstInfo& info) -> double {
-    emp_assert((int)info.estimation_dist <= config.EVAL_MAX_PHYLO_SEARCH_DEPTH());
-    // Penalize up to 1% of score for estimate distance.
-    const double dist_modifier = 1 - (0.01 * (info.estimation_dist / config.EVAL_MAX_PHYLO_SEARCH_DEPTH()));
-    return info.estimated_score * dist_modifier;
-  };
+  if (config.EVAL_ADJ_EST()) {
+    adjust_estimate = [this](const phylo::TraitEstInfo& info) -> double {
+      emp_assert((int)info.estimation_dist <= config.EVAL_MAX_PHYLO_SEARCH_DEPTH());
+      // Penalize up to 1% of score for estimate distance.
+      const double dist_modifier = 1 - (0.01 * (info.estimation_dist / config.EVAL_MAX_PHYLO_SEARCH_DEPTH()));
+      return info.estimated_score * dist_modifier;
+    };
+  } else {
+    adjust_estimate = [this](const phylo::TraitEstInfo& info) -> double {
+      emp_assert((int)info.estimation_dist <= config.EVAL_MAX_PHYLO_SEARCH_DEPTH());
+      return info.estimated_score;
+    };
+  }
+
 
   bool estimation_mode = config.EVAL_FIT_EST_MODE() != "none";
   if (config.EVAL_FIT_EST_MODE() == "none") {

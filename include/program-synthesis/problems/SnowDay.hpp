@@ -17,10 +17,6 @@
 
 namespace psynth::problems {
 
-// struct SnowDayHardware : public BaseProblemHardware {
-
-// };
-
 struct SnowDay : public BaseProblem {
   using reader_t = psb::readers::SnowDay;
   using input_t = typename reader_t::input_t;

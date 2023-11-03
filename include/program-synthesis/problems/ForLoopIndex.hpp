@@ -1,30 +1,65 @@
 #pragma once
 
 #include <utility>
+#include <unordered_map>
 
-#include "BaseProblem.hpp"
-#include "psb/readers/Median.hpp"
+#include "emp/base/Ptr.hpp"
+#include "emp/math/sequence_utils.hpp"
+
+#include "psb/readers/ForLoopIndex.hpp"
+
+#include "../BaseProblemHardware.hpp"
+#include "../Event.hpp"
 #include "../TestResult.hpp"
+#include "BaseProblem.hpp"
 
 namespace psynth::problems {
 
-struct Median : public BaseProblem {
-  using reader_t = psb::readers::Median;
+struct ForLoopIndexHardware : public BaseProblemHardware {
+  emp::vector<int> output;
+
+  void Reset() override {
+    ClearOutput();
+  }
+
+  void SubmitOutput(int value) {
+    output.emplace_back(value);
+  }
+
+  void ClearOutput() {
+    output.clear();
+  }
+
+  bool HasOutput() const {
+    return output.size() > 0;
+  }
+
+  const emp::vector<int>& GetOutput() const {
+    return output;
+  }
+};
+
+struct ForLoopIndex : public BaseProblem {
+  using reader_t = psb::readers::ForLoopIndex;
   using input_t = typename reader_t::input_t;
   using output_t = typename reader_t::output_t;
   using test_case_t = std::pair<input_t, output_t>;
-  using prob_hw_t = NumericOutputHardware;
+  using prob_hw_t = ForLoopIndexHardware;
 
   size_t input_sig_event_id = 0;
   double max_test_score = 1.0;
+
+  // Configure hardware
   template<typename HARDWARE_T>
   void ConfigureHardware(HARDWARE_T& hw) {
     auto& hw_component = hw.GetCustomComponent();
     hw_component.template CreateProblemHardware<prob_hw_t>();
   }
 
+  // Configure instructions
   template<typename INST_LIB_T>
   void AddInstructions(INST_LIB_T& inst_lib) {
+
     using hardware_t = typename INST_LIB_T::hardware_t;
     using inst_t = typename hardware_t::inst_t;
 
@@ -37,7 +72,16 @@ struct Median : public BaseProblem {
         const double output = mem_state.AccessWorking(inst.GetArg(0));
         component.SubmitOutput(output);
       },
-      "Submit output"
+      "Print output"
+    );
+
+    inst_lib.AddInst(
+      "ClearOutput",
+      [](hardware_t& hw, const inst_t& inst) {
+        auto& component = hw.GetCustomComponent().template GetProbHW<prob_hw_t>();
+        component.ClearOutput();
+      },
+      "Reset output buffer"
     );
 
   }
@@ -68,16 +112,30 @@ struct Median : public BaseProblem {
   template<typename HARDWARE_T, typename ORG_T>
   TestResult EvaluateOutput(HARDWARE_T& hw, ORG_T& org, const test_case_t& test_io) {
     // Get correct output
-    const int correct_output = test_io.second;
+    const auto& correct_output = test_io.second;
     // Get reference to problem component
     auto& prob_component = hw.GetCustomComponent().template GetProbHW<prob_hw_t>();
+    const auto& output = prob_component.GetOutput();
     // Did the program record any output?
     const bool has_output = prob_component.HasOutput();
+    if (!has_output) {
+      return {has_output, false, 0};
+    }
+
     // Is the output correct?
-    const bool correct = has_output && (prob_component.GetOutput() == correct_output);
-    const double partial_credit = (correct) ? max_test_score : 0.0;
-    return {has_output, correct, partial_credit};
+    const bool correct = (output == correct_output);
+    if (correct) {
+      return {has_output, correct, max_test_score};
+    }
+
+    // Have output, but not correct.
+    const double max_dist = emp::Max(correct_output.size(), output.size());
+    const double dist = emp::calc_edit_distance(correct_output, output);
+    emp_assert(max_dist > 0);
+    const double modifier = (max_dist - dist) / max_dist;
+    return {has_output, correct, max_test_score * modifier};
   }
+
 
 };
 

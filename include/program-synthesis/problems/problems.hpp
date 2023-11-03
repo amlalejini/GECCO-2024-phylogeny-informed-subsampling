@@ -6,6 +6,8 @@
 #include "FizzBuzz.hpp"
 #include "SnowDay.hpp"
 #include "Smallest.hpp"
+#include "BouncingBalls.hpp"
+#include "ForLoopIndex.hpp"
 
 // TODO
 // - For loop index
