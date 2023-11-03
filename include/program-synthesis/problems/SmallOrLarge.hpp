@@ -103,6 +103,20 @@ struct SmallOrLarge : public BaseProblem {
       "Categorize test input as neither"
     );
 
+    // Add more constants to instruction set
+    // (as per recommendations in original PSB technical report)
+    for (size_t i = 0; i <= 20; ++i) {
+      inst_lib.AddInst(
+        "Set-" + emp::to_string(i),
+        [i](hardware_t& hw, const inst_t& inst) {
+          auto& call_state = hw.GetCurThread().GetExecState().GetTopCallState();
+          auto& mem_state = call_state.GetMemory();
+          mem_state.SetWorking(inst.GetArg(0), (double)i);
+        },
+        "Set [arg0] = " + emp::to_string(i)
+      );
+    }
+
   }
 
   template<typename EVENT_LIB_T>
