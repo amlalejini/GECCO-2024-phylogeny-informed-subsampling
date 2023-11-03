@@ -64,7 +64,8 @@ protected:
     {"small-or-large", BuildProblemSetupFunction<problems::SmallOrLarge>()},
     {"median", BuildProblemSetupFunction<problems::Median>()},
     {"grade", BuildProblemSetupFunction<problems::Grade>()},
-    {"fizz-buzz", BuildProblemSetupFunction<problems::FizzBuzz>()}
+    {"fizz-buzz", BuildProblemSetupFunction<problems::FizzBuzz>()},
+    {"snow-day", BuildProblemSetupFunction<problems::SnowDay>()}
   };
 
   template<typename PROBLEM_T>

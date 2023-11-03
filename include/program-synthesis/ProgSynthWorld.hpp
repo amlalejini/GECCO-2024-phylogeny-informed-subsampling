@@ -1248,8 +1248,8 @@ void ProgSynthWorld::SetupFitFunEstimator() {
 
   adjust_estimate = [this](const phylo::TraitEstInfo& info) -> double {
     emp_assert((int)info.estimation_dist <= config.EVAL_MAX_PHYLO_SEARCH_DEPTH());
-    // Penalize up to 50% of score for estimate distance.
-    const double dist_modifier = 1 - (0.5 * (info.estimation_dist / config.EVAL_MAX_PHYLO_SEARCH_DEPTH()));
+    // Penalize up to 1% of score for estimate distance.
+    const double dist_modifier = 1 - (0.01 * (info.estimation_dist / config.EVAL_MAX_PHYLO_SEARCH_DEPTH()));
     return info.estimated_score * dist_modifier;
   };
 
