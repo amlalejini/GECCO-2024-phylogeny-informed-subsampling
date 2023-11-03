@@ -5,6 +5,7 @@
 #include "Grade.hpp"
 #include "FizzBuzz.hpp"
 #include "SnowDay.hpp"
+#include "Smallest.hpp"
 
 // TODO
 // - For loop index
