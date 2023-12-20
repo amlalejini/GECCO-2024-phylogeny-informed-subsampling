@@ -15,6 +15,7 @@
 #include "phylogeny/phylogeny_utils.hpp"
 #include "selection/SelectionSchemes.hpp"
 #include "utility/printing.hpp"
+#include "utility/GroupManager.hpp"
 
 #include "DiagnosticsConfig.hpp"
 #include "DiagnosticsOrg.hpp"
@@ -36,19 +37,6 @@ public:
 
   using config_t = DiagnosticsConfig;
   using selection_fun_t = std::function< emp::vector<size_t>&(size_t, const emp::vector<size_t>&, const emp::vector<size_t>&) >;
-
-  struct Grouping {
-    size_t group_id = 0;
-    size_t group_size = 0;
-    emp::vector<size_t> member_ids;
-
-    void Resize(size_t size, size_t value=0) {
-      group_size = size;
-      member_ids.resize(group_size, value);
-    }
-
-    size_t GetSize() const { return member_ids.size(); }
-  };
 
   // TODO - setup statistics info struct that gets computed when it needs to
   struct SelectedStatistics {
@@ -121,12 +109,15 @@ protected:
   emp::vector<size_t> possible_test_ids;
   emp::vector<size_t> possible_pop_ids;
 
-  emp::vector<Grouping> test_groupings; ///< Groupings of tests (needs to be same size as org_groupings)
-  emp::vector<Grouping> org_groupings;  ///< Groupings of organisms (needs to be same size as test_groupings)
-  emp::vector<size_t> org_group_ids;    ///< Group ID for each organism
+  // emp::vector<Grouping> test_groupings; ///< Groupings of tests (needs to be same size as org_groupings)
+  // emp::vector<Grouping> org_groupings;  ///< Groupings of organisms (needs to be same size as test_groupings)
+  // emp::vector<size_t> org_group_ids;    ///< Group ID for each organism
 
-  std::function<void(void)> assign_test_groupings;
-  std::function<void(void)> assign_org_groupings;
+  // std::function<void(void)> assign_test_groupings;
+  // std::function<void(void)> assign_org_groupings;
+
+  emp::Ptr<utils::GroupManager> org_groupings = nullptr;
+  emp::Ptr<utils::GroupManager> test_groupings = nullptr;
 
   std::function<double(size_t, size_t)> estimate_test_score;
 
@@ -174,6 +165,7 @@ protected:
   void SetupEvaluation_Cohort();
   void SetupEvaluation_DownSample();
   void SetupEvaluation_Full();
+  void SetupEvaluation_IndivRandomSample();
 
   void SetupSelection_Lexicase();
   void SetupSelection_Tournament();
@@ -211,6 +203,8 @@ public:
     if (summary_file_ptr != nullptr) summary_file_ptr.Delete();
     if (elite_file_ptr != nullptr) elite_file_ptr.Delete();
     if (phylodiversity_file_ptr != nullptr) phylodiversity_file_ptr.Delete();
+    if (org_groupings != nullptr) org_groupings.Delete();
+    if (test_groupings != nullptr) test_groupings.Delete();
   }
 
   void RunStep();
@@ -244,10 +238,11 @@ void DiagnosticsWorld::DoEvaluation() {
     pop_test_coverage.end(),
     false
   );
-  // Assign test groupings (if any)
-  assign_test_groupings();
-  // Assign organism groupings (if any)
-  assign_org_groupings();
+
+  // Update test and organism groupings
+  org_groupings->UpdateGroupings();
+  test_groupings->UpdateGroupings();
+
   // Evaluate each organism
   for (size_t org_id = 0; org_id < GetSize(); ++org_id) {
     // Evaluation signal actions will:
@@ -693,7 +688,7 @@ void DiagnosticsWorld::SetupPhylogenyTracking() {
   // *how far they are apart phylogeneticallly.
 
   systematics_ptr->AddSnapshotFun(
-    [this](const taxon_t& taxon) {
+    [](const taxon_t& taxon) {
       std::stringstream ss;
       utils::PrintVector(ss, taxon.GetData().traits_evaluated, true);
       return ss.str();
@@ -827,6 +822,16 @@ void DiagnosticsWorld::SetupStoppingCondition_Evaluations() {
 
 void DiagnosticsWorld::SetupEvaluation() {
   std::cout << "Configuring evaluation (mode: " << config.EVAL_MODE() << ")" << std::endl;
+  if (org_groupings != nullptr) {
+    org_groupings.Delete();
+  }
+  if (test_groupings != nullptr) {
+    test_groupings.Delete();
+  }
+
+  org_groupings = emp::NewPtr<utils::GroupManager>(*random_ptr);
+  test_groupings = emp::NewPtr<utils::GroupManager>(*random_ptr);
+
   // Total tests is equal to diagnostic dimensionality.
   total_tests = config.DIAGNOSTIC_DIMENSIONALITY();
   // Allocate space for tracking organism aggregate scores
@@ -860,6 +865,7 @@ void DiagnosticsWorld::SetupEvaluation() {
     possible_test_ids.end(),
     0
   );
+  test_groupings->SetPossibleIDs(possible_test_ids);
   // Initialize all possible population ids
   possible_pop_ids.resize(config.POP_SIZE(), 0);
   std::iota(
@@ -867,9 +873,7 @@ void DiagnosticsWorld::SetupEvaluation() {
     possible_pop_ids.end(),
     0
   );
-  // Initialize org group ids
-  org_group_ids.clear();
-  org_group_ids.resize(config.POP_SIZE(), 0);
+  org_groupings->SetPossibleIDs(possible_pop_ids);
 
   // Clear all actions associated with organism evaluation.
   do_org_evaluation_sig.Clear();
@@ -958,6 +962,11 @@ void DiagnosticsWorld::SetupEvaluation() {
   } else if (config.EVAL_MODE() == "cohort-full-compete") {
     SetupEvaluation_Cohort();
     force_full_compete = true;
+  } else if (config.EVAL_MODE() == "indiv-rand-sample") {
+    SetupEvaluation_IndivRandomSample();
+  } else if (config.EVAL_MODE() == "phylo-informed-sample") {
+    emp_assert(false);
+    // TODO
   } else {
     std::cout << "Unknown EVAL_MODE: " << config.EVAL_MODE() << std::endl;
     exit(-1);
@@ -977,19 +986,6 @@ void DiagnosticsWorld::SetupEvaluation() {
     }
   );
 
-  // Add signal to calculate aggregate score (using fit funs to incorporate estimator)
-  // Need to do this separately to use estimated trait scores
-  // NOTE - Cannot use estimator until all organisms have been evaluated and recorded
-  // do_org_evaluation_sig.AddAction(
-  //   [this](size_t org_id) {
-  //     double est_agg_score = 0.0;
-  //     for (size_t test_id = 0; test_id < total_tests; ++test_id) {
-  //       est_agg_score += fit_fun_set[org_id][test_id]();
-  //     }
-  //     org_aggregate_scores[org_id] = est_agg_score;
-  //   }
-  // );
-
 }
 
 void DiagnosticsWorld::SetupEvaluation_Cohort() {
@@ -998,98 +994,33 @@ void DiagnosticsWorld::SetupEvaluation_Cohort() {
   emp_assert(total_tests > 0);
   emp_assert(config.POP_SIZE() > 0);
   const size_t num_cohorts = config.NUM_COHORTS();
-  // Compute test cohort sizes
-  const size_t base_test_cohort_size = (size_t)(total_tests / num_cohorts);
-  size_t leftover_tests = total_tests - (base_test_cohort_size * num_cohorts);
-  // Compute organism cohort sizes
-  const size_t base_org_cohort_size = (size_t)(config.POP_SIZE() / num_cohorts);
-  size_t leftover_orgs = config.POP_SIZE() - (base_org_cohort_size * num_cohorts);
 
-  std::cout << "num_cohorts = " << num_cohorts << std::endl;
-  std::cout << "base_test_cohort_size = " << base_test_cohort_size << std::endl;
-  std::cout << "leftover_tests = " << leftover_tests << std::endl;
-
-  // Initialize test groupings
-  test_groupings.resize(num_cohorts);
-  for (size_t i = 0; i < test_groupings.size(); ++i) {
-    size_t group_size = base_test_cohort_size;
-    if (leftover_tests > 0) {
-      ++group_size;
-      --leftover_tests;
-    }
-    auto& test_group = test_groupings[i];
-    test_group.group_id = i;
-    test_group.Resize(group_size, 0);
-    std::cout << "  Test group " << i << " size: " << test_group.member_ids.size() << std::endl;
+  // Configure test groupings
+  test_groupings->SetCohortsMode(num_cohorts);
+  std::cout << "Number of cohorts: " << num_cohorts << std::endl;
+  std::cout << "Test cohorts:" << std::endl;
+  for (size_t group_id = 0; group_id < test_groupings->GetNumGroups(); ++group_id) {
+    std::cout << "  Test group " << group_id << " size: " << test_groupings->GetGroup(group_id).GetSize() << std::endl;
   }
-  emp_assert(leftover_tests == 0);
 
-  std::cout << "base_org_cohort_size = " << base_org_cohort_size << std::endl;
-  std::cout << "leftover_orgs = " << leftover_orgs << std::endl;
-
-  // Initialize org groupings
-  org_groupings.resize(num_cohorts);
-  for (size_t i = 0; i < org_groupings.size(); ++i) {
-    size_t group_size = base_org_cohort_size;
-    if (leftover_orgs > 0) {
-      ++group_size;
-      --leftover_orgs;
-    }
-    auto& org_group = org_groupings[i];
-    org_group.group_id = i;
-    org_group.Resize(group_size, 0);
-    std::cout << "  Org group " << i << " size: " << org_group.member_ids.size() << std::endl;
+  // Configure org groupings
+  org_groupings->SetCohortsMode(num_cohorts);
+  std::cout << "Organism cohorts:" << std::endl;
+  for (size_t group_id = 0; group_id < org_groupings->GetNumGroups(); ++group_id) {
+    std::cout << "  Org group " << group_id << " size: " << org_groupings->GetGroup(group_id).GetSize() << std::endl;
   }
-  emp_assert(leftover_orgs == 0);
-
-
-  // Setup function to assign test/org groupings
-  assign_test_groupings = [this]() {
-    // Shuffle all possible test ids
-    emp::Shuffle(*random_ptr, possible_test_ids);
-    // Assign to cohorts in shuffled order
-    size_t cur_pos = 0;
-    for (size_t cohort_id = 0; cohort_id < test_groupings.size(); ++cohort_id) {
-      auto& cohort = test_groupings[cohort_id];
-      emp_assert(cohort.member_ids.size() == cohort.group_size);
-      for (size_t test_i = 0; test_i < cohort.group_size; ++test_i) {
-        cohort.member_ids[test_i] = possible_test_ids[cur_pos];
-        ++cur_pos;
-      }
-    }
-    emp_assert(cur_pos == total_tests);
-  };
-
-  // Setup function to assign orgnism groupings
-  assign_org_groupings = [this]() {
-    // Shuffle all possible test ids
-    emp::Shuffle(*random_ptr, possible_pop_ids);
-    // Assign to cohorts in shuffled order
-    size_t cur_pos = 0;
-    for (size_t cohort_id = 0; cohort_id < org_groupings.size(); ++cohort_id) {
-      auto& cohort = org_groupings[cohort_id];
-      emp_assert(cohort.member_ids.size() == cohort.group_size);
-      for (size_t member_i = 0; member_i < cohort.group_size; ++member_i) {
-        const size_t pop_id = possible_pop_ids[cur_pos];
-        emp_assert(GetOrg(pop_id).GetPopID() == pop_id);
-        cohort.member_ids[member_i] = pop_id;
-        org_group_ids[pop_id] = cohort.group_id;
-        ++cur_pos;
-      }
-    }
-    emp_assert(cur_pos == config.POP_SIZE());
-  };
 
   // Configure organism evaluation (in cohort context)
   do_org_evaluation_sig.AddAction(
     [this](size_t org_id) {
       emp_assert(org_id < this->GetSize());
       auto& org = this->GetOrg(org_id);
-      const size_t group_id = org_group_ids[org_id];
+      const size_t group_id = org_groupings->GetMemberGroupID(org_id);
       // Evaluate organism on all tests in appropriate group
-      emp_assert(group_id < test_groupings.size());
-      auto& test_grouping = test_groupings[group_id];
-      auto& cohort_test_ids = test_grouping.member_ids;
+      emp_assert(group_id < test_groupings->GetNumGroups());
+      emp_assert(group_id < org_groupings->GetNumGroups());
+      auto& test_group = test_groupings->GetGroup(group_id);
+      const auto& cohort_test_ids = test_group.GetMembers();
       for (size_t i = 0; i < cohort_test_ids.size(); ++i) {
         const size_t test_id = cohort_test_ids[i];
         emp_assert(org.IsEvaluated());
@@ -1102,10 +1033,6 @@ void DiagnosticsWorld::SetupEvaluation_Cohort() {
       }
     }
   );
-
-  // TODO print out assigned groupings, make sure makes sense
-
-
 }
 
 void DiagnosticsWorld::SetupEvaluation_DownSample() {
@@ -1119,58 +1046,30 @@ void DiagnosticsWorld::SetupEvaluation_DownSample() {
   emp_assert(sample_size > 0);
   emp_assert(sample_size <= total_tests);
 
-  std::cout << "sample_size = " << sample_size << std::endl;
+  std::cout << "Down-sample size = " << sample_size << std::endl;
 
-  // Initialize test groupings to one group that will contain random sample
-  test_groupings.resize(1);
-  auto& test_group = test_groupings.back();
-  test_group.group_id = 0;
-  test_group.Resize(sample_size, 0);
-  emp_assert(test_group.member_ids.size() == sample_size);
+  // Configure test groupings
+  test_groupings->SetDownSampleMode(sample_size);
+  std::cout << "Test groups (initial):" << std::endl;
+  for (size_t group_id = 0; group_id < test_groupings->GetNumGroups(); ++group_id) {
+    std::cout << "  Test group " << group_id << " size: " << test_groupings->GetGroup(group_id).GetSize() << std::endl;
+  }
 
-  // Setup function to assign random test cases to test group
-  assign_test_groupings = [this, sample_size]() {
-    emp_assert(test_groupings.size() == 1);
-    // Suffle all possible test ids
-    emp::Shuffle(*random_ptr, possible_test_ids);
-    // NOTE - if wanted to allow over sampling (> num tests), could modify this code to support
-    auto& test_group = test_groupings.back();
-    emp_assert(test_group.member_ids.size() == sample_size);
-    for (size_t i = 0; i < sample_size; ++i) {
-      const size_t test_id = possible_test_ids[i];
-      test_group.member_ids[i] = test_id;
-    }
-  };
-
-  // Initialize org groupings to one group that will contain entire population
-  org_groupings.resize(1);
-  auto& org_group = org_groupings.back();
-  org_group.group_id = 0;
-  org_group.Resize(config.POP_SIZE(), 0);
-  // Go ahead and initialize organism grouping to contain all organism ids
-  std::iota(
-    org_group.member_ids.begin(),
-    org_group.member_ids.end(),
-    0
-  );
-  // Setup function to assign organism groupings (should do nothing, no need to modify current grouping)
-  assign_org_groupings = [this]() {
-    emp_assert(org_groupings.size() == 1);
-    emp_assert(org_groupings.back().member_ids.size() == config.POP_SIZE());
-    /* Do nothing */
-  };
+  // Configure organism groupings
+  org_groupings->SetSingleGroupMode();
 
   // Configure organism evaluation
   do_org_evaluation_sig.AddAction(
     [this, sample_size](size_t org_id) {
       emp_assert(org_id < GetSize());
-      emp_assert(test_groupings.size() == 1);
+      emp_assert(test_groupings->GetNumGroups() == 1);
       auto& org = GetOrg(org_id);
-      auto& test_group = test_groupings.back();
+      const auto& test_group = test_groupings->GetGroup(0);
+      const auto& test_ids = test_group.GetMembers();
       emp_assert(org.IsEvaluated());
-      emp_assert(test_group.member_ids.size() == sample_size);
+      emp_assert(test_group.GetSize() == sample_size);
       for (size_t i = 0; i < sample_size; ++i) {
-        const size_t test_id = test_group.member_ids[i];
+        const size_t test_id = test_ids[i];
         emp_assert(test_id < org.GetPhenotype().size());
         const double test_score = org.GetPhenotype()[test_id];
         // Update test score, aggregate score
@@ -1186,54 +1085,31 @@ void DiagnosticsWorld::SetupEvaluation_DownSample() {
 
 }
 
+void DiagnosticsWorld::SetupEvaluation_IndivRandomSample() {
+  // TODO
+}
+
 void DiagnosticsWorld::SetupEvaluation_Full() {
   std::cout << "Configuring evaluation mode: full" << std::endl;
   emp_assert(total_tests > 0);
 
   // Initialize the test groupings with one group that holds all tests
-  test_groupings.resize(1);
-  auto& test_group = test_groupings.back();
-  test_group.group_id = 0;
-  test_group.Resize(total_tests, 0);
-  std::iota(
-    test_group.member_ids.begin(),
-    test_group.member_ids.end(),
-    0
-  );
-  // Setup function to assign test cases to test group (should do nothing to change test group)
-  assign_test_groupings = [this]() {
-    emp_assert(test_groupings.size() == 1);
-    emp_assert(test_groupings.back().member_ids.size() == total_tests);
-    /* Do nothing */
-  };
-
-  // Initialize org groupings to one group containing all organisms
-  org_groupings.resize(1);
-  auto& org_group = org_groupings.back();
-  org_group.group_id = 0;
-  org_group.Resize(config.POP_SIZE(), 0);
-  // Go ahead and initialize organism grouping to contain all organism ids
-  std::iota(
-    org_group.member_ids.begin(),
-    org_group.member_ids.end(),
-    0
-  );
-  // Setup function to assign organism groupings (should do nothing, no need to modify current grouping)
-  assign_org_groupings = [this]() {
-    emp_assert(org_groupings.size() == 1);
-    emp_assert(org_groupings.back().member_ids.size() == config.POP_SIZE());
-    /* Do nothing */
-  };
+  test_groupings->SetSingleGroupMode();
+  // Initialize the org groupings with one group that holds all orgs
+  org_groupings->SetSingleGroupMode();
+  emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
 
   // Configure organism evaluation
   do_org_evaluation_sig.AddAction(
     [this](size_t org_id) {
       emp_assert(org_id < GetSize());
-      emp_assert(test_groupings.size() == 1);
+      emp_assert(test_groupings->GetNumGroups() == 1);
       auto& org = GetOrg(org_id);
       emp_assert(org.IsEvaluated());
-      emp_assert(test_groupings.back().member_ids.size() == total_tests);
-      for (size_t test_id = 0; test_id < total_tests; ++test_id) {
+      const auto& test_group = test_groupings->GetGroup(0);
+      const auto& test_ids = test_group.GetMembers();
+      // emp_assert(test_groupings.back().member_ids.size() == total_tests);
+      for (size_t test_id = 0; test_id < test_ids.size(); ++test_id) {
         emp_assert(test_id < org.GetPhenotype().size());
         const double test_score = org.GetPhenotype()[test_id];
         // Update test score, aggregate score
@@ -1244,9 +1120,6 @@ void DiagnosticsWorld::SetupEvaluation_Full() {
       }
     }
   );
-
-  // TODO - test full evaluation to make sure it works
-
 }
 
 void DiagnosticsWorld::SetupFitFunEstimator() {
@@ -1296,17 +1169,17 @@ void DiagnosticsWorld::SetupFitFunEstimator() {
       run_selection_routine = [this]() {
         // Resize parent ids to hold pop_size parents
         selected_parent_ids.resize(config.POP_SIZE(), 0);
-        emp_assert(test_groupings.size() == org_groupings.size());
-        const size_t num_groups = org_groupings.size();
+        emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+        const size_t num_groups = org_groupings->GetNumGroups();
         // For each grouping, select a number of parents equal to group size
         size_t num_selected = 0;
         for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-          auto& org_group = org_groupings[group_id];
+          auto& org_group = org_groupings->GetGroup(group_id);
           const size_t n = org_group.GetSize();
           // Run selection, but use all possible test ids
           auto& selected = selection_fun(
             n,
-            org_group.member_ids,
+            org_group.GetMembers(),
             possible_test_ids
           );
           emp_assert(selected.size() == n);
@@ -1325,18 +1198,18 @@ void DiagnosticsWorld::SetupFitFunEstimator() {
     run_selection_routine = [this]() {
       // Resize parent ids to hold pop_size parents
       selected_parent_ids.resize(config.POP_SIZE(), 0);
-      emp_assert(test_groupings.size() == org_groupings.size());
-      const size_t num_groups = org_groupings.size();
+      emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+      const size_t num_groups = org_groupings->GetNumGroups();
       // For each grouping, select a number of parents equal to group size
       size_t num_selected = 0;
       for (size_t group_id = 0; group_id < num_groups; ++group_id) {
-        auto& org_group = org_groupings[group_id];
-        auto& test_group = test_groupings[group_id];
+        auto& org_group = org_groupings->GetGroup(group_id);
+        auto& test_group = test_groupings->GetGroup(group_id);
         const size_t n = org_group.GetSize();
         auto& selected = selection_fun(
           n,
-          org_group.member_ids,
-          test_group.member_ids
+          org_group.GetMembers(),
+          test_group.GetMembers()
         );
         emp_assert(selected.size() == n);
         emp_assert(n + num_selected <= selected_parent_ids.size());
