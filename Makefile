@@ -4,15 +4,16 @@ SGP_DIR := ../SignalGP/include
 PSB_DIR := ../psb-cpp/include
 CEREAL_DIR := third-party/Empirical/third-party/cereal/include
 
-# PROJECT := diagnostics
-PROJECT := prog_synth
+PROJECT := diagnostics
+# PROJECT := prog_synth
 MAIN_CPP ?= source/${PROJECT}.cpp
 
 # Flags to use regardless of compiler
 CFLAGS_all := -Wall -Wno-unused-function -std=c++17 -lstdc++fs -I$(EMP_DIR)/ -Iinclude/ -Ithird-party/ -I$(SGP_DIR)/ -I$(PSB_DIR)/
 
 # Native compiler information
-CXX_nat := g++-12
+CXX ?= g++
+CXX_nat = $(CXX)
 CFLAGS_nat := -O3 -DNDEBUG $(CFLAGS_all) # -msse4.2
 CFLAGS_nat_debug := -g -DEMP_TRACK_MEM $(CFLAGS_all)
 
