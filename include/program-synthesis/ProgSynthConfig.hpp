@@ -31,8 +31,6 @@ EMP_BUILD_CONFIG(ProgSynthConfig,
   VALUE(EVAL_MAX_PHYLO_SEARCH_DEPTH, int, -1, "Maximum phylogeny search depth when estimating fitness."),
   VALUE(EVAL_CPU_CYCLES_PER_TEST, size_t, 128, "Maximum number of CPU cycles programs are run for single test case."),
   VALUE(EVAL_ADJ_EST, bool, false, "Penalize estimates by distance?"),
-
-  GROUP(EVALUATION_COHORT, "Cohort evaluation settings"),
   VALUE(NUM_COHORTS, size_t, 2, "How many cohorts should we divide the tests and organisms into?"),
   VALUE(TEST_DOWNSAMPLE_RATE, double, 0.5, "Proportion of training cases to down-sample each generation"),
 
