@@ -109,15 +109,13 @@ protected:
   emp::vector<size_t> possible_test_ids;
   emp::vector<size_t> possible_pop_ids;
 
-  // emp::vector<Grouping> test_groupings; ///< Groupings of tests (needs to be same size as org_groupings)
-  // emp::vector<Grouping> org_groupings;  ///< Groupings of organisms (needs to be same size as test_groupings)
-  // emp::vector<size_t> org_group_ids;    ///< Group ID for each organism
-
-  // std::function<void(void)> assign_test_groupings;
-  // std::function<void(void)> assign_org_groupings;
-
   emp::Ptr<utils::GroupManager> org_groupings = nullptr;
   emp::Ptr<utils::GroupManager> test_groupings = nullptr;
+
+  std::function<emp::vector<size_t>(
+    const emp::vector<size_t>& /* choose from */,
+    emp::Ptr<taxon_t> /* taxon sampling for */
+  )> phylo_sample_fun;
 
   std::function<double(size_t, size_t)> estimate_test_score;
 
@@ -166,6 +164,7 @@ protected:
   void SetupEvaluation_DownSample();
   void SetupEvaluation_Full();
   void SetupEvaluation_IndivRandomSample();
+  void SetupEvaluation_PhyloInformedSample();
 
   void SetupSelection_Lexicase();
   void SetupSelection_Tournament();
@@ -965,8 +964,7 @@ void DiagnosticsWorld::SetupEvaluation() {
   } else if (config.EVAL_MODE() == "indiv-rand-sample") {
     SetupEvaluation_IndivRandomSample();
   } else if (config.EVAL_MODE() == "phylo-informed-sample") {
-    emp_assert(false);
-    // TODO
+    SetupEvaluation_PhyloInformedSample();
   } else {
     std::cout << "Unknown EVAL_MODE: " << config.EVAL_MODE() << std::endl;
     exit(-1);
@@ -1080,13 +1078,110 @@ void DiagnosticsWorld::SetupEvaluation_DownSample() {
       }
     }
   );
-
-  // TODO - print out assigned down sample, test to make sure it works
-
 }
 
 void DiagnosticsWorld::SetupEvaluation_IndivRandomSample() {
-  // TODO
+  std::cout << "Configuring evaluation mode: individualized random sample" << std::endl;
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() > 0);
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() <= 1.0);
+  emp_assert(total_tests > 0);
+
+  size_t sample_size = (size_t)(config.TEST_DOWNSAMPLE_RATE() * (double)total_tests);
+  sample_size = (sample_size == 0) ? sample_size + 1 : sample_size;
+  emp_assert(sample_size > 0);
+  emp_assert(sample_size <= total_tests);
+
+  // Initialize the test groupings with one group that holds all tests.
+  // (we'll randomize on an individual basis)
+  test_groupings->SetSingleGroupMode();
+  // Initialize the organism groupings with one group that holds all organisms.
+  org_groupings->SetSingleGroupMode();
+  emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+
+  // Configure organism evaluation
+  do_org_evaluation_sig.AddAction(
+    [this, sample_size](size_t org_id) {
+      emp_assert(org_id < GetSize());
+      emp_assert(test_groupings->GetNumGroups() == 1);
+      auto& org = GetOrg(org_id);
+      test_groupings->ShuffleMemberIDs(0, *random_ptr);
+      const auto& test_group = test_groupings->GetGroup(0);
+      const auto& test_ids = test_group.GetMembers();
+      emp_assert(org.IsEvaluated());
+      for (size_t i = 0; i < sample_size; ++i) {
+        const size_t test_id = test_ids[i];
+        emp_assert(test_id < org.GetPhenotype().size());
+        const double test_score = org.GetPhenotype()[test_id];
+        // Update test score, aggregate score
+        org_test_scores[org_id][test_id] = test_score;
+        // Update evaluated
+        org_test_evaluations[org_id][test_id] = true;
+        ++total_test_evaluations;
+      }
+    }
+  );
+
+}
+
+void DiagnosticsWorld::SetupEvaluation_PhyloInformedSample() {
+  std::cout << "Configuring evaluation mode: phylogeny-informed sample" << std::endl;
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() > 0);
+  emp_assert(config.TEST_DOWNSAMPLE_RATE() <= 1.0);
+  emp_assert(total_tests > 0);
+
+  size_t sample_size = (size_t)(config.TEST_DOWNSAMPLE_RATE() * (double)total_tests);
+  sample_size = (sample_size == 0) ? sample_size + 1 : sample_size;
+  emp_assert(sample_size > 0);
+  emp_assert(sample_size <= total_tests);
+  const bool ancestors_only = config.EVAL_FIT_EST_MODE() != "relative";
+
+  // Initialize the test groupings with one group that holds all tests.
+  // (we'll sample on an individual basis)
+  test_groupings->SetSingleGroupMode();
+  // Initialize the organism groupings with one group that holds all organisms.
+  org_groupings->SetSingleGroupMode();
+  emp_assert(test_groupings->GetNumGroups() == org_groupings->GetNumGroups());
+
+  // Configure phylogeny-informed sampling function
+  phylo_sample_fun = [this, sample_size, ancestors_only](
+    const emp::vector<size_t>& sample_from,
+    emp::Ptr<taxon_t> taxon_ptr
+  ) {
+    return phylo::PhyloInformedSample(
+      *random_ptr,
+      sample_size,
+      sample_from,
+      taxon_ptr,
+      ancestors_only,
+      (size_t)config.EVAL_MAX_PHYLO_SEARCH_DEPTH()
+    );
+  };
+
+  // Configure organism evaluation
+  do_org_evaluation_sig.AddAction(
+    [this, sample_size](size_t org_id) {
+      emp_assert(org_id < GetSize());
+      emp_assert(test_groupings->GetNumGroups() == 1);
+      auto& org = GetOrg(org_id);
+      emp::Ptr<taxon_t> taxon = systematics_ptr->GetTaxonAt(org_id);
+      const auto& test_group = test_groupings->GetGroup(0);
+      const auto& test_ids = test_group.GetMembers();
+      emp::vector<size_t> sample_test_ids(
+        phylo_sample_fun(test_ids, taxon)
+      );
+      emp_assert(sample_test_ids.size() == sample_size);
+      // Loop over first `sample_size` training cases (which have been shuffled)
+      for (size_t i = 0; i < sample_size; ++i) {
+        const size_t test_id = sample_test_ids[i]; // Get test id from sample.
+        const double test_score = org.GetPhenotype()[test_id];
+        // Update test score, aggregate score
+        org_test_scores[org_id][test_id] = test_score;
+        // Update evaluated
+        org_test_evaluations[org_id][test_id] = true;
+        ++total_test_evaluations;
+      }
+    }
+  );
 }
 
 void DiagnosticsWorld::SetupEvaluation_Full() {
