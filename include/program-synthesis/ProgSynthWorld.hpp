@@ -36,6 +36,7 @@
 #include "MutatorLinearFunctionsProgram.hpp"
 #include "SelectedStatistics.hpp"
 #include "program_utils.hpp"
+#include "ProgSynthTaxonInfo.hpp"
 
 // TODO - re-organize problem manager <==> world interactions to use world signals
 // i.e., pass the world to the problem manager configure, allow it to wire up functions to OnXSetup signals.
@@ -95,12 +96,13 @@ public:
       const emp::vector<size_t>&
     )
   >;
+  // using taxon_info_t = phylo::phenotype_info;
+  using taxon_info_t = ProgSynthTaxonInfo;
   using systematics_t = emp::Systematics<
     org_t,
     genome_t,
-    phylo::phenotype_info
+    taxon_info_t
   >;
-  using taxon_info_t = phylo::phenotype_info;
   using taxon_t = typename systematics_t::taxon_t;
 
   using config_t = ProgSynthConfig;
@@ -246,6 +248,7 @@ protected:
 
   void SnapshotConfig();
   void SnapshotSolution();
+  void SnapshotPhylogeny();
   void SnapshotPhyloGenotypes();
 
 public:
@@ -442,10 +445,7 @@ void ProgSynthWorld::DoUpdate() {
   }
 
   if (snapshot_interval) {
-    systematics_ptr->Snapshot(output_dir + "phylo_" + emp::to_string(GetUpdate()) + ".csv");
-    if (config.RECORD_PHYLO_GENOTYPES()) {
-      SnapshotPhyloGenotypes();
-    }
+    SnapshotPhylogeny();
   }
 
   if (found_solution) {
@@ -1679,6 +1679,15 @@ void ProgSynthWorld::SetupPhylogenyTracking() {
     "training_cases_estimated_scores"
   );
 
+  // True scores on training cases
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      // TODO
+      return "[]";
+    },
+    "training_cases_true_scores"
+  );
+
   // Genome - TODO
   // systematics_ptr->AddSnapshotFun(
   //   [](const taxon_t& taxon) {
@@ -1972,6 +1981,17 @@ void ProgSynthWorld::SnapshotSolution() {
     inst_lib
   );
   outfile.close();
+}
+
+void ProgSynthWorld::SnapshotPhylogeny() {
+  // TODO - evaluate all taxa on complete training case prior to snapshotting (cache results)
+
+
+
+  systematics_ptr->Snapshot(output_dir + "phylo_" + emp::to_string(GetUpdate()) + ".csv");
+  if (config.RECORD_PHYLO_GENOTYPES()) {
+    SnapshotPhyloGenotypes();
+  }
 }
 
 void ProgSynthWorld::SnapshotPhyloGenotypes() {
