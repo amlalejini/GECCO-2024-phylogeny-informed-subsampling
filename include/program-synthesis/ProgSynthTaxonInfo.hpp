@@ -14,9 +14,12 @@ struct ProgSynthTaxonInfo : public phylo::phenotype_info {
   using phylo::phenotype_info::has_fitness_t;
   using has_mutations_t = std::true_type;
 
+  // TODO - implement rough mutation tracking!
   std::unordered_map<std::string, int> mut_counts;
 
-  // TODO
+  emp::vector<double> true_training_scores; ///< Used to store true training scores for a taxon when taking a phylogeny snapshot. Not used for search.
+  double true_agg_score=0.0;
+  bool true_training_scores_computed=false;
 
 };
 

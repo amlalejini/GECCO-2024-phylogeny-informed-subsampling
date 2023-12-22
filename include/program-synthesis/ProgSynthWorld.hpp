@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <limits>
 #include <fstream>
+#include <ranges>
 
 #include "emp/Evolve/World.hpp"
 #include "emp/Evolve/Systematics.hpp"
@@ -1682,19 +1683,24 @@ void ProgSynthWorld::SetupPhylogenyTracking() {
   // True scores on training cases
   systematics_ptr->AddSnapshotFun(
     [this](const taxon_t& taxon) -> std::string {
-      // TODO
-      return "[]";
+      emp_assert(taxon.GetData().true_training_scores_computed);
+      if (taxon.GetData().true_training_scores.size() == 0) {
+        return "\"[]\"";
+      }
+      std::stringstream ss;
+      utils::PrintVector(ss, taxon.GetData().true_training_scores, true);
+      return ss.str();
     },
     "training_cases_true_scores"
   );
 
-  // Genome - TODO
-  // systematics_ptr->AddSnapshotFun(
-  //   [](const taxon_t& taxon) {
-  //     return "TODO";
-  //   },
-  //   "genome"
-  // );
+  systematics_ptr->AddSnapshotFun(
+    [this](const taxon_t& taxon) -> std::string {
+      emp_assert(taxon.GetData().true_training_scores_computed);
+      return emp::to_string(taxon.GetData().true_agg_score);
+    },
+    "true_agg_score"
+  );
 
   systematics_ptr->AddEvolutionaryDistinctivenessDataNode();
   systematics_ptr->AddPairwiseDistanceDataNode();
@@ -1986,7 +1992,55 @@ void ProgSynthWorld::SnapshotSolution() {
 void ProgSynthWorld::SnapshotPhylogeny() {
   // TODO - evaluate all taxa on complete training case prior to snapshotting (cache results)
 
+  const auto& active_taxa = systematics_ptr->GetActive();
+  const auto& ancestor_taxa = systematics_ptr->GetAncestors();
+  const auto& outside_taxa = systematics_ptr->GetOutside();
+  std::unordered_set<size_t> ids_output;
+  // Consolidate active/ancestor/outside taxa pointers into a single vector
+  auto phylo_taxa(active_taxa);
+  for (const emp::Ptr<taxon_t>& taxon : ancestor_taxa) {
+    phylo_taxa.insert(taxon);
+  }
+  for (const emp::Ptr<taxon_t>& taxon : outside_taxa) {
+    phylo_taxa.insert(taxon);
+  }
 
+  // Evaluate all taxa on full training set (if they haven't already been evaluated)
+  for (const emp::Ptr<taxon_t>& taxon : phylo_taxa) {
+    const size_t taxon_id = taxon->GetID();
+    // If already seen this taxon, skip.
+    if (emp::Has(ids_output, taxon_id)) continue;
+    ids_output.emplace(taxon_id);
+    // If already computed taxon scores, skip.
+    if (taxon->GetData().true_training_scores_computed) continue;
+    // Need to evaluate taxon on full training set
+    const auto& genome = taxon->GetInfo();
+    // Build new org.
+    org_t org(genome);
+    org.ResetPhenotype(problem_manager.GetTrainingSetSize());
+    auto& scores = taxon->GetData().true_training_scores;
+    scores.resize(problem_manager.GetTrainingSetSize(), 0.0);
+    begin_program_eval_sig.Trigger(org);
+    // Evaluate org on each training case.
+    for (size_t i = 0; i < all_training_case_ids.size(); ++i) {
+      const size_t training_id = all_training_case_ids[i];
+      // Handle training input
+      begin_program_test_sig.Trigger(org, training_id, true);
+      // Run the program
+      do_program_test_sig.Trigger(org, training_id);
+      // Check program output
+      TestResult result = problem_manager.EvaluateOutput(
+        *eval_hardware,
+        org,
+        training_id,
+        true
+      );
+      org.UpdatePhenotype(training_id, result);
+      scores[training_id] = result.score;
+    }
+    taxon->GetData().true_training_scores_computed = true;
+    taxon->GetData().true_agg_score = org.GetPhenotype().GetAggregateScore();
+  }
 
   systematics_ptr->Snapshot(output_dir + "phylo_" + emp::to_string(GetUpdate()) + ".csv");
   if (config.RECORD_PHYLO_GENOTYPES()) {
@@ -1999,8 +2053,8 @@ void ProgSynthWorld::SnapshotPhyloGenotypes() {
   outfile.open(output_dir + "phylo_genotypes_" + emp::to_string(GetUpdate()) + ".sgp");
 
   const auto& active_taxa = systematics_ptr->GetActive();
-  const auto& ancestor_taxa = systematics_ptr->GetActive();
-  const auto& outside_taxa = systematics_ptr->GetActive();
+  const auto& ancestor_taxa = systematics_ptr->GetAncestors();
+  const auto& outside_taxa = systematics_ptr->GetOutside();
   std::unordered_set<size_t> ids_output;
 
   // Write active taxa genotypes
