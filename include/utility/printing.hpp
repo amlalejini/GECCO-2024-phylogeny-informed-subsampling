@@ -19,4 +19,25 @@ void PrintVector(std::ostream& os, const emp::vector<T>& vec, bool quotes=false)
   if (quotes) os << "\"";
 }
 
+
+template<typename T>
+void PrintMapping(
+  std::ostream& os,
+  const std::unordered_map<std::string, T>& mapping,
+  const std::string& pair_sep = ":",
+  const std::string& mapping_sep = " ",
+  bool quotes = false
+) {
+  if (quotes) os << "\"";
+  os << "{";
+  size_t cnt = 0;
+  for (const auto& pair : mapping) {
+    os << pair.first << pair_sep << pair.second;
+    ++cnt;
+    if (cnt != mapping.size()) os << mapping_sep;
+  }
+  os << "}";
+  if (quotes) os << "\"";
 }
+
+} // End utils namespace

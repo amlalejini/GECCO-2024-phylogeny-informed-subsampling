@@ -62,11 +62,11 @@ struct TraitEstInfo {
 };
 
 // NOTE - might need to make this more generic!
-struct phenotype_info {
+struct taxon_info {
 
   using phen_t = emp::vector<double>;
   using has_phen_t = std::true_type;
-  using has_mutations_t = std::false_type;
+  using has_mutations_t = std::true_type;
   using has_fitness_t = std::true_type;
 
   // Phenotype is set of test case scores
@@ -82,6 +82,9 @@ struct phenotype_info {
   emp::vector<bool> traits_evaluated; ///< Tracks whether a particular trait has been evaluated
   emp::vector<TraitEstInfo> trait_est_info;  ///< Tracks information about trait estimation.
   bool phen_recorded=false;
+
+  // TODO - implement rough mutation tracking!
+  std::unordered_map<std::string, int> mut_counts;
 
   const phen_t& GetPhenotype() const {
     return phenotype;

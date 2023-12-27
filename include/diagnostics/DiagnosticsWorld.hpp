@@ -31,8 +31,8 @@ public:
   using genome_t = typename org_t::genome_t;
   using phenotype_t = typename org_t::phenotype_t;
 
-  using systematics_t = emp::Systematics<org_t, genome_t, phylo::phenotype_info>;
-  using taxon_info_t = phylo::phenotype_info;
+  using taxon_info_t = phylo::taxon_info;
+  using systematics_t = emp::Systematics<org_t, genome_t, taxon_info_t>;
   using taxon_t = typename systematics_t::taxon_t;
 
   using config_t = DiagnosticsConfig;
@@ -128,6 +128,7 @@ protected:
   emp::Ptr<systematics_t> systematics_ptr;
   size_t mrca_changes = 0;
   emp::Ptr<taxon_t> mrca_ptr = nullptr;
+  std::function<void(emp::Ptr<taxon_t>, org_t& org)> record_muts_fun;
 
   size_t total_test_evaluations = 0;  ///< Tracks total number of "test case" evaluations (across all organisms since beginning of run)
   size_t total_test_estimations = 0;
@@ -328,6 +329,14 @@ void DiagnosticsWorld::Setup() {
   // Setup population structure
   SetPopStruct_Mixed(true);
 
+  OnBeforePlacement(
+    [this](org_t& org, size_t pos) {
+      org.SetMutsFromParent("point", 0);
+      org.SetMutsFromParent("inc_point", 0);
+      org.SetMutsFromParent("dec_point", 0);
+    }
+  );
+
   // Configure world to set organism ID on placement
   OnPlacement(
     [this](size_t pos) {
@@ -429,6 +438,8 @@ void DiagnosticsWorld::SetupMutator() {
     [this](org_t& org, emp::Random& random) {
       // number of mutations and solution genome
       size_t mcnt = 0;
+      size_t inc_mcnt = 0;
+      size_t dec_mcnt = 0;
       genome_t& genome = org.GetGenome();
 
       // quick checks
@@ -439,6 +450,7 @@ void DiagnosticsWorld::SetupMutator() {
         // if we do a mutation at this objective
         if (random.P(config.MUTATE_PER_SITE_RATE())) {
           const double mut = random.GetRandNormal(config.MUTATE_MEAN(), config.MUTATE_STD());
+          const double orig_value = genome[i];
           if ( config.TARGET() < (genome[i] + mut) ) {
             // Rebound
             genome[i] = config.TARGET() - (genome[i] + mut - config.TARGET());
@@ -449,9 +461,14 @@ void DiagnosticsWorld::SetupMutator() {
             // Add mutation
             genome[i] = genome[i] + mut;
           }
-          ++mcnt;
+          inc_mcnt += (size_t) genome[i] > orig_value;
+          dec_mcnt += (size_t) genome[i] < orig_value;
+          mcnt += (size_t) genome[i] != orig_value;
         }
       }
+      org.SetMutsFromParent("point", mcnt);
+      org.SetMutsFromParent("inc_point", inc_mcnt);
+      org.SetMutsFromParent("dec_point", dec_mcnt);
       return mcnt;
     }
   );
@@ -488,6 +505,7 @@ void DiagnosticsWorld::SetupDataCollection() {
   phylodiversity_file_ptr->AddVar(mrca_changes, "mrca_changes", "Number of MRCA changes");
   phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("evolutionary_distinctiveness") , "genotype_evolutionary_distinctiveness", "evolutionary distinctiveness for a single update", true, true);
   phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("pairwise_distance"), "genotype_pairwise_distance", "pairwise distance for a single update", true, true);
+  phylodiversity_file_ptr->AddStats(*systematics_ptr->GetDataNode("deleterious_steps"), "genoetype_deleterious_steps", "deleterious steps", true, true);
   phylodiversity_file_ptr->AddCurrent(*systematics_ptr->GetDataNode("phylogenetic_diversity"), "genotype_current_phylogenetic_diversity", "current phylogenetic_diversity", true, true);
   phylodiversity_file_ptr->PrintHeaderKeys();
 
@@ -572,6 +590,30 @@ void DiagnosticsWorld::SetupDataCollection() {
     "elite organism genome"
   );
 
+  elite_file_ptr->AddFun<size_t>(
+    [this]() -> size_t {
+      emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(true_max_fit_org_id);
+      return emp::LineageLength(taxon_ptr);
+    },
+    "lineage_length"
+  );
+
+  elite_file_ptr->AddFun<size_t>(
+    [this]() -> size_t {
+      emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(true_max_fit_org_id);
+      return emp::CountMuts(taxon_ptr, "point");
+    },
+    "mut_count"
+  );
+
+  elite_file_ptr->AddFun<size_t>(
+    [this]() -> size_t {
+      emp::Ptr<taxon_t> taxon_ptr = systematics_ptr->GetTaxonAt(true_max_fit_org_id);
+      return emp::CountDeleteriousSteps(taxon_ptr);
+    },
+    "deleterious_steps"
+  );
+
   // true phenotype
   elite_file_ptr->AddFun<std::string>(
     [this]() -> std::string {
@@ -648,6 +690,13 @@ void DiagnosticsWorld::SetupPhylogenyTracking() {
     [](const org_t& org) { return org.GetGenome(); }
   );
 
+  record_muts_fun = [this](emp::Ptr<taxon_t> taxon, org_t& org) {
+    taxon->GetData().mut_counts["point"] = org.GetMutsFromParent("point");
+    taxon->GetData().mut_counts["inc_point"] = org.GetMutsFromParent("inc_point");
+    taxon->GetData().mut_counts["dec_point"] = org.GetMutsFromParent("dec_point");
+  };
+  systematics_ptr->OnNew(record_muts_fun);
+
   mrca_changes = 0;
   mrca_ptr = nullptr;
 
@@ -680,6 +729,15 @@ void DiagnosticsWorld::SetupPhylogenyTracking() {
       return ss.str();
     },
     "genome"
+  );
+
+  systematics_ptr->AddSnapshotFun(
+    [](const taxon_t& taxon) {
+      std::stringstream ss;
+      utils::PrintMapping(ss, taxon.GetData().mut_counts);
+      return ss.str();
+    },
+    "mut_cnts"
   );
 
   // *what population members are having the phylogenetic approximation applied,
@@ -782,6 +840,8 @@ void DiagnosticsWorld::SetupPhylogenyTracking() {
   systematics_ptr->AddEvolutionaryDistinctivenessDataNode();
   systematics_ptr->AddPairwiseDistanceDataNode();
   systematics_ptr->AddPhylogeneticDiversityDataNode();
+  systematics_ptr->AddMutationCountDataNode("point_mutation_count", "point");
+  systematics_ptr->AddDeleteriousStepDataNode();
 
   // Note, base class takes ownership of this pointer
   AddSystematics(systematics_ptr, "genotype");

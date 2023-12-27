@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <numeric>
 #include <functional>
+#include <unordered_map>
 #include "emp/base/vector.hpp"
 
 namespace diag {
@@ -29,6 +30,8 @@ protected:
   size_t max_trait_id = 0;
 
   size_t pop_id = 0;
+
+  std::unordered_map<std::string, size_t> muts_from_parent;
 
   // bool is_clone = false;
 
@@ -137,6 +140,19 @@ public:
   // bool IsClone() const {
   //   return is_clone;
   // }
+
+  const std::unordered_map<std::string, size_t>& GetMutsFromParent() const {
+    return muts_from_parent;
+  }
+
+  size_t GetMutsFromParent(const std::string& type) const {
+    emp_assert(emp::Has(muts_from_parent, type));
+    return muts_from_parent.at(type);
+  }
+
+  void SetMutsFromParent(const std::string& type, size_t count) {
+    muts_from_parent[type] = count;
+  }
 
   void SetPhenotype(const phenotype_t& phen) {
     emp_assert(phen.size() == genome.size());
