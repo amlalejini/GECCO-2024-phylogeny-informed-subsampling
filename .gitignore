@@ -34,6 +34,9 @@
 # Debug files
 *.dSYM
 
+# Python files
+__pycache__/
+
 # Local MacOS files
 .DS_Store
 
