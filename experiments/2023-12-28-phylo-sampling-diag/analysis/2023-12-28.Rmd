@@ -1,0 +1,849 @@
+# 2023-12-28 Analysis
+
+```{r}
+experiment_slug <- "2023-12-28-phylo-sampling-diag"
+
+working_directory <- paste0(
+  "experiments/",
+  experiment_slug,
+  "/analysis/"
+)
+
+if (exists("bookdown_wd_prefix")) {
+  working_directory <- paste0(
+    bookdown_wd_prefix,
+    working_directory
+  )
+}
+```
+
+## Dependencies
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(RColorBrewer)
+library(khroma)
+library(rstatix)
+library(knitr)
+library()
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+```
+
+```{r}
+print(version)
+```
+
+## Setup
+
+```{r}
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_directory <- paste0(working_directory, "plots/")
+dir.create(plot_directory, showWarnings=FALSE)
+
+full_median_size = 1.5
+```
+
+### Load experiment summary data
+
+```{r}
+summary_data_loc <- paste0(working_directory, "data/aggregate.csv")
+summary_data <- read_csv(summary_data_loc)
+
+summary_data <- summary_data %>%
+  mutate(
+    evals_per_gen = case_when(
+      EVAL_MODE == "cohort-full-compete" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "cohort" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "down-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "full" ~ 1.0,
+      EVAL_MODE == "indiv-rand-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "phylo-informed-sample" ~ TEST_DOWNSAMPLE_RATE
+    ),
+    EVAL_FIT_EST_MODE = case_when(
+      EVAL_FIT_EST_MODE == "ancestor-opt" ~ "ancestor",
+      EVAL_FIT_EST_MODE == "relative-opt" ~ "relative",
+      .default = EVAL_FIT_EST_MODE
+    ),
+    .keep = "all"
+  ) %>%
+  mutate(
+    eval_label = case_when(
+      EVAL_MODE == "down-sample" & EVAL_FIT_EST_MODE != "none" ~ paste("down-sample", EVAL_FIT_EST_MODE, sep="-"),
+      .default = EVAL_MODE
+    )
+  ) %>%
+  mutate(
+    evals_per_gen = as.factor(evals_per_gen),
+    DIAGNOSTIC = as.factor(DIAGNOSTIC),
+    SELECTION = as.factor(SELECTION),
+    EVAL_MODE = as.factor(EVAL_MODE),
+    NUM_COHORTS = as.factor(NUM_COHORTS),
+    TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE),
+    EVAL_FIT_EST_MODE = factor(
+      EVAL_FIT_EST_MODE,
+      levels = c(
+        "none",
+        "ancestor",
+        "relative"
+      ),
+      labels = c(
+        "None",
+        "Ancestor",
+        "Relative"
+      )
+    )
+  )
+
+# Split summary data on diagnostic
+con_obj_summary_data <- filter(
+  summary_data,
+  DIAGNOSTIC == "contradictory-objectives"
+)
+
+explore_summary_data <- filter(
+  summary_data,
+  DIAGNOSTIC == "multipath-exploration"
+)
+
+exploit_summary_data <- filter(
+  summary_data,
+  DIAGNOSTIC == "exploitation-rate"
+)
+```
+
+### Load experiment time series data
+
+```{r}
+ts_data_loc <- paste0(working_directory, "data/time_series.csv")
+ts_data <- read_csv(ts_data_loc)
+
+ts_data <- ts_data %>%
+  mutate(
+    evals_per_gen = case_when(
+      EVAL_MODE == "cohort-full-compete" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "cohort" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "down-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "full" ~ 1.0,
+      EVAL_MODE == "indiv-rand-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "phylo-informed-sample" ~ TEST_DOWNSAMPLE_RATE
+    ),
+    EVAL_FIT_EST_MODE = case_when(
+      EVAL_FIT_EST_MODE == "ancestor-opt" ~ "ancestor",
+      EVAL_FIT_EST_MODE == "relative-opt" ~ "relative",
+      .default = EVAL_FIT_EST_MODE
+    ),
+    .keep = "all"
+  ) %>%
+  mutate(
+    eval_label = case_when(
+      EVAL_MODE == "down-sample" & EVAL_FIT_EST_MODE != "none" ~ paste("down-sample", EVAL_FIT_EST_MODE, sep="-"),
+      .default = EVAL_MODE
+    )
+  ) %>%
+  mutate(
+    evals_per_gen = as.factor(evals_per_gen),
+    DIAGNOSTIC = as.factor(DIAGNOSTIC),
+    SELECTION = as.factor(SELECTION),
+    EVAL_MODE = as.factor(EVAL_MODE),
+    NUM_COHORTS = as.factor(NUM_COHORTS),
+    TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE),
+    EVAL_FIT_EST_MODE = factor(
+      EVAL_FIT_EST_MODE,
+      levels = c(
+        "none",
+        "ancestor",
+        "relative"
+      ),
+      labels = c(
+        "None",
+        "Ancestor",
+        "Relative"
+      )
+    )
+  )
+
+con_obj_ts_data <- ts_data %>%
+  filter(DIAGNOSTIC == "contradictory-objectives")
+
+explore_ts_data <- ts_data %>%
+  filter(DIAGNOSTIC == "multipath-exploration")
+
+exploit_ts_data <- ts_data %>%
+  filter(DIAGNOSTIC == "exploitation-rate")
+```
+
+Summarize time series data
+
+```{r}
+ts_summary_data <- ts_data %>%
+  group_by(SEED, DIAGNOSTIC, SELECTION, evals_per_gen, eval_label) %>%
+  summarize(
+    n = n(),
+    avg_num_unique_selected = mean(num_unique_selected),
+    total_optimal_trait_coverage_loss = sum(optimal_trait_coverage_loss)
+  )
+```
+
+## Contradictory objectives diagnostic
+
+### Population-wide satisfactory trait coverage (final)
+
+Satisfactory trait coverage after 50,000 generations
+
+```{r}
+
+build_con_obj_cov_f_plot <- function(selection) {
+
+  full_median <- median(
+    filter(
+      con_obj_summary_data,
+      eval_label == "full" & SELECTION == selection
+    )$pop_optimal_trait_coverage
+  )
+
+  plot <- con_obj_summary_data %>%
+    filter(
+      eval_label != "full" & SELECTION == selection
+    ) %>%
+    ggplot(
+      aes(
+        x = eval_label,
+        y = pop_optimal_trait_coverage,
+        fill = eval_label
+      )
+    ) +
+    geom_hline(
+      yintercept = full_median,
+      size = full_median_size,
+      alpha = 0.7,
+      color = "black"
+    ) +
+    geom_flat_violin(
+      position = position_nudge(x = .2, y = 0),
+      alpha = .8,
+      adjust = 1.5
+    ) +
+    geom_point(
+      mapping = aes(color = eval_label),
+      position = position_jitter(width = .15),
+      size = .5,
+      alpha = 0.8
+    ) +
+    geom_boxplot(
+      width = .1,
+      outlier.shape = NA,
+      alpha = 0.5
+    ) +
+    scale_y_continuous(
+      # limits = c(-0.5, 100)
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    facet_grid(
+      SELECTION ~ evals_per_gen,
+      # nrow=2,
+      labeller = label_both
+    ) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(
+        angle = 30,
+        hjust = 1
+      ),
+      panel.border = element_rect(color = "gray", size = 2)
+    )
+
+  return(plot)
+
+}
+
+# tourn_co_plt <- build_con_obj_cov_f_plot("tournament")
+lex_co_plt <- build_con_obj_cov_f_plot("lexicase")
+
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-cov-final-lex.pdf"),
+  plot = lex_co_plt + labs(title = "Contradictory objectives"),
+  width = 15,
+  height = 10
+)
+```
+
+### Population-wide satisfactory trait coverage (over time)
+
+```{r}
+con_obj_pop_cov_ts <- con_obj_ts_data %>%
+  filter(SELECTION == "lexicase") %>%
+  ggplot(
+    aes(
+      x = ts_step,
+      y = pop_optimal_trait_coverage,
+      fill = eval_label,
+      color = eval_label
+    )
+  ) +
+  stat_summary(
+    geom = "line",
+    fun = mean
+  ) +
+  stat_summary(
+    geom = "ribbon",
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_wrap(
+    ~ evals_per_gen,
+    ncol = 1,
+    labeller = label_both
+  ) +
+  theme(
+    legend.position = "bottom"
+  )
+
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-ts.pdf"),
+  plot = con_obj_pop_cov_ts + labs(title="Contradictory objectives"),
+  width = 10,
+  height = 15
+)
+```
+
+### MRCA changes (successful selective sweeps)
+
+```{r}
+
+full_median <- median(
+  filter(
+    con_obj_summary_data,
+    eval_label == "full" & SELECTION == "lexicase"
+  )$phylo_mrca_changes
+)
+
+plot <- con_obj_summary_data %>%
+  filter(
+    eval_label != "full" & SELECTION == "lexicase"
+  ) %>%
+  ggplot(
+    aes(
+      x = eval_label,
+      y = phylo_mrca_changes,
+      fill = eval_label
+    )
+  ) +
+  geom_hline(
+    yintercept = full_median,
+    size = full_median_size,
+    alpha = 0.7,
+    color = "black"
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8,
+    adjust = 1.5
+  ) +
+  geom_point(
+    mapping = aes(color = eval_label),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_y_continuous(
+    # limits = c(-0.5, 100)
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_grid(
+    SELECTION ~ evals_per_gen,
+    # nrow=2,
+    labeller = label_both
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    ),
+    panel.border = element_rect(color = "gray", size = 2)
+  )
+
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-mrca-chgs-final-lex.pdf"),
+  plot = plot + labs(title = "Contradictory objectives"),
+  width = 15,
+  height = 10
+)
+```
+
+### Mean genotype deleterious steps (over time)
+<!-- mean_genoetype_deleterious_steps -->
+
+```{r}
+plot <- con_obj_ts_data %>%
+  filter(SELECTION == "lexicase") %>%
+  ggplot(
+    aes(
+      x = ts_step,
+      y = mean_genoetype_deleterious_steps,
+      fill = eval_label,
+      color = eval_label
+    )
+  ) +
+  stat_summary(
+    geom = "line",
+    fun = mean
+  ) +
+  stat_summary(
+    geom = "ribbon",
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_wrap(
+    ~ evals_per_gen,
+    ncol = 1,
+    labeller = label_both
+  ) +
+  theme(
+    legend.position = "bottom"
+  )
+
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-ts-del-steps.pdf"),
+  plot = plot + labs(title="Contradictory objectives"),
+  width = 10,
+  height = 15
+)
+```
+
+### Mean genotype deleterious steps (final)
+
+```{r}
+full_median <- median(
+  filter(
+    con_obj_summary_data,
+    eval_label == "full" & SELECTION == "lexicase"
+  )$phylo_mean_genoetype_deleterious_steps
+)
+
+plot <- con_obj_summary_data %>%
+  filter(
+    eval_label != "full" & SELECTION == "lexicase"
+  ) %>%
+  ggplot(
+    aes(
+      x = eval_label,
+      y = phylo_mean_genoetype_deleterious_steps,
+      fill = eval_label
+    )
+  ) +
+  geom_hline(
+    yintercept = full_median,
+    size = full_median_size,
+    alpha = 0.7,
+    color = "black"
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8,
+    adjust = 1.5
+  ) +
+  geom_point(
+    mapping = aes(color = eval_label),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_y_continuous(
+    # limits = c(-0.5, 100)
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_grid(
+    SELECTION ~ evals_per_gen,
+    # nrow=2,
+    labeller = label_both
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    ),
+    panel.border = element_rect(color = "gray", size = 2)
+  )
+
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-del-steps-final-lex.pdf"),
+  plot = plot + labs(title = "Contradictory objectives"),
+  width = 15,
+  height = 10
+)
+```
+
+### Mean genotype pairwise distance (over time)
+<!-- mean_genotype_pairwise_distance -->
+```{r}
+plot <- con_obj_ts_data %>%
+  filter(SELECTION == "lexicase") %>%
+  ggplot(
+    aes(
+      x = ts_step,
+      y = mean_genotype_pairwise_distance,
+      fill = eval_label,
+      color = eval_label
+    )
+  ) +
+  stat_summary(
+    geom = "line",
+    fun = mean
+  ) +
+  stat_summary(
+    geom = "ribbon",
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_wrap(
+    ~ evals_per_gen,
+    ncol = 1,
+    labeller = label_both
+  ) +
+  theme(
+    legend.position = "bottom"
+  )
+
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-ts-pw-dist.pdf"),
+  plot = plot + labs(title="Contradictory objectives"),
+  width = 10,
+  height = 15
+)
+```
+
+### Mean genotype pairwise distance (final)
+```{r}
+full_median <- median(
+  filter(
+    con_obj_summary_data,
+    eval_label == "full" & SELECTION == "lexicase"
+  )$phylo_mean_genotype_pairwise_distance
+)
+
+plot <- con_obj_summary_data %>%
+  filter(
+    eval_label != "full" & SELECTION == "lexicase"
+  ) %>%
+  ggplot(
+    aes(
+      x = eval_label,
+      y = phylo_mean_genotype_pairwise_distance,
+      fill = eval_label
+    )
+  ) +
+  geom_hline(
+    yintercept = full_median,
+    size = full_median_size,
+    alpha = 0.7,
+    color = "black"
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8,
+    adjust = 1.5
+  ) +
+  geom_point(
+    mapping = aes(color = eval_label),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_y_continuous(
+    # limits = c(-0.5, 100)
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_grid(
+    SELECTION ~ evals_per_gen,
+    # nrow=2,
+    labeller = label_both
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    ),
+    panel.border = element_rect(color = "gray", size = 2)
+  )
+
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-pw-dist-final-lex.pdf"),
+  plot = plot + labs(title = "Contradictory objectives"),
+  width = 15,
+  height = 10
+)
+```
+
+### Number unique individual selected (averaged over all generations)
+<!-- num_unique_selected -->
+
+```{r}
+full_median <- median(
+  filter(
+    ts_summary_data,
+    DIAGNOSTIC == "contradictory-objectives" && eval_label == "full" & SELECTION == "lexicase"
+  )$avg_num_unique_selected
+)
+
+plot <- ts_summary_data %>%
+  filter(
+    DIAGNOSTIC == "contradictory-objectives" & eval_label != "full" & SELECTION == "lexicase"
+  ) %>%
+  ggplot(
+    aes(
+      x = eval_label,
+      y = avg_num_unique_selected,
+      fill = eval_label
+    )
+  ) +
+  geom_hline(
+    yintercept = full_median,
+    size = full_median_size,
+    alpha = 0.7,
+    color = "black"
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8,
+    adjust = 1.5
+  ) +
+  geom_point(
+    mapping = aes(color = eval_label),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_y_continuous(
+    # limits = c(-0.5, 100)
+  ) +
+  scale_fill_bright() +
+  scale_color_bright() +
+  facet_grid(
+    SELECTION ~ evals_per_gen,
+    # nrow=2,
+    labeller = label_both
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    ),
+    panel.border = element_rect(color = "gray", size = 2)
+  )
+
+ggsave(
+  filename = paste0(plot_directory, "contra-obj-avg-unique-sel-lex.pdf"),
+  plot = plot + labs(title = "Contradictory objectives"),
+  width = 15,
+  height = 10
+)
+```
+
+## Exploration
+
+### Max aggregate score (final)
+
+```{r}
+# diagnostic <- "multipath-exploration"
+# selection <- "lexicase"
+# response <- "elite_true_agg_score"
+# diag_data <- summary_data %>% filter(DIAGNOSTIC == diagnostic)
+
+# full_median <- median(
+#   filter(
+#     diag_data,
+#     eval_label == "full" & SELECTION == selection
+#   )[[response]]
+#   )
+
+
+
+# plot <- diag_data %>%
+#     filter(
+#       eval_label != "full" & SELECTION == selection
+#     ) %>%
+#     ggplot(
+#       aes_string(
+#         x = "eval_label",
+#         y = response,
+#         fill = "eval_label"
+#       )
+#     ) +
+#     geom_hline(
+#       yintercept = full_median,
+#       size = full_median_size,
+#       alpha = 0.7,
+#       color = "black"
+#     ) +
+#     geom_flat_violin(
+#       position = position_nudge(x = .2, y = 0),
+#       alpha = .8,
+#       adjust = 1.5
+#     ) +
+#     geom_point(
+#       mapping = aes(color = eval_label),
+#       position = position_jitter(width = .15),
+#       size = .5,
+#       alpha = 0.8
+#     ) +
+#     geom_boxplot(
+#       width = .1,
+#       outlier.shape = NA,
+#       alpha = 0.5
+#     ) +
+#     scale_y_continuous(
+#       # limits = c(-0.5, 100)
+#     ) +
+#     scale_fill_bright() +
+#     scale_color_bright() +
+#     facet_grid(
+#       SELECTION ~ evals_per_gen,
+#       # nrow=2,
+#       labeller = label_both
+#     ) +
+#     theme(
+#       legend.position = "none",
+#       axis.text.x = element_text(
+#         angle = 30,
+#         hjust = 1
+#       ),
+#       panel.border = element_rect(color = "gray", size = 2)
+#     )
+# plot
+
+
+build_plot_summary_data <- function(diagnostic, selection, response) {
+  diag_data <- summary_data %>% filter(DIAGNOSTIC == diagnostic)
+
+  full_median <- median(
+    filter(
+      diag_data,
+      eval_label == "full" & SELECTION == selection
+    )[[response]]
+  )
+
+  plot <- diag_data %>%
+    filter(
+      eval_label != "full" & SELECTION == selection
+    ) %>%
+    ggplot(
+      aes_string(
+        x = "eval_label",
+        y = response,
+        fill = "eval_label"
+      )
+    ) +
+    geom_hline(
+      yintercept = full_median,
+      size = full_median_size,
+      alpha = 0.7,
+      color = "black"
+    ) +
+    geom_flat_violin(
+      position = position_nudge(x = .2, y = 0),
+      alpha = .8,
+      adjust = 1.5
+    ) +
+    geom_point(
+      mapping = aes(color = eval_label),
+      position = position_jitter(width = .15),
+      size = .5,
+      alpha = 0.8
+    ) +
+    geom_boxplot(
+      width = .1,
+      outlier.shape = NA,
+      alpha = 0.5
+    ) +
+    scale_y_continuous(
+      # limits = c(-0.5, 100)
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    facet_grid(
+      SELECTION ~ evals_per_gen,
+      # nrow=2,
+      labeller = label_both
+    ) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(
+        angle = 30,
+        hjust = 1
+      ),
+      panel.border = element_rect(color = "gray", size = 2)
+    )
+
+  return(plot)
+}
+
+# tourn_co_plt <- build_con_obj_cov_f_plot("tournament")
+p <- build_plot_summary_data("multipath-exploration", "lexicase", "elite_true_agg_score")
+
+ggsave(
+  filename = paste0(plot_directory, "explore-score-final-lex.pdf"),
+  plot = p + labs(title = "Exploration"),
+  width = 15,
+  height = 10
+)
+```
+
+## Exploitation
+
+```{r}
+
+p <- build_plot_summary_data("exploitation-rate", "lexicase", "elite_true_agg_score")
+ggsave(
+  filename = paste0(plot_directory, "exploit-score-final-lex.pdf"),
+  plot = p + labs(title = "Exploitation rate"),
+  width = 15,
+  height = 10
+)
+```
+
+
+
+
