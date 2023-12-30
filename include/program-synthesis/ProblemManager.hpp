@@ -69,7 +69,8 @@ protected:
     {"smallest", BuildProblemSetupFunction<problems::Smallest>()},
     {"bouncing-balls", BuildProblemSetupFunction<problems::BouncingBalls>()},
     {"for-loop-index", BuildProblemSetupFunction<problems::ForLoopIndex>()},
-    {"gcd", BuildProblemSetupFunction<problems::GCD>()}
+    {"gcd", BuildProblemSetupFunction<problems::GCD>()},
+    {"dice-game", BuildProblemSetupFunction<problems::DiceGame>()}
   };
 
   template<typename PROBLEM_T>

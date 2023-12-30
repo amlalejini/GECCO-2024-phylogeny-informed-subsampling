@@ -9,8 +9,4 @@
 #include "BouncingBalls.hpp"
 #include "ForLoopIndex.hpp"
 #include "GCD.hpp"
-
-// TODO
-// - For loop index
-// - Bouncing balls
-// - Snow day
+#include "DiceGame.hpp"
