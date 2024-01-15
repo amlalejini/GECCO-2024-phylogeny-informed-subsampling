@@ -1,4 +1,4 @@
-# 2023-12-28 - Exploitation rate diagnostic
+# 2023-12-28 - Contradictory objectives diagnostics
 
 ```{r}
 experiment_slug <- "2023-12-28-phylo-sampling-diag"
@@ -42,7 +42,7 @@ theme_set(theme_cowplot())
 plot_directory <- paste0(working_directory, "plots/")
 dir.create(plot_directory, showWarnings=FALSE)
 # Constants
-focal_diagnostic <- "exploitation-rate"
+focal_diagnostic <- "contradictory-objectives"
 ```
 
 ### Load experiment summary data
@@ -97,10 +97,10 @@ summary_data <- summary_data %>%
     )
   )
 
-# Grab just the exploitation rate data
-exploit_summary_data <- filter(
+# Grab just the contradictory objectives data
+con_obj_summary_data <- filter(
   summary_data,
-  DIAGNOSTIC == "exploitation-rate"
+  DIAGNOSTIC == "contradictory-objectives"
 )
 ```
 
@@ -155,9 +155,10 @@ ts_data <- ts_data %>%
     )
   )
 
-# Grab just the exploitation rate data
-exploit_ts_data <- ts_data %>%
-  filter(DIAGNOSTIC == "exploitation-rate")
+# Grab just the contradictory objectives data
+con_obj_ts_data <- ts_data %>%
+  filter(DIAGNOSTIC == "contradictory-objectives")
+
 ```
 
 Summarize time series data
@@ -364,19 +365,35 @@ build_plot_time_series <- function(
 }
 ```
 
-## Aggregate score
+## Population-wide satisfactory trait coverage
 
 ### Final - Lexicase selection
 
 ```{r}
 p <- summary_data %>% build_plot_summary_data(
-  "exploitation-rate",
+  focal_diagnostic,
   "lexicase",
-  "elite_true_agg_score"
+  "pop_optimal_trait_coverage"
 )
 ggsave(
-  filename = paste0(plot_directory, "exploit-score-final-lex.pdf"),
-  plot = p + labs(title = "Exploitation rate - Lexicase selection"),
+  filename = paste0(plot_directory, "con-obj-sat-cov-final-lex.pdf"),
+  plot = p + labs(title = "Contradictory objectives - Lexicase selection"),
+  width = 15,
+  height = 10
+)
+```
+
+### Over time - lexicase selection
+
+```{r}
+p <- ts_data  %>% build_plot_time_series(
+  focal_diagnostic,
+  "lexicase",
+  "pop_optimal_trait_coverage"
+)
+ggsave(
+  filename = paste0(plot_directory, "con-obj-sat-cov-ts-lex.pdf"),
+  plot = p,
   width = 15,
   height = 10
 )
@@ -386,112 +403,96 @@ ggsave(
 
 ```{r}
 p <- summary_data %>% build_plot_summary_data(
-  "exploitation-rate",
+  focal_diagnostic,
   "tournament",
-  "elite_true_agg_score"
+  "pop_optimal_trait_coverage"
 )
 ggsave(
-  filename = paste0(plot_directory, "exploit-score-final-tourn.pdf"),
-  plot = p + labs(title = "Exploitation rate - Tournament selection"),
+  filename = paste0(plot_directory, "con-obj-sat-cov-final-tourn.pdf"),
+  plot = p + labs(title = "Contradictory objectives - Tournament selection"),
   width = 15,
   height = 10
 )
 ```
 
-### Statistical analysis
-
-First, we'll create a table of median / mean values for easy reference.
-
-```{r}
-exploit_summary_data %>%
-  group_by(DIAGNOSTIC, SELECTION, evals_per_gen, eval_label) %>%
-  summarize(
-    score_median = median(elite_true_agg_score),
-    score_mean = mean(elite_true_agg_score),
-    replicates = n()
-  ) %>%
-  kable()
-```
-
-Next, we run a Kruskal-Wallis test to check for differences.
-For these tests, we only compare within a single subsampling level (`evals_per_gen`) and within the same selection scheme.
-
-```{r}
-kw_test <- exploit_summary_data %>%
-  filter(eval_label != "full") %>%
-  group_by(SELECTION, evals_per_gen) %>%
-  kruskal_test(elite_true_agg_score ~ eval_label) %>%
-  mutate(sig = (p < 0.05)) %>%
-  unite(
-    "comparison_group",
-    SELECTION,
-    evals_per_gen,
-    sep = "_",
-    remove = FALSE
-  )
-kable(kw_test)
-```
-
-Perform pairwise wilcoxon rank-sum tests for all significant comparison groups.
-
-```{r}
-# Grab group names of significant comparisons
-sig_kw_groups <- filter(kw_test, p < 0.05)$comparison_group
-
-wrs_test <- exploit_summary_data %>%
-  unite(
-    "comparison_group",
-    SELECTION,
-    evals_per_gen,
-    sep = "_",
-    remove = FALSE
-  ) %>%
-  filter(
-    eval_label != "full" & comparison_group %in% sig_kw_groups
-  ) %>%
-  group_by(SELECTION, evals_per_gen) %>%
-  pairwise_wilcox_test(elite_true_agg_score ~ eval_label) %>%
-  adjust_pvalue(method = "holm") %>%
-  add_significance("p.adj")
-
-kable(wrs_test)
-```
-
-### Over time - Lexicase
+### Over time  - tournament selection
 
 ```{r}
 p <- ts_data  %>% build_plot_time_series(
-  "exploitation-rate",
+  focal_diagnostic,
+  "tournament",
+  "pop_optimal_trait_coverage"
+)
+ggsave(
+  filename = paste0(plot_directory, "con-obj-sat-cov-ts-tourn.pdf"),
+  plot = p,
+  width = 15,
+  height = 10
+)
+```
+
+## MRCA changes
+
+```{r}
+p <- summary_data %>% build_plot_summary_data(
+  focal_diagnostic,
   "lexicase",
-  "max_agg_score"
+  "phylo_mrca_changes"
 )
 ggsave(
-  filename = paste0(plot_directory, "exploit-score-ts-lex.pdf"),
-  plot = p,
+  filename = paste0(plot_directory, "con-obj-mrca-chgs-final-lex.pdf"),
+  plot = p + labs(title = "Contradictory objectives - Lexicase selection"),
   width = 15,
   height = 10
 )
 ```
 
-### Over time - Tournament
+## Mean genotype deleterious steps
 
 ```{r}
-p <- ts_data  %>% build_plot_time_series(
-  "exploitation-rate",
-  "tournament",
-  "max_agg_score"
+p <- summary_data %>% build_plot_summary_data(
+  focal_diagnostic,
+  "lexicase",
+  "phylo_mean_genoetype_deleterious_steps"
 )
 ggsave(
-  filename = paste0(plot_directory, "exploit-score-ts-tourn.pdf"),
-  plot = p,
+  filename = paste0(plot_directory, "con-obj-del-steps-final-lex.pdf"),
+  plot = p + labs(title = "Contradictory objectives - Lexicase selection"),
   width = 15,
   height = 10
+)
+```
+
+## Mean genotype pairwise distance
+
+```{r}
+p <- summary_data %>% build_plot_summary_data(
+  focal_diagnostic,
+  "lexicase",
+  "phylo_mean_genotype_pairwise_distance"
+)
+ggsave(
+  filename = paste0(plot_directory, "con-obj-pw-dist-final-lex.pdf"),
+  plot = p + labs(title = "Contradictory objectives - Lexicase selection"),
+  width = 15,
+  height = 10
+)
+```
+
+## Number unique individual selected
+
+```{r}
+build_plot_summary_data(
+  ts_summary_data,
+  focal_diagnostic,
+  "lexicase",
+  "avg_num_unique_selected"
 )
 ```
 
 ## Manuscript figures
 
-Figures customized / cleaned up for the manuscript.
+Time series graphs don't add a ton here, so just final graphs.
 
 ```{r}
 build_final_score_manuscript_plot <- function(
@@ -501,24 +502,24 @@ build_final_score_manuscript_plot <- function(
 
   # Extract median values for max aggregate score at same evaluation level as sampling regimes
   max_eval <- max(
-    filter(exploit_ts_data, evals_per_gen == subsample_rate)$evaluations
+    filter(con_obj_summary_data, evals_per_gen == subsample_rate)$evaluations
   )
   full_eval_steps <- as.numeric(
     levels(
       as.factor(
-        filter(exploit_ts_data, eval_label == "full" & evaluations >= max_eval)$evaluations # nolint: line_length_linter.
+        filter(con_obj_summary_data, eval_label == "full" & evaluations >= max_eval)$evaluations # nolint: line_length_linter.
       )
     )
   )
   full_eval <- full_eval_steps[which.min( full_eval_steps  - max_eval )]
   full_median_score_evals <- median(
     filter(
-      exploit_ts_data,
+      con_obj_summary_data,
       SELECTION == selection & eval_label == "full" & evaluations == full_eval
-    )$max_agg_score
+    )$pop_optimal_trait_coverage
   )
 
-  plot <- exploit_summary_data %>%
+  plot <- con_obj_summary_data %>%
     filter(
       eval_label != "full" &
       SELECTION == selection &
@@ -527,7 +528,7 @@ build_final_score_manuscript_plot <- function(
     ggplot(
       aes(
         x = eval_label,
-        y = elite_true_agg_score,
+        y = pop_optimal_trait_coverage,
         fill = eval_label
       )
     ) +
@@ -555,11 +556,11 @@ build_final_score_manuscript_plot <- function(
       alpha = 0.5
     ) +
     scale_y_continuous(
-      name = "Aggregate score",
-      limits = c(0, 10010)
+      name = "Satisfactory trait coverage",
+      limits = c(0, 100)
     ) +
     scale_x_discrete(
-      name = "Subsampling regimes",
+      name = "Subsampling regime",
       breaks = c("down-sample", "down-sample-ancestor", "indiv-rand-sample", "phylo-informed-sample"),
       labels = c("DS", "DS+EST", "IRS", "ABS")
     ) +
@@ -576,111 +577,7 @@ build_final_score_manuscript_plot <- function(
 }
 ```
 
-Build time series manuscript plot:
-
-```{r}
-build_score_over_time_manuscript_plot <- function(
-  selection,
-  subsample_rate
-) {
-
-  max_eval <- max(
-    filter(exploit_ts_data, evals_per_gen == subsample_rate)$evaluations
-  )
-  full_eval_steps <- as.numeric(
-    levels(
-      as.factor(
-        filter(exploit_ts_data, eval_label == "full" & evaluations >= max_eval)$evaluations # nolint: line_length_linter.
-      )
-    )
-  )
-  full_eval <- full_eval_steps[which.min( full_eval_steps  - max_eval )]
-
-  data <- exploit_ts_data %>%
-    filter(
-      SELECTION == selection &
-      evals_per_gen == subsample_rate
-    ) %>%
-    mutate(
-      sampling_level_label = subsample_rate
-    )
-
-  full_diag_data <- exploit_ts_data %>%
-    filter(
-      SELECTION == selection & eval_label == "full" & evaluations <= full_eval
-    ) %>%
-    mutate(
-      # Ensure that median line will sit in same facet
-      sampling_level_label = subsample_rate
-    )
-
-  plot <- data %>%
-    filter(
-      eval_label != "full"
-    ) %>%
-    ggplot(
-      aes(
-        x = evaluations,
-        y = max_agg_score
-      )
-    ) +
-    stat_summary(
-      geom = "line",
-      fun = mean,
-      aes(
-        color = eval_label
-      )
-    ) +
-    stat_summary(
-      geom = "ribbon",
-      fun.data = "mean_cl_boot",
-      fun.args = list(conf.int = 0.95),
-      alpha = 0.2,
-      linetype = 0,
-      aes(
-        color = eval_label,
-        fill = eval_label
-      )
-    ) +
-    scale_y_continuous(
-      name = "Aggregate score",
-      limits = c(0, 10010)
-    ) +
-    scale_x_continuous(
-      name = "Evaluations"
-    ) +
-    scale_fill_bright(
-      labels=c(
-        "Down-sampling (DS)",
-        "Down-sampling + Estimation (DS+EST)",
-        "Individualized random sampling (IRS)",
-        "Ancestor-based sampling (ABS)"
-      )
-    ) +
-    scale_color_bright(
-      labels=c(
-        "Down-sampling (DS)",
-        "Down-sampling + Estimation (DS+EST)",
-        "Individualized random sampling (IRS)",
-        "Ancestor-based sampling (ABS)"
-      )
-    ) +
-    theme(
-      legend.position = "none"
-    ) +
-    stat_summary(
-      data = full_diag_data,
-      geom = "line",
-      fun = median,
-      linetype = "dashed",
-      color = "black"
-    )
-
-  return(plot)
-}
-```
-
-Build plots of final scores (after fixed number of evaluations)
+Build end-of-run plots (fixed number of evaluations)
 
 ```{r}
 plot_final_lex_01 <- build_final_score_manuscript_plot(
@@ -691,235 +588,41 @@ plot_final_lex_10 <- build_final_score_manuscript_plot(
   "lexicase",
   "0.1"
 )
-plot_final_tourn_01 <- build_final_score_manuscript_plot(
-  "tournament",
-  "0.01"
-)
-plot_final_tourn_10 <- build_final_score_manuscript_plot(
-  "tournament",
-  "0.1"
-)
 ```
 
-Build time series plots (with evaluations on x-axis)
+Combine into single figure
 
 ```{r}
-plot_ts_lex_01 <- build_score_over_time_manuscript_plot(
-  "lexicase",
-  "0.01"
-)
-
-plot_ts_lex_10 <- build_score_over_time_manuscript_plot(
-  "lexicase",
-  "0.1"
-)
-
-plot_ts_tourn_01 <- build_score_over_time_manuscript_plot(
-  "tournament",
-  "0.01"
-)
-
-plot_ts_tourn_10 <- build_score_over_time_manuscript_plot(
-  "tournament",
-  "0.1"
-)
-```
-
-### Lexicase selection manuscript figure
-
-```{r}
-
-legend <- get_legend(
-  plot_ts_lex_01 +
-    guides(
-      color = guide_legend(nrow = 2, title = "Subsampling regime:"),
-      fill = guide_legend(nrow = 2, title = "Subsampling regime:")
-    ) +
-    theme(legend.position = "bottom")
-)
-
-title_01 <- ggdraw() +
-  draw_label(
-    "1% Subsampling",
-    fontface = 'bold',
-    x = 0,
-    hjust = 0
-  ) +
-  theme(
-    # add margin on the left of the drawing canvas,
-    # so title is aligned with left edge of first plot
-    plot.margin = margin(0, 0, 0, 7)
-  )
-
-title_10 <- ggdraw() +
-  draw_label(
-    "10% Subsampling",
-    fontface = 'bold',
-    x = 0,
-    hjust = 0
-  ) +
-  theme(
-    # add margin on the left of the drawing canvas,
-    # so title is aligned with left edge of first plot
-    plot.margin = margin(0, 0, 0, 7)
-  )
-
-# grid <- plot_grid(
-#   title_01,
-#   NULL,
-#   plot_ts_lex_01,
-#   plot_final_lex_01 +
-#     theme(
-#       axis.text.y = element_blank(),
-#       axis.title.y = element_blank(),
-#       axis.ticks.y = element_blank(),
-#       plot.margin = margin(0, 0, 0, 1, "cm")
-#     ),
-#   title_10,
-#   NULL,
-#   plot_ts_lex_10,
-#   plot_final_lex_10 +
-#     theme(
-#       axis.text.y = element_blank(),
-#       axis.title.y = element_blank(),
-#       axis.ticks.y = element_blank(),
-#       plot.margin = margin(0, 0, 0, 1, "cm")
-#     ),
-#   nrow = 4,
-#   ncol = 2,
-#   align = "h",
-#   labels = c("", "", "a", "b", "", "", "c", "d"),
-#   rel_heights = c(0.075, 1, 0.075, 1)
-# )
-
-grid <- plot_grid(
-  plot_ts_lex_01 +
-    labs(title = "1% Subsampling"),
-  plot_final_lex_01 +
-    theme(
-      axis.text.y = element_blank(),
-      axis.title.y = element_blank(),
-      axis.ticks.y = element_blank(),
-      plot.margin = margin(0, 0, 0, 1, "cm")
-    ),
-  plot_ts_lex_10 +
-    labs(title = "10% Subsampling"),
-  plot_final_lex_10 +
-    theme(
-      axis.text.y = element_blank(),
-      axis.title.y = element_blank(),
-      axis.ticks.y = element_blank(),
-      plot.margin = margin(0, 0, 0, 1, "cm")
-    ),
-  nrow = 2,
-  ncol = 2,
-  align = "h",
-  labels = c("a", "b", "c", "d")
-)
-
-grid
-
 lex_fig <- plot_grid(
-  grid,
-  legend,
-  nrow = 2,
-  ncol = 1,
-  rel_heights = c(1, 0.05)
-)
-
-# lex_fig
-save_plot(
-  filename = paste0(plot_directory, "2023-12-28-exploit-lex-fig.pdf"),
-  plot = lex_fig,
-  base_width = 10,
-  base_height = 8,
-  dpi = 600
-)
-```
-
-### Tournament selection manuscript figures
-
-```{r}
-
-legend <- get_legend(
-  plot_ts_tourn_01 +
-    guides(
-      color = guide_legend(nrow = 2, title = "Subsampling regime:"),
-      fill = guide_legend(nrow = 2, title = "Subsampling regime:")
-    ) +
-    theme(legend.position = "bottom")
-)
-
-# grid <- plot_grid(
-#   title_01,
-#   NULL,
-#   plot_ts_tourn_01,
-#   plot_final_tourn_01 +
-#     theme(
-#       axis.text.y = element_blank(),
-#       axis.title.y = element_blank(),
-#       axis.ticks.y = element_blank(),
-#       plot.margin = margin(0, 0, 0, 1, "cm")
-#     ),
-#   title_10,
-#   NULL,
-#   plot_ts_tourn_10,
-#   plot_final_tourn_10 +
-#     theme(
-#       axis.text.y = element_blank(),
-#       axis.title.y = element_blank(),
-#       axis.ticks.y = element_blank(),
-#       plot.margin = margin(0, 0, 0, 1, "cm")
-#     ),
-#   nrow = 4,
-#   ncol = 2,
-#   align = "h",
-#   labels = c("", "", "a", "b", "", "", "c", "d"),
-#   rel_heights = c(0.075, 1, 0.075, 1)
-# )
-
-grid <- plot_grid(
-  plot_ts_tourn_01 +
-    labs(title = "1% Subsampling"),
-  plot_final_tourn_01 +
+  plot_final_lex_01 +
+    # labs(
+    #   title = "1% subsampling"
+    # ) +
+    theme(
+      plot.margin = margin(1, 0, 0, 0, "cm")
+    ),
+  plot_final_lex_10 +
+    # labs(
+    #   title = "10% subsampling"
+    # ) +
     theme(
       axis.text.y = element_blank(),
       axis.title.y = element_blank(),
       axis.ticks.y = element_blank(),
-      plot.margin = margin(0, 0, 0, 1, "cm")
+      plot.margin = margin(1, 0, 0, 1, "cm")
     ),
-  plot_ts_tourn_10 +
-    labs(title = "10% Subsampling"),
-  plot_final_tourn_10 +
-    theme(
-      axis.text.y = element_blank(),
-      axis.title.y = element_blank(),
-      axis.ticks.y = element_blank(),
-      plot.margin = margin(0, 0, 0, 1, "cm")
-    ),
-  nrow = 2,
+  nrow = 1,
   ncol = 2,
   align = "h",
-  labels = c("a", "b", "c", "d")
+  labels = c("a) 1% subsampling", "b) 10% subsampling"),
+  rel_widths = c(1, 1)
 )
-
-tourn_fig <- plot_grid(
-  grid,
-  legend,
-  nrow = 2,
-  ncol = 1,
-  rel_heights = c(1, 0.05)
-)
-
-tourn_fig
-```
-
-```{r}
+lex_fig
 save_plot(
-  filename = paste0(plot_directory, "2023-12-28-exploit-tourn-fig.pdf"),
-  plot = tourn_fig,
-  base_width = 10,
-  base_height = 8,
+  filename = paste0(plot_directory, "2023-12-28-con-obj-lex-fig.pdf"),
+  plot = lex_fig,
+  base_width = 7,
+  base_height = 4,
   dpi = 600
 )
 ```
