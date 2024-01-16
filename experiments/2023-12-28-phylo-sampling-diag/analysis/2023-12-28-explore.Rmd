@@ -1,0 +1,537 @@
+# 2023-12-28 - Contradictory objectives diagnostics
+
+```{r}
+experiment_slug <- "2023-12-28-phylo-sampling-diag"
+
+working_directory <- paste0(
+  "experiments/",
+  experiment_slug,
+  "/analysis/"
+)
+
+if (exists("bookdown_wd_prefix")) {
+  working_directory <- paste0(
+    bookdown_wd_prefix,
+    working_directory
+  )
+}
+```
+
+## Dependencies
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(RColorBrewer)
+library(khroma)
+library(rstatix)
+library(knitr)
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+```
+
+```{r}
+print(version)
+```
+
+## Setup
+
+```{r}
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_directory <- paste0(working_directory, "plots/")
+dir.create(plot_directory, showWarnings=FALSE)
+# Constants
+focal_diagnostic <- "multipath-exploration"
+```
+
+### Load experiment summary data
+
+```{r}
+summary_data_loc <- paste0(working_directory, "data/aggregate.csv")
+summary_data <- read_csv(summary_data_loc)
+
+summary_data <- summary_data %>%
+  mutate(
+    evals_per_gen = case_when(
+      EVAL_MODE == "cohort-full-compete" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "cohort" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "down-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "full" ~ 1.0,
+      EVAL_MODE == "indiv-rand-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "phylo-informed-sample" ~ TEST_DOWNSAMPLE_RATE
+    ),
+    EVAL_FIT_EST_MODE = case_when(
+      EVAL_FIT_EST_MODE == "ancestor-opt" ~ "ancestor",
+      EVAL_FIT_EST_MODE == "relative-opt" ~ "relative",
+      .default = EVAL_FIT_EST_MODE
+    ),
+    .keep = "all"
+  ) %>%
+  mutate(
+    eval_label = case_when(
+      # Clean up down-sample label
+      EVAL_MODE == "down-sample" & EVAL_FIT_EST_MODE != "none" ~ paste("down-sample", EVAL_FIT_EST_MODE, sep="-"),
+      .default = EVAL_MODE
+    ),
+  ) %>%
+  mutate(
+    evals_per_gen = as.factor(evals_per_gen),
+    DIAGNOSTIC = as.factor(DIAGNOSTIC),
+    SELECTION = as.factor(SELECTION),
+    EVAL_MODE = as.factor(EVAL_MODE),
+    NUM_COHORTS = as.factor(NUM_COHORTS),
+    TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE),
+    EVAL_FIT_EST_MODE = factor(
+      EVAL_FIT_EST_MODE,
+      levels = c(
+        "none",
+        "ancestor",
+        "relative"
+      ),
+      labels = c(
+        "None",
+        "Ancestor",
+        "Relative"
+      )
+    )
+  )
+
+explore_summary_data <- filter(
+  summary_data,
+  DIAGNOSTIC == "multipath-exploration"
+)
+```
+
+### Load experiment time series data
+
+```{r}
+ts_data_loc <- paste0(working_directory, "data/time_series.csv")
+ts_data <- read_csv(ts_data_loc)
+
+ts_data <- ts_data %>%
+  mutate(
+    evals_per_gen = case_when(
+      EVAL_MODE == "cohort-full-compete" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "cohort" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "down-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "full" ~ 1.0,
+      EVAL_MODE == "indiv-rand-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "phylo-informed-sample" ~ TEST_DOWNSAMPLE_RATE
+    ),
+    EVAL_FIT_EST_MODE = case_when(
+      EVAL_FIT_EST_MODE == "ancestor-opt" ~ "ancestor",
+      EVAL_FIT_EST_MODE == "relative-opt" ~ "relative",
+      .default = EVAL_FIT_EST_MODE
+    ),
+    .keep = "all"
+  ) %>%
+  mutate(
+    eval_label = case_when(
+      EVAL_MODE == "down-sample" & EVAL_FIT_EST_MODE != "none" ~ paste("down-sample", EVAL_FIT_EST_MODE, sep="-"),
+      .default = EVAL_MODE
+    )
+  ) %>%
+  mutate(
+    evals_per_gen = as.factor(evals_per_gen),
+    DIAGNOSTIC = as.factor(DIAGNOSTIC),
+    SELECTION = as.factor(SELECTION),
+    EVAL_MODE = as.factor(EVAL_MODE),
+    NUM_COHORTS = as.factor(NUM_COHORTS),
+    TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE),
+    EVAL_FIT_EST_MODE = factor(
+      EVAL_FIT_EST_MODE,
+      levels = c(
+        "none",
+        "ancestor",
+        "relative"
+      ),
+      labels = c(
+        "None",
+        "Ancestor",
+        "Relative"
+      )
+    )
+  )
+
+explore_ts_data <- ts_data %>%
+  filter(DIAGNOSTIC == "multipath-exploration")
+
+```
+
+Summarize time series data
+
+```{r}
+ts_summary_data <- ts_data %>%
+  group_by(SEED, DIAGNOSTIC, SELECTION, evals_per_gen, eval_label) %>%
+  summarize(
+    n = n(),
+    avg_num_unique_selected = mean(num_unique_selected),
+    total_optimal_trait_coverage_loss = sum(optimal_trait_coverage_loss)
+  )
+```
+
+### Plotting helper functions
+
+Functions to assist with quick plotting of different measurements from summary and timeseries data.
+
+```{r}
+build_plot_summary_data <- function(data, diagnostic, selection, response) {
+  diag_data <- data %>% filter(DIAGNOSTIC == diagnostic)
+
+  full_median <- median(
+    filter(
+      diag_data,
+      eval_label == "full" & SELECTION == selection
+    )[[response]]
+  )
+
+  plot <- diag_data %>%
+    filter(
+      eval_label != "full" & SELECTION == selection
+    ) %>%
+    ggplot(
+      aes_string(
+        x = "eval_label",
+        y = response,
+        fill = "eval_label"
+      )
+    ) +
+    geom_hline(
+      yintercept = full_median,
+      size = 1.0,
+      alpha = 0.7,
+      color = "black",
+      linetype="dashed"
+    ) +
+    geom_flat_violin(
+      position = position_nudge(x = .2, y = 0),
+      alpha = .8,
+      adjust = 1.5
+    ) +
+    geom_point(
+      mapping = aes(color = eval_label),
+      position = position_jitter(width = .15),
+      size = .5,
+      alpha = 0.8
+    ) +
+    geom_boxplot(
+      width = .1,
+      outlier.shape = NA,
+      alpha = 0.5
+    ) +
+    scale_y_continuous(
+      # limits = c(-0.5, 100)
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    facet_grid(
+      SELECTION ~ evals_per_gen,
+      # nrow=2,
+      labeller = label_both
+    ) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(
+        angle = 30,
+        hjust = 1
+      ),
+      panel.border = element_rect(color = "gray", size = 2)
+    )
+
+  return(plot)
+}
+
+build_plot_time_series_single_sampling <- function(
+  data,
+  diagnostic,
+  selection,
+  sampling_level,
+  response
+) {
+
+  diag_data <- data %>% filter(
+    DIAGNOSTIC == diagnostic &
+    SELECTION == selection &
+    evals_per_gen == sampling_level
+  ) %>%
+  mutate(
+    sampling_level_label = sampling_level
+  )
+
+  full_diag_data <- data %>% filter(
+    DIAGNOSTIC == diagnostic & SELECTION == selection & eval_label == "full"
+  ) %>%
+  mutate(
+    # Ensure that median line will sit in same facet
+    sampling_level_label = sampling_level
+  )
+
+  plot <- diag_data %>%
+    filter(
+      eval_label != "full"
+    ) %>%
+    ggplot(
+      aes_string(
+        x = "ts_step",
+        # x = "evaluations",
+        y = {{ response }}
+      )
+    ) +
+    stat_summary(
+      geom = "line",
+      fun = mean,
+      aes(
+        color = eval_label
+      )
+    ) +
+    stat_summary(
+      geom = "ribbon",
+      fun.data = "mean_cl_boot",
+      fun.args = list(conf.int = 0.95),
+      alpha = 0.2,
+      linetype = 0,
+      aes(
+        color = eval_label,
+        fill = eval_label
+      )
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    # facet_wrap(
+    #   ~ sampling_level_label,
+    #   ncol = 1,
+    #   labeller = label_both
+    # ) +
+    theme(
+      legend.position = "right"
+    ) +
+    stat_summary(
+      data = full_diag_data,
+      geom = "line",
+      fun = median,
+      linetype = "dashed",
+      color = "black"
+    )
+
+  return(plot)
+}
+
+build_plot_time_series <- function(
+  data,
+  diagnostic,
+  selection,
+  response
+) {
+  # Build 1% sampling plot and 10% sampling plot
+  p_01 <- data  %>% build_plot_time_series_single_sampling(
+    diagnostic,
+    selection,
+    "0.01",
+    response
+  )
+  p_10 <- data %>% build_plot_time_series_single_sampling(
+    diagnostic,
+    selection,
+    "0.1",
+    response
+  )
+
+  title <- ggdraw() +
+    draw_label(
+      paste0(diagnostic, " - ", selection),
+      fontface = 'bold',
+      x = 0,
+      hjust = 0
+    ) +
+    theme(
+      # add margin on the left of the drawing canvas,
+      # so title is aligned with left edge of first plot
+      plot.margin = margin(0, 0, 0, 7)
+    )
+
+  plot <- plot_grid(
+    title,
+    p_01 + labs(title = "1% subsampling") + theme(legend.position = "none"),
+    p_10 + labs(title = "10% subsampling") + theme(legend.position = "bottom"),
+    nrow = 3,
+    ncol = 1,
+    rel_heights = c(0.075, 1, 1)
+  )
+
+  return(plot)
+}
+```
+
+## Aggregate score
+
+### Final - Lexicase selection
+
+Note that lexicase baseline is shown @ 50,000 generations (not same number of evaluations).
+
+```{r}
+p <- summary_data %>% build_plot_summary_data(
+  "multipath-exploration",
+  "lexicase",
+  "elite_true_agg_score"
+)
+ggsave(
+  filename = paste0(plot_directory, "explore-score-final-lex.pdf"),
+  plot = p + labs(title = "Exploration rate - Lexicase selection"),
+  width = 15,
+  height = 10
+)
+```
+
+### Over time - Lexicase selection
+
+```{r}
+p <- ts_data  %>% build_plot_time_series(
+  "multipath-exploration",
+  "lexicase",
+  "max_agg_score"
+)
+ggsave(
+  filename = paste0(plot_directory, "explore-score-ts-lex.pdf"),
+  plot = p,
+  width = 15,
+  height = 10
+)
+```
+
+## Manuscript figures
+
+Figures customized / cleaned up for the manuscript.
+
+```{r}
+build_final_score_manuscript_plot <- function(
+  selection,
+  subsample_rate
+) {
+
+  # Extract median values for max aggregate score at same evaluation level as sampling regimes
+  max_eval <- max(
+    filter(explore_ts_data, evals_per_gen == subsample_rate)$evaluations
+  )
+  full_eval_steps <- as.numeric(
+    levels(
+      as.factor(
+        filter(explore_ts_data, eval_label == "full" & evaluations >= max_eval)$evaluations # nolint: line_length_linter.
+      )
+    )
+  )
+  full_eval <- full_eval_steps[which.min( full_eval_steps  - max_eval )]
+  full_median_score_evals <- median(
+    filter(
+      explore_ts_data,
+      SELECTION == selection & eval_label == "full" & evaluations == full_eval
+    )$max_agg_score
+  )
+
+  plot <- explore_summary_data %>%
+    filter(
+      eval_label != "full" &
+      SELECTION == selection &
+      evals_per_gen == subsample_rate
+    ) %>%
+    ggplot(
+      aes(
+        x = eval_label,
+        y = elite_true_agg_score,
+        fill = eval_label
+      )
+    ) +
+    geom_hline(
+      yintercept = full_median_score_evals,
+      size = 1.0,
+      alpha = 0.7,
+      color = "black",
+      linetype="dashed"
+    ) +
+    geom_flat_violin(
+      position = position_nudge(x = .2, y = 0),
+      alpha = .8,
+      adjust = 1.5
+    ) +
+    geom_point(
+      mapping = aes(color = eval_label),
+      position = position_jitter(width = .15),
+      size = .5,
+      alpha = 0.8
+    ) +
+    geom_boxplot(
+      width = .1,
+      outlier.shape = NA,
+      alpha = 0.5
+    ) +
+    scale_y_continuous(
+      name = "Aggregate score",
+      limits = c(0, 10010)
+    ) +
+    scale_x_discrete(
+      name = "Subsampling regime",
+      breaks = c("down-sample", "down-sample-ancestor", "indiv-rand-sample", "phylo-informed-sample"),
+      labels = c("DS", "DS+EST", "IRS", "ABS")
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    theme(
+      legend.position = "none",
+      # axis.text.x = element_text(
+      #   angle = 30,
+      #   hjust = 1
+      # ),
+    )
+  return(plot)
+}
+```
+
+Build end-of-run plots (fixed number of evaluations)
+
+```{r}
+plot_final_lex_01 <- build_final_score_manuscript_plot(
+  "lexicase",
+  "0.01"
+)
+plot_final_lex_10 <- build_final_score_manuscript_plot(
+  "lexicase",
+  "0.1"
+)
+```
+
+Combine into single figure
+
+```{r}
+lex_fig <- plot_grid(
+  plot_final_lex_01 +
+    # labs(
+    #   title = "1% subsampling"
+    # ) +
+    theme(
+      plot.margin = margin(1, 0, 0, 0, "cm")
+    ),
+  plot_final_lex_10 +
+    # labs(
+    #   title = "10% subsampling"
+    # ) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.title.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      plot.margin = margin(1, 0, 0, 1, "cm")
+    ),
+  nrow = 1,
+  ncol = 2,
+  align = "h",
+  labels = c("a) 1% subsampling", "b) 10% subsampling"),
+  rel_widths = c(1, 1)
+)
+lex_fig
+save_plot(
+  filename = paste0(plot_directory, "2023-12-28-explore-lex-fig.pdf"),
+  plot = lex_fig,
+  base_width = 7,
+  base_height = 4,
+  dpi = 600
+)
+```
