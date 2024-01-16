@@ -84,6 +84,13 @@ summary_data <- summary_data %>%
     .keep = "all"
   ) %>%
   mutate(
+    eval_label = case_when(
+      # Clean up down-sample label
+      EVAL_MODE == "down-sample" & EVAL_FIT_EST_MODE != "none" ~ paste("down-sample", EVAL_FIT_EST_MODE, sep="-"),
+      .default = EVAL_MODE
+    ),
+  ) %>%
+  mutate(
     evals_per_gen = as.factor(evals_per_gen),
     est_mode_with_depth = as.factor(est_mode_with_depth),
     eval_mode_est_mode_depth = as.factor(eval_mode_est_mode_depth),
@@ -118,6 +125,7 @@ solution_counts <- summary_data %>%
     est_mode_with_depth,
     eval_mode_est_mode_depth,
     EVAL_MODE,
+    eval_label,
     EVAL_MAX_PHYLO_SEARCH_DEPTH
   ) %>%
   summarize(
@@ -125,8 +133,80 @@ solution_counts <- summary_data %>%
     replicates = n(),
     no_solution_count = n() - sum(found_solution == "1")
   )
-print(solution_counts, n=208)
+# print(solution_counts, n=208)
 solution_table <- kable(solution_counts) %>%
   kable_styling(latex_options = "striped", font_size = 25)
 save_kable(solution_table, paste0(plot_directory, "solution_counts_table.pdf"))
+solution_table
+```
+
+## Problem-solving success statistics
+
+```{r}
+sol_stats_data <- solution_counts %>%
+  filter(EVAL_MODE != "full") %>%
+  ungroup() %>%
+  unite(
+    "grouping",
+    PROBLEM,
+    evals_per_gen,
+    sep="_"
+  ) %>%
+  select(
+    grouping, eval_label, solution_count, no_solution_count
+  ) %>%
+  mutate(
+    grouping = as.factor(grouping)
+  )
+```
+
+```{r}
+fisher_results <- data.frame(
+  comparison = character(),
+  group1 = character(),
+  group2 = character(),
+  n = integer(),
+  p = double(),
+  p.adj = double(),
+  p.adj.signif = character()
+)
+
+groupings <- levels(sol_stats_data$grouping)
+for (g in groupings) {
+
+  ft_results <- sol_stats_data %>%
+    filter(grouping == g) %>%
+    select(!grouping) %>%
+    column_to_rownames(var = "eval_label") %>%
+    pairwise_fisher_test(
+      p.adjust.method = "holm"
+    ) %>%
+    add_significance("p.adj")
+
+  ft_results <- ft_results %>%
+    mutate(
+      comparison = rep(g, nrow(ft_results)),
+      .keep = "all"
+    ) %>%
+    relocate(comparison)
+
+  fisher_results <- rbind(
+    fisher_results,
+    ft_results
+  )
+}
+fisher_results <- as.tibble(fisher_results)
+fisher_results <- fisher_results %>%
+  mutate(
+    comparison = as.factor(comparison),
+    group1 = as.factor(group1),
+    group2 = as.factor(group2),
+  ) %>%
+  group_by(
+    comparison
+  )
+
+fisher_table <- kbl(fisher_results) %>% kable_styling()
+save_kable(fisher_table, paste0(plot_directory, "stats_table.pdf"))
+fisher_table
 ```
