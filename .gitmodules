@@ -5,3 +5,9 @@
 [submodule "third-party/Empirical"]
 	path = third-party/Empirical
 	url = https://github.com/devosoft/Empirical.git
+[submodule "SignalGP"]
+	path = third-party/SignalGP
+	url = https://github.com/amlalejini/SignalGP.git
+[submodule "psb-cpp"]
+	path = third-party/psb-cpp
+	url = https://github.com/amlalejini/psb-cpp.git
