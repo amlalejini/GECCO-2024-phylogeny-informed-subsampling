@@ -1,4 +1,4 @@
-# Compile and run locally
+# Local compilation
 
 You will need a C++ compiler that supports at least C++17.
 We used g++13 for all local compilations.

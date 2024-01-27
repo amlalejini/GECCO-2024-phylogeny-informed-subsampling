@@ -3,7 +3,7 @@
 <!-- TODO - Badges! -->
 <!-- [![supplemental](https://img.shields.io/badge/go%20to-supplemental%20material-ff69b4)](https://lalejini.com/GPTP-2023-phylogeny-informed-evaluation/bookdown/book/) -->
 <!-- [![DOI](https://zenodo.org/badge/569026105.svg)](https://zenodo.org/badge/latestdoi/569026105) -->
-<!-- [![OSF](https://img.shields.io/badge/data%20%40%20OSF-10.17605%2FOSF.IO%2FWXCKN-blue)](https://osf.io/wxckn/) -->
+[![OSF](https://img.shields.io/badge/data%20%40%20OSF-10.17605%2FOSF.IO%2FH3F52-blue)](https://osf.io/h3f52/)
 
 ## Overview
 
