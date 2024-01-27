@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
   psynth::ProgSynthConfig config;
   config.Read("prog_synth.cfg", false);
   auto args = emp::cl::ArgManager(argc, argv);
-  if (args.ProcessConfigOptions(config, std::cout, "prog_synth.cfg", "diagnostics-macros.h") == false) exit(0);
+  if (args.ProcessConfigOptions(config, std::cout, "prog_synth.cfg", "prog_synth-macros.h") == false) exit(0);
   if (args.TestUnknown() == false) exit(0);  // If there are leftover args, throw an error.
 
   std::cout << "==============================" << std::endl;
