@@ -1,11 +1,11 @@
 # Project-specific settings
 EMP_DIR := third-party/Empirical/include
-SGP_DIR := ../SignalGP/include
-PSB_DIR := ../psb-cpp/include
+SGP_DIR := third-party/SignalGP/include
+PSB_DIR := third-party/psb-cpp/include
 CEREAL_DIR := third-party/Empirical/third-party/cereal/include
 
-PROJECT := diagnostics
-# PROJECT := prog_synth
+# PROJECT := diagnostics
+PROJECT := prog_synth
 MAIN_CPP ?= source/${PROJECT}.cpp
 
 # Flags to use regardless of compiler
