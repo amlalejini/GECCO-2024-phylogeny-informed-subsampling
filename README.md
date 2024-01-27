@@ -1,8 +1,7 @@
 # Phylogeny-informed subsampling
 
-<!-- TODO - Badges! -->
 <!-- [![supplemental](https://img.shields.io/badge/go%20to-supplemental%20material-ff69b4)](https://lalejini.com/GPTP-2023-phylogeny-informed-evaluation/bookdown/book/) -->
-<!-- [![DOI](https://zenodo.org/badge/569026105.svg)](https://zenodo.org/badge/latestdoi/569026105) -->
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10576330.svg)](https://doi.org/10.5281/zenodo.10576330)
 [![OSF](https://img.shields.io/badge/data%20%40%20OSF-10.17605%2FOSF.IO%2FH3F52-blue)](https://osf.io/h3f52/)
 
 ## Overview
