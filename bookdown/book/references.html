@@ -4,26 +4,26 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>References | Supplemental Material for Phylogeny-informed fitness estimation</title>
+  <title>References | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’</title>
   <meta name="description" content="Supplemental material" />
-  <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.37 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="References | Supplemental Material for Phylogeny-informed fitness estimation" />
+  <meta property="og:title" content="References | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="Supplemental material" />
-  <meta name="github-repo" content="amlalejini/GPTP-2023-phylogeny-informed-evaluation" />
+  <meta name="github-repo" content="amlalejini/GECCO-2024-phylogeny-informed-subsampling" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="References | Supplemental Material for Phylogeny-informed fitness estimation" />
+  <meta name="twitter:title" content="References | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’" />
   
   <meta name="twitter:description" content="Supplemental material" />
   
 
-<meta name="author" content="Alexander Lalejini, Matthew Andres Moreno, Jose Guadalupe Hernandez, and Emily Dolson" />
+<meta name="author" content="Alexander Lalejini, Marcos Sanson, Jack Garbus, Matthew Andres Moreno, and Emily Dolson" />
 
 
-<meta name="date" content="2023-06-06" />
+<meta name="date" content="2024-01-27" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -52,6 +52,10 @@
 <link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
 
 
 <style type="text/css">
@@ -120,6 +124,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </style>
 
 <style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+<style type="text/css">
 /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
 div.csl-bib-body { }
 div.csl-entry {
@@ -177,48 +185,90 @@ div.csl-indent {
 <li class="chapter" data-level="3.1" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#default-instructions"><i class="fa fa-check"></i><b>3.1</b> Default Instructions</a></li>
 <li class="chapter" data-level="3.2" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#problem-specific-instructions"><i class="fa fa-check"></i><b>3.2</b> Problem-specific instructions</a>
 <ul>
-<li class="chapter" data-level="3.2.1" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#fizz-buzz"><i class="fa fa-check"></i><b>3.2.1</b> Fizz Buzz</a></li>
-<li class="chapter" data-level="3.2.2" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#median"><i class="fa fa-check"></i><b>3.2.2</b> Median</a></li>
-<li class="chapter" data-level="3.2.3" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#grade"><i class="fa fa-check"></i><b>3.2.3</b> Grade</a></li>
-<li class="chapter" data-level="3.2.4" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#small-or-large"><i class="fa fa-check"></i><b>3.2.4</b> Small or large</a></li>
+<li class="chapter" data-level="3.2.1" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#bouncing-balls"><i class="fa fa-check"></i><b>3.2.1</b> Bouncing Balls</a></li>
+<li class="chapter" data-level="3.2.2" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#dice-game"><i class="fa fa-check"></i><b>3.2.2</b> Dice Game</a></li>
+<li class="chapter" data-level="3.2.3" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#fizz-buzz"><i class="fa fa-check"></i><b>3.2.3</b> Fizz Buzz</a></li>
+<li class="chapter" data-level="3.2.4" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#for-loop-index"><i class="fa fa-check"></i><b>3.2.4</b> For loop index</a></li>
+<li class="chapter" data-level="3.2.5" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#gcd"><i class="fa fa-check"></i><b>3.2.5</b> GCD</a></li>
+<li class="chapter" data-level="3.2.6" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#grade"><i class="fa fa-check"></i><b>3.2.6</b> Grade</a></li>
+<li class="chapter" data-level="3.2.7" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#median"><i class="fa fa-check"></i><b>3.2.7</b> Median</a></li>
+<li class="chapter" data-level="3.2.8" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#small-or-large"><i class="fa fa-check"></i><b>3.2.8</b> Small or large</a></li>
+<li class="chapter" data-level="3.2.9" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#smallest"><i class="fa fa-check"></i><b>3.2.9</b> Smallest</a></li>
+<li class="chapter" data-level="3.2.10" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#snow-day"><i class="fa fa-check"></i><b>3.2.10</b> Snow Day</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html"><i class="fa fa-check"></i><b>4</b> Selection scheme diagnostic experiments</a>
+<li class="chapter" data-level="4" data-path="local-compilation.html"><a href="local-compilation.html"><i class="fa fa-check"></i><b>4</b> Local compilation</a></li>
+<li class="chapter" data-level="5" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html"><i class="fa fa-check"></i><b>5</b> Exploitation rate diagnostic experiments</a>
 <ul>
-<li class="chapter" data-level="4.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#dependencies"><i class="fa fa-check"></i><b>4.1</b> Dependencies</a></li>
-<li class="chapter" data-level="4.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#setup"><i class="fa fa-check"></i><b>4.2</b> Setup</a>
+<li class="chapter" data-level="5.1" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#dependencies"><i class="fa fa-check"></i><b>5.1</b> Dependencies</a></li>
+<li class="chapter" data-level="5.2" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#setup"><i class="fa fa-check"></i><b>5.2</b> Setup</a>
 <ul>
-<li class="chapter" data-level="4.2.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#load-experiment-summary-data"><i class="fa fa-check"></i><b>4.2.1</b> Load experiment summary data</a></li>
-<li class="chapter" data-level="4.2.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#load-experiment-time-series-data"><i class="fa fa-check"></i><b>4.2.2</b> Load experiment time series data</a></li>
-<li class="chapter" data-level="4.2.3" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#load-estimate-source-distributions"><i class="fa fa-check"></i><b>4.2.3</b> Load estimate source distributions</a></li>
+<li class="chapter" data-level="5.2.1" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#load-experiment-summary-data"><i class="fa fa-check"></i><b>5.2.1</b> Load experiment summary data</a></li>
+<li class="chapter" data-level="5.2.2" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#load-experiment-time-series-data"><i class="fa fa-check"></i><b>5.2.2</b> Load experiment time series data</a></li>
+<li class="chapter" data-level="5.2.3" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#plotting-helper-functions"><i class="fa fa-check"></i><b>5.2.3</b> Plotting helper functions</a></li>
 </ul></li>
-<li class="chapter" data-level="4.3" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#contradictory-objectives-diagnostic"><i class="fa fa-check"></i><b>4.3</b> Contradictory objectives diagnostic</a>
+<li class="chapter" data-level="5.3" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#aggregate-score"><i class="fa fa-check"></i><b>5.3</b> Aggregate score</a>
 <ul>
-<li class="chapter" data-level="4.3.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#population-wide-satisfactory-trait-coverage-final"><i class="fa fa-check"></i><b>4.3.1</b> Population-wide satisfactory trait coverage (final)</a></li>
-<li class="chapter" data-level="4.3.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#population-wide-satisfactory-trait-coverage-over-time"><i class="fa fa-check"></i><b>4.3.2</b> Population-wide satisfactory trait coverage (over time)</a></li>
-<li class="chapter" data-level="4.3.3" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#phylogeny-estimate-source-distributions"><i class="fa fa-check"></i><b>4.3.3</b> Phylogeny estimate source distributions</a></li>
+<li class="chapter" data-level="5.3.1" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#final---lexicase-selection"><i class="fa fa-check"></i><b>5.3.1</b> Final - Lexicase selection</a></li>
+<li class="chapter" data-level="5.3.2" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#final---tournament-selection"><i class="fa fa-check"></i><b>5.3.2</b> Final - Tournament selection</a></li>
+<li class="chapter" data-level="5.3.3" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#statistical-analysis"><i class="fa fa-check"></i><b>5.3.3</b> Statistical analysis</a></li>
+<li class="chapter" data-level="5.3.4" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#over-time---lexicase"><i class="fa fa-check"></i><b>5.3.4</b> Over time - Lexicase</a></li>
+<li class="chapter" data-level="5.3.5" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#over-time---tournament"><i class="fa fa-check"></i><b>5.3.5</b> Over time - Tournament</a></li>
 </ul></li>
-<li class="chapter" data-level="4.4" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#multi-path-exploration-diagnostic"><i class="fa fa-check"></i><b>4.4</b> Multi-path exploration diagnostic</a>
+<li class="chapter" data-level="5.4" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#number-unique-individual-selected"><i class="fa fa-check"></i><b>5.4</b> Number unique individual selected</a></li>
+<li class="chapter" data-level="5.5" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#manuscript-figures"><i class="fa fa-check"></i><b>5.5</b> Manuscript figures</a>
 <ul>
-<li class="chapter" data-level="4.4.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#maximum-aggregate-score-final"><i class="fa fa-check"></i><b>4.4.1</b> Maximum aggregate score (final)</a></li>
-<li class="chapter" data-level="4.4.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#maximum-aggregate-score-over-time"><i class="fa fa-check"></i><b>4.4.2</b> Maximum aggregate score (over time)</a></li>
-<li class="chapter" data-level="4.4.3" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#phylogeny-estimate-source-distributions-1"><i class="fa fa-check"></i><b>4.4.3</b> Phylogeny estimate source distributions</a></li>
-</ul></li>
-<li class="chapter" data-level="4.5" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#manuscript-figures"><i class="fa fa-check"></i><b>4.5</b> Manuscript figures</a>
-<ul>
-<li class="chapter" data-level="4.5.1" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#contradictory-objectives"><i class="fa fa-check"></i><b>4.5.1</b> Contradictory objectives</a></li>
-<li class="chapter" data-level="4.5.2" data-path="selection-scheme-diagnostic-experiments.html"><a href="selection-scheme-diagnostic-experiments.html#multi-path-exploration"><i class="fa fa-check"></i><b>4.5.2</b> Multi-path exploration</a></li>
+<li class="chapter" data-level="5.5.1" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#lexicase-selection-manuscript-figure"><i class="fa fa-check"></i><b>5.5.1</b> Lexicase selection manuscript figure</a></li>
+<li class="chapter" data-level="5.5.2" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#tournament-selection-manuscript-figures"><i class="fa fa-check"></i><b>5.5.2</b> Tournament selection manuscript figures</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html"><i class="fa fa-check"></i><b>5</b> Program synthesis experiments</a>
+<li class="chapter" data-level="6" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html"><i class="fa fa-check"></i><b>6</b> Contradictory objectives diagnostic</a>
 <ul>
-<li class="chapter" data-level="5.1" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#dependencies-1"><i class="fa fa-check"></i><b>5.1</b> Dependencies</a></li>
-<li class="chapter" data-level="5.2" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#setup-1"><i class="fa fa-check"></i><b>5.2</b> Setup</a>
+<li class="chapter" data-level="6.1" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#dependencies-1"><i class="fa fa-check"></i><b>6.1</b> Dependencies</a></li>
+<li class="chapter" data-level="6.2" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#setup-1"><i class="fa fa-check"></i><b>6.2</b> Setup</a>
 <ul>
-<li class="chapter" data-level="5.2.1" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#load-summary-data"><i class="fa fa-check"></i><b>5.2.1</b> Load summary data</a></li>
-<li class="chapter" data-level="5.2.2" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#load-time-series-data"><i class="fa fa-check"></i><b>5.2.2</b> Load time series data</a></li>
+<li class="chapter" data-level="6.2.1" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#load-experiment-summary-data-1"><i class="fa fa-check"></i><b>6.2.1</b> Load experiment summary data</a></li>
+<li class="chapter" data-level="6.2.2" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#load-experiment-time-series-data-1"><i class="fa fa-check"></i><b>6.2.2</b> Load experiment time series data</a></li>
+<li class="chapter" data-level="6.2.3" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#plotting-helper-functions-1"><i class="fa fa-check"></i><b>6.2.3</b> Plotting helper functions</a></li>
 </ul></li>
-<li class="chapter" data-level="5.3" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#problem-solving-success"><i class="fa fa-check"></i><b>5.3</b> Problem-solving success</a></li>
+<li class="chapter" data-level="6.3" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#population-wide-satisfactory-trait-coverage"><i class="fa fa-check"></i><b>6.3</b> Population-wide satisfactory trait coverage</a>
+<ul>
+<li class="chapter" data-level="6.3.1" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#final---lexicase-selection-1"><i class="fa fa-check"></i><b>6.3.1</b> Final - Lexicase selection</a></li>
+<li class="chapter" data-level="6.3.2" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#over-time---lexicase-selection"><i class="fa fa-check"></i><b>6.3.2</b> Over time - lexicase selection</a></li>
+<li class="chapter" data-level="6.3.3" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#final---tournament-selection-1"><i class="fa fa-check"></i><b>6.3.3</b> Final - Tournament selection</a></li>
+<li class="chapter" data-level="6.3.4" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#over-time---tournament-selection"><i class="fa fa-check"></i><b>6.3.4</b> Over time - tournament selection</a></li>
+</ul></li>
+<li class="chapter" data-level="6.4" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#mrca-changes"><i class="fa fa-check"></i><b>6.4</b> MRCA changes</a></li>
+<li class="chapter" data-level="6.5" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#mean-genotype-deleterious-steps"><i class="fa fa-check"></i><b>6.5</b> Mean genotype deleterious steps</a></li>
+<li class="chapter" data-level="6.6" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#mean-genotype-pairwise-distance"><i class="fa fa-check"></i><b>6.6</b> Mean genotype pairwise distance</a></li>
+<li class="chapter" data-level="6.7" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#number-unique-individual-selected-1"><i class="fa fa-check"></i><b>6.7</b> Number unique individual selected</a></li>
+<li class="chapter" data-level="6.8" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#manuscript-figures-1"><i class="fa fa-check"></i><b>6.8</b> Manuscript figures</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html"><i class="fa fa-check"></i><b>7</b> Multi-path exploration diagnostic</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#dependencies-2"><i class="fa fa-check"></i><b>7.1</b> Dependencies</a></li>
+<li class="chapter" data-level="7.2" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#setup-2"><i class="fa fa-check"></i><b>7.2</b> Setup</a>
+<ul>
+<li class="chapter" data-level="7.2.1" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#load-experiment-summary-data-2"><i class="fa fa-check"></i><b>7.2.1</b> Load experiment summary data</a></li>
+<li class="chapter" data-level="7.2.2" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#load-experiment-time-series-data-2"><i class="fa fa-check"></i><b>7.2.2</b> Load experiment time series data</a></li>
+<li class="chapter" data-level="7.2.3" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#plotting-helper-functions-2"><i class="fa fa-check"></i><b>7.2.3</b> Plotting helper functions</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#aggregate-score-1"><i class="fa fa-check"></i><b>7.3</b> Aggregate score</a>
+<ul>
+<li class="chapter" data-level="7.3.1" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#final---lexicase-selection-2"><i class="fa fa-check"></i><b>7.3.1</b> Final - Lexicase selection</a></li>
+<li class="chapter" data-level="7.3.2" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#over-time---lexicase-selection-1"><i class="fa fa-check"></i><b>7.3.2</b> Over time - Lexicase selection</a></li>
+</ul></li>
+<li class="chapter" data-level="7.4" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#manuscript-figures-2"><i class="fa fa-check"></i><b>7.4</b> Manuscript figures</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html"><i class="fa fa-check"></i><b>8</b> Program synthesis experiments</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#dependencies-3"><i class="fa fa-check"></i><b>8.1</b> Dependencies</a></li>
+<li class="chapter" data-level="8.2" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#setup-3"><i class="fa fa-check"></i><b>8.2</b> Setup</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#load-summary-data"><i class="fa fa-check"></i><b>8.2.1</b> Load summary data</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#problem-solving-success-statistics"><i class="fa fa-check"></i><b>8.3</b> Problem-solving success statistics</a></li>
+<li class="chapter" data-level="8.4" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#average-number-of-unique-candidates-selected"><i class="fa fa-check"></i><b>8.4</b> Average number of unique candidates selected</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
@@ -233,7 +283,7 @@ div.csl-indent {
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Supplemental Material for Phylogeny-informed fitness estimation</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’</a>
           </h1>
         </div>
 
@@ -246,55 +296,58 @@ div.csl-indent {
 
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div class="csl-entry">
-Frerebeau, Nicolas. 2022. <em>Khroma: Colour Schemes for Scientific Data Visualization</em>. <a href="https://CRAN.R-project.org/package=khroma">https://CRAN.R-project.org/package=khroma</a>.
+Frerebeau, Nicolas. 2023. <em>Khroma: Colour Schemes for Scientific Data Visualization</em>. <a href="https://packages.tesselle.org/khroma/">https://packages.tesselle.org/khroma/</a>.
+</div>
+<div class="csl-entry">
+Grolemund, Garrett, and Hadley Wickham. 2011. <span>“Dates and Times Made Easy with <span class="nocase">lubridate</span>.”</span> <em>Journal of Statistical Software</em> 40 (3): 1–25. <a href="https://www.jstatsoft.org/v40/i03/">https://www.jstatsoft.org/v40/i03/</a>.
 </div>
 <div class="csl-entry">
 Kassambara, Alboukadel. 2023. <em>Rstatix: Pipe-Friendly Framework for Basic Statistical Tests</em>. <a href="https://rpkgs.datanovia.com/rstatix/">https://rpkgs.datanovia.com/rstatix/</a>.
 </div>
 <div class="csl-entry">
-Müller, Kirill, and Hadley Wickham. 2022. <em>Tibble: Simple Data Frames</em>. <a href="https://CRAN.R-project.org/package=tibble">https://CRAN.R-project.org/package=tibble</a>.
-</div>
-<div class="csl-entry">
-Neuwirth, Erich. 2022. <em>RColorBrewer: ColorBrewer Palettes</em>. <a href="https://CRAN.R-project.org/package=RColorBrewer">https://CRAN.R-project.org/package=RColorBrewer</a>.
+Müller, Kirill, and Hadley Wickham. 2023. <em>Tibble: Simple Data Frames</em>. <a href="https://tibble.tidyverse.org/">https://tibble.tidyverse.org/</a>.
 </div>
 <div class="csl-entry">
 R Core Team. 2022. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
 </div>
 <div class="csl-entry">
+Spinu, Vitalie, Garrett Grolemund, and Hadley Wickham. 2023. <em>Lubridate: Make Dealing with Dates a Little Easier</em>. <a href="https://lubridate.tidyverse.org">https://lubridate.tidyverse.org</a>.
+</div>
+<div class="csl-entry">
 Wickham, Hadley. 2016. <em>Ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. <a href="https://ggplot2.tidyverse.org">https://ggplot2.tidyverse.org</a>.
 </div>
 <div class="csl-entry">
-———. 2022a. <em>Forcats: Tools for Working with Categorical Variables (Factors)</em>. <a href="https://CRAN.R-project.org/package=forcats">https://CRAN.R-project.org/package=forcats</a>.
+———. 2023a. <em>Forcats: Tools for Working with Categorical Variables (Factors)</em>. <a href="https://forcats.tidyverse.org/">https://forcats.tidyverse.org/</a>.
 </div>
 <div class="csl-entry">
-———. 2022b. <em>Stringr: Simple, Consistent Wrappers for Common String Operations</em>. <a href="https://CRAN.R-project.org/package=stringr">https://CRAN.R-project.org/package=stringr</a>.
+———. 2023b. <em>Stringr: Simple, Consistent Wrappers for Common String Operations</em>. <a href="https://stringr.tidyverse.org">https://stringr.tidyverse.org</a>.
 </div>
 <div class="csl-entry">
-———. 2022c. <em>Tidyverse: Easily Install and Load the Tidyverse</em>. <a href="https://CRAN.R-project.org/package=tidyverse">https://CRAN.R-project.org/package=tidyverse</a>.
+———. 2023c. <em>Tidyverse: Easily Install and Load the Tidyverse</em>. <a href="https://tidyverse.tidyverse.org">https://tidyverse.tidyverse.org</a>.
 </div>
 <div class="csl-entry">
 Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy D’Agostino McGowan, Romain François, Garrett Grolemund, et al. 2019. <span>“Welcome to the <span class="nocase">tidyverse</span>.”</span> <em>Journal of Open Source Software</em> 4 (43): 1686. <a href="https://doi.org/10.21105/joss.01686">https://doi.org/10.21105/joss.01686</a>.
 </div>
 <div class="csl-entry">
-Wickham, Hadley, Winston Chang, Lionel Henry, Thomas Lin Pedersen, Kohske Takahashi, Claus Wilke, Kara Woo, Hiroaki Yutani, and Dewey Dunnington. 2022. <em>Ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics</em>. <a href="https://CRAN.R-project.org/package=ggplot2">https://CRAN.R-project.org/package=ggplot2</a>.
+Wickham, Hadley, Winston Chang, Lionel Henry, Thomas Lin Pedersen, Kohske Takahashi, Claus Wilke, Kara Woo, Hiroaki Yutani, and Dewey Dunnington. 2023. <em>Ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics</em>. <a href="https://ggplot2.tidyverse.org">https://ggplot2.tidyverse.org</a>.
 </div>
 <div class="csl-entry">
-Wickham, Hadley, Romain François, Lionel Henry, Kirill Müller, and Davis Vaughan. 2023. <em>Dplyr: A Grammar of Data Manipulation</em>. <a href="https://CRAN.R-project.org/package=dplyr">https://CRAN.R-project.org/package=dplyr</a>.
+Wickham, Hadley, Romain François, Lionel Henry, Kirill Müller, and Davis Vaughan. 2023. <em>Dplyr: A Grammar of Data Manipulation</em>. <a href="https://dplyr.tidyverse.org">https://dplyr.tidyverse.org</a>.
 </div>
 <div class="csl-entry">
-Wickham, Hadley, and Lionel Henry. 2023. <em>Purrr: Functional Programming Tools</em>. <a href="https://CRAN.R-project.org/package=purrr">https://CRAN.R-project.org/package=purrr</a>.
+Wickham, Hadley, and Lionel Henry. 2023. <em>Purrr: Functional Programming Tools</em>. <a href="https://purrr.tidyverse.org/">https://purrr.tidyverse.org/</a>.
 </div>
 <div class="csl-entry">
-Wickham, Hadley, Jim Hester, and Jennifer Bryan. 2022. <em>Readr: Read Rectangular Text Data</em>. <a href="https://CRAN.R-project.org/package=readr">https://CRAN.R-project.org/package=readr</a>.
+Wickham, Hadley, Jim Hester, and Jennifer Bryan. 2023. <em>Readr: Read Rectangular Text Data</em>. <a href="https://readr.tidyverse.org">https://readr.tidyverse.org</a>.
 </div>
 <div class="csl-entry">
-Wickham, Hadley, Davis Vaughan, and Maximilian Girlich. 2023. <em>Tidyr: Tidy Messy Data</em>. <a href="https://CRAN.R-project.org/package=tidyr">https://CRAN.R-project.org/package=tidyr</a>.
+Wickham, Hadley, Davis Vaughan, and Maximilian Girlich. 2023. <em>Tidyr: Tidy Messy Data</em>. <a href="https://tidyr.tidyverse.org">https://tidyr.tidyverse.org</a>.
 </div>
 <div class="csl-entry">
-Wilke, Claus O. 2020. <em>Cowplot: Streamlined Plot Theme and Plot Annotations for Ggplot2</em>. <a href="https://wilkelab.org/cowplot/">https://wilkelab.org/cowplot/</a>.
+Wilke, Claus O. 2023. <em>Cowplot: Streamlined Plot Theme and Plot Annotations for Ggplot2</em>. <a href="https://wilkelab.org/cowplot/">https://wilkelab.org/cowplot/</a>.
 </div>
 <div class="csl-entry">
-Xie, Yihui. 2014. <span>“Knitr: A Comprehensive Tool for Reproducible Research in <span>R</span>.”</span> In <em>Implementing Reproducible Computational Research</em>, edited by Victoria Stodden, Friedrich Leisch, and Roger D. Peng. Chapman; Hall/CRC. <a href="http://www.crcpress.com/product/isbn/9781466561595">http://www.crcpress.com/product/isbn/9781466561595</a>.
+Xie, Yihui. 2014. <span>“Knitr: A Comprehensive Tool for Reproducible Research in <span>R</span>.”</span> In <em>Implementing Reproducible Computational Research</em>, edited by Victoria Stodden, Friedrich Leisch, and Roger D. Peng. Chapman; Hall/CRC.
 </div>
 <div class="csl-entry">
 ———. 2015. <em>Dynamic Documents with <span>R</span> and Knitr</em>. 2nd ed. Boca Raton, Florida: Chapman; Hall/CRC. <a href="https://yihui.org/knitr/">https://yihui.org/knitr/</a>.
@@ -303,10 +356,13 @@ Xie, Yihui. 2014. <span>“Knitr: A Comprehensive Tool for Reproducible Research
 ———. 2016. <em>Bookdown: Authoring Books and Technical Documents with <span>R</span> Markdown</em>. Boca Raton, Florida: Chapman; Hall/CRC. <a href="https://bookdown.org/yihui/bookdown">https://bookdown.org/yihui/bookdown</a>.
 </div>
 <div class="csl-entry">
-———. 2022a. <em>Bookdown: Authoring Books and Technical Documents with r Markdown</em>. <a href="https://CRAN.R-project.org/package=bookdown">https://CRAN.R-project.org/package=bookdown</a>.
+———. 2023a. <em>Bookdown: Authoring Books and Technical Documents with r Markdown</em>. <a href="https://github.com/rstudio/bookdown">https://github.com/rstudio/bookdown</a>.
 </div>
 <div class="csl-entry">
-———. 2022b. <em>Knitr: A General-Purpose Package for Dynamic Report Generation in r</em>. <a href="https://yihui.org/knitr/">https://yihui.org/knitr/</a>.
+———. 2023b. <em>Knitr: A General-Purpose Package for Dynamic Report Generation in r</em>. <a href="https://yihui.org/knitr/">https://yihui.org/knitr/</a>.
+</div>
+<div class="csl-entry">
+Zhu, Hao. 2021. <em>kableExtra: Construct Complex Table with Kable and Pipe Syntax</em>. <a href="http://haozhu233.github.io/kableExtra/">http://haozhu233.github.io/kableExtra/</a>.
 </div>
 </div>
 </div>
@@ -347,7 +403,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/amlalejini/GPTP-2023-phylogeny-informed-evaluation/tree/main/tail.Rmd",
+"link": "https://github.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/tree/main/tail.Rmd",
 "text": "Edit"
 },
 "history": {
@@ -358,7 +414,7 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": ["phylogeny-informed-estimation-supplemental.pdf"],
+"download": ["phylogeny-informed-subsampling-supplemental.pdf"],
 "search": {
 "engine": "fuse",
 "options": null

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.9.29)  27 JAN 2024 16:13
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.9.29)  27 JAN 2024 16:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -573,16 +573,16 @@ Chapter 2.
 
 ]
 Chapter 3.
-[9] [10] [11] [12]
+[9] [10] [11] [12] [13] [14
+
+]
 Chapter 4.
 
-Underfull \hbox (badness 3792) in paragraph at lines 383--385
+Underfull \hbox (badness 3792) in paragraph at lines 437--439
 []\T1/lmr/m/n/10 Once cloned, [][][][] into your lo-cal [][][][][][][][][][][]
  []
 
-[13
-
-] [14]
+[15] [16]
 Chapter 5.
 (/Users/lalejina/Library/TinyTeX/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2020/03/24 1.8d listings language file
@@ -591,139 +591,126 @@ File: lstlang2.sty 2020/03/24 1.8d listings language file
 ) (/Users/lalejina/Library/TinyTeX/texmf-dist/tex/latex/listings/lstlang3.sty
 File: lstlang3.sty 2020/03/24 1.8d listings language file
 )
-Overfull \hbox (563.00903pt too wide) in paragraph at lines 455--456
+Overfull \hbox (593.00934pt too wide) in paragraph at lines 509--510
 [][] 
  []
 
-[15
+[17
 
 ]
-Overfull \hbox (671.01013pt too wide) in paragraph at lines 461--462
+Overfull \hbox (701.01044pt too wide) in paragraph at lines 515--516
 [][] 
  []
 
-[16]
-Overfull \hbox (755.01099pt too wide) in paragraph at lines 545--546
+[18]
+Overfull \hbox (785.01129pt too wide) in paragraph at lines 599--600
 [][] 
  []
 
-[17] [18]
-Overfull \hbox (755.01099pt too wide) in paragraph at lines 618--619
+[19] [20]
+Overfull \hbox (785.01129pt too wide) in paragraph at lines 672--673
 [][] 
  []
 
-[19] [20] [21] [22] [23] [24] [25] [26]
-Overfull \hbox (191.70485pt too wide) in paragraph at lines 979--1020
-[][] 
- []
-
-[27]
-Overfull \hbox (234.73854pt too wide) in paragraph at lines 1040--1053
-[][] 
- []
-
-[28]
-Overfull \hbox (388.94392pt too wide) in paragraph at lines 1079--1132
+[21] [22] [23] [24] [25] [26] [27] [28]
+Overfull \hbox (191.70485pt too wide) in paragraph at lines 1033--1074
 [][] 
  []
 
 [29]
-<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-17-1.pdf, id=893, 457.71pt x 312.16624pt>
+Overfull \hbox (234.73854pt too wide) in paragraph at lines 1094--1107
+[][] 
+ []
+
+[30]
+Overfull \hbox (388.94392pt too wide) in paragraph at lines 1133--1186
+[][] 
+ []
+
+[31]
+<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-17-1.pdf, id=915, 457.71pt x 312.16624pt>
 File: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-17-1.pdf Graphic file (type pdf)
 <use phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-17-1.pdf>
-Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-17-1.pdf  used on input line 1179.
+Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-17-1.pdf  used on input line 1233.
 (pdftex.def)             Requested size: 345.01372pt x 235.30539pt.
-[30 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-17-1.pdf>] [31] [32] [33] [34] [35] [36] [37]
-<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-24-1.pdf, id=1261, 465.74pt x 312.16624pt>
+[32 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-17-1.pdf>] [33] [34] [35] [36] [37] [38] [39]
+<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-24-1.pdf, id=1281, 465.74pt x 312.16624pt>
 File: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-24-1.pdf Graphic file (type pdf)
 <use phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-24-1.pdf>
-Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-24-1.pdf  used on input line 1525.
+Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-24-1.pdf  used on input line 1579.
 (pdftex.def)             Requested size: 345.01175pt x 231.24709pt.
-[38 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-24-1.pdf>] [39]
-<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-25-1.pdf, id=1353, 470.75874pt x 319.1925pt>
+[40 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-24-1.pdf>] [41]
+<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-25-1.pdf, id=1373, 470.75874pt x 319.1925pt>
 File: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-25-1.pdf Graphic file (type pdf)
 <use phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-25-1.pdf>
-Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-25-1.pdf  used on input line 1617.
+Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-25-1.pdf  used on input line 1671.
 (pdftex.def)             Requested size: 345.00146pt x 233.92422pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[40] [41 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-25-1.pdf>] [42
+[42] [43 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-25-1.pdf>] [44
 
 ]
 Chapter 6.
-[43]
-Overfull \hbox (755.01099pt too wide) in paragraph at lines 1707--1708
+[45]
+Overfull \hbox (785.01129pt too wide) in paragraph at lines 1761--1762
 [][] 
  []
 
-[44] [45]
-Overfull \hbox (755.01099pt too wide) in paragraph at lines 1780--1781
+[46] [47]
+Overfull \hbox (785.01129pt too wide) in paragraph at lines 1834--1835
 [][] 
  []
 
-[46] [47] [48] [49] [50] [51] [52]
-Overfull \hbox (209.12202pt too wide) in paragraph at lines 2092--2133
+[48] [49] [50] [51] [52] [53] [54]
+Overfull \hbox (209.12202pt too wide) in paragraph at lines 2146--2187
 [][] 
  []
 
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[53]
-Overfull \hbox (282.4605pt too wide) in paragraph at lines 2153--2166
+[55]
+Overfull \hbox (282.4605pt too wide) in paragraph at lines 2207--2220
 [][] 
  []
 
-[54]
-Overfull \hbox (422.22137pt too wide) in paragraph at lines 2190--2219
+[56]
+Overfull \hbox (422.22137pt too wide) in paragraph at lines 2244--2273
 [][] 
  []
 
-[55] [56] [57]
-<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-45-1.pdf, id=2012, 457.71pt x 312.16624pt>
+[57] [58] [59]
+<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-45-1.pdf, id=2032, 457.71pt x 312.16624pt>
 File: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-45-1.pdf Graphic file (type pdf)
 <use phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-45-1.pdf>
-Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-45-1.pdf  used on input line 2334.
+Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-45-1.pdf  used on input line 2388.
 (pdftex.def)             Requested size: 345.01372pt x 235.30539pt.
-[58 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-45-1.pdf>] [59] [60]
-<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-48-1.pdf, id=2140, 469.755pt x 321.2pt>
+[60 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-45-1.pdf>] [61] [62]
+<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-48-1.pdf, id=2161, 469.755pt x 321.2pt>
 File: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-48-1.pdf Graphic file (type pdf)
 <use phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-48-1.pdf>
-Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-48-1.pdf  used on input line 2467.
+Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-48-1.pdf  used on input line 2521.
 (pdftex.def)             Requested size: 344.997pt x 235.89537pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[61] [62 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-48-1.pdf>]
+[63] [64 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-48-1.pdf>]
 Chapter 7.
-[63
+[65
 
 ]
-Overfull \hbox (755.01099pt too wide) in paragraph at lines 2557--2558
+Overfull \hbox (785.01129pt too wide) in paragraph at lines 2611--2612
 [][] 
  []
 
-[64] [65]
-Overfull \hbox (755.01099pt too wide) in paragraph at lines 2629--2630
+[66] [67]
+Overfull \hbox (785.01129pt too wide) in paragraph at lines 2683--2684
 [][] 
  []
 
-[66] [67] [68] [69] [70] [71] [72]
-Overfull \hbox (214.7598pt too wide) in paragraph at lines 2942--2983
-[][] 
- []
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-[73]
-Overfull \hbox (269.18329pt too wide) in paragraph at lines 3003--3016
-[][] 
- []
-
-[74]
-Overfull \hbox (391.72144pt too wide) in paragraph at lines 3040--3093
+[68] [69] [70] [71] [72] [73] [74]
+Overfull \hbox (214.7598pt too wide) in paragraph at lines 2996--3037
 [][] 
  []
 
@@ -731,77 +718,90 @@ Overfull \hbox (391.72144pt too wide) in paragraph at lines 3040--3093
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 [75]
+Overfull \hbox (269.18329pt too wide) in paragraph at lines 3057--3070
+[][] 
+ []
+
+[76]
+Overfull \hbox (391.72144pt too wide) in paragraph at lines 3094--3147
+[][] 
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+[77]
 Underfull \vbox (badness 6252) has occurred while \output is active []
 
-[76] [77] [78]
-<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-64-1.pdf, id=2810, 469.755pt x 321.2pt>
+[78] [79] [80]
+<phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-64-1.pdf, id=2831, 469.755pt x 321.2pt>
 File: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-64-1.pdf Graphic file (type pdf)
 <use phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-64-1.pdf>
-Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-64-1.pdf  used on input line 3236.
+Package pdftex.def Info: phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-64-1.pdf  used on input line 3290.
 (pdftex.def)             Requested size: 344.997pt x 235.89537pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[79] [80 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-64-1.pdf>]
+[81] [82 <./phylogeny-informed-subsampling-supplemental_files/figure-latex/unnamed-chunk-64-1.pdf>]
 Chapter 8.
-[81
+[83
 
 ]
-Overfull \hbox (755.01099pt too wide) in paragraph at lines 3340--3341
+Overfull \hbox (785.01129pt too wide) in paragraph at lines 3394--3395
 [][] 
  []
 
-[82] [83] [84]
-LaTeX Font Info:    Calculating math sizes for size <25> on input line 3450.
+[84] [85] [86]
+LaTeX Font Info:    Calculating math sizes for size <25> on input line 3504.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <25> on input line 3450.
+(Font)              <25> on input line 3504.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <17.49992> on input line 3450.
+(Font)              <17.49992> on input line 3504.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12.5> on input line 3450.
+(Font)              <12.5> on input line 3504.
 
-Overfull \hbox (2510.93813pt too wide) in paragraph at lines 3450--3636
+Overfull \hbox (2510.93813pt too wide) in paragraph at lines 3504--3690
  [][] 
  []
 
 
-LaTeX Warning: Float too large for page by 1944.79944pt on input line 3636.
+LaTeX Warning: Float too large for page by 1944.79944pt on input line 3690.
 
 
-Overfull \hbox (755.01099pt too wide) in paragraph at lines 3647--3648
+Overfull \hbox (785.01129pt too wide) in paragraph at lines 3701--3702
 [][] 
  []
 
-[85] [86] [87] [88] [89]
-Overfull \hbox (167.84308pt too wide) in paragraph at lines 3831--4076
+[87] [88] [89] [90] [91]
+Overfull \hbox (167.84308pt too wide) in paragraph at lines 3885--4130
  [][] 
  []
 
 
-LaTeX Warning: Float too large for page by 950.79926pt on input line 4076.
+LaTeX Warning: Float too large for page by 950.79926pt on input line 4130.
 
 
 Underfull \vbox (badness 5652) has occurred while \output is active []
 
-[90] [91] [92] [93]
+[92] [93] [94] [95]
 No file phylogeny-informed-subsampling-supplemental.bbl.
-[94] (./phylogeny-informed-subsampling-supplemental.aux)
+[96] (./phylogeny-informed-subsampling-supplemental.aux)
 Package rerunfilecheck Info: File `phylogeny-informed-subsampling-supplemental.out' has not changed.
 (rerunfilecheck)             Checksum: 391A54DFB87B12286C3A37771A4F1CC7;5919.
  ) 
 Here is how much of TeX's memory you used:
- 18196 strings out of 477035
- 282032 string characters out of 5827300
- 1026737 words of memory out of 5000000
- 36292 multiletter control sequences out of 15000+600000
+ 18216 strings out of 477035
+ 282267 string characters out of 5827300
+ 1027006 words of memory out of 5000000
+ 36298 multiletter control sequences out of 15000+600000
  550216 words of font info for 92 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  72i,10n,77p,481b,1960s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/Users/lalejina/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}{/Users/lalejina/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}</Users/lalejina/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></Users/lalejina/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></Users/lalejina/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb></Users/lalejina/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb></Users/lalejina/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr17.pfb></Users/lalejina/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb></Users/lalejina/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmro10.pfb>
-Output written on phylogeny-informed-subsampling-supplemental.pdf (94 pages, 731564 bytes).
+Output written on phylogeny-informed-subsampling-supplemental.pdf (96 pages, 733396 bytes).
 PDF statistics:
- 3967 PDF objects out of 4296 (max. 8388607)
- 3798 compressed objects within 38 object streams
- 2768 named destinations out of 2984 (max. 500000)
+ 3991 PDF objects out of 4296 (max. 8388607)
+ 3819 compressed objects within 39 object streams
+ 2782 named destinations out of 2984 (max. 500000)
  319 words of extra memory for PDF output out of 10000 (max. 10000000)
 

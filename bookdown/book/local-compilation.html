@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 3 SignalGP instruction set | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’</title>
+  <title>Chapter 4 Local compilation | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’</title>
   <meta name="description" content="Supplemental material" />
   <meta name="generator" content="bookdown 0.37 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 3 SignalGP instruction set | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’" />
+  <meta property="og:title" content="Chapter 4 Local compilation | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="Supplemental material" />
   <meta name="github-repo" content="amlalejini/GECCO-2024-phylogeny-informed-subsampling" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 3 SignalGP instruction set | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’" />
+  <meta name="twitter:title" content="Chapter 4 Local compilation | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’" />
   
   <meta name="twitter:description" content="Supplemental material" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="data-availability.html"/>
-<link rel="next" href="local-compilation.html"/>
+<link rel="prev" href="signalgp-instruction-set.html"/>
+<link rel="next" href="exploitation-rate-diagnostic-experiments.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -291,304 +291,41 @@ div.csl-indent {
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="signalgp-instruction-set" class="section level1 hasAnchor" number="3">
-<h1><span class="header-section-number">Chapter 3</span> SignalGP instruction set<a href="signalgp-instruction-set.html#signalgp-instruction-set" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Below, we document the instruction set used in our GP system for our 2023 GPTP experiments.</p>
-<p>Abbreviations:</p>
+<div id="local-compilation" class="section level1 hasAnchor" number="4">
+<h1><span class="header-section-number">Chapter 4</span> Local compilation<a href="local-compilation.html#local-compilation" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>You will need a C++ compiler that supports at least C++17.
+We used g++13 for all local compilations.</p>
+<p>First, clone <code>GECCO-2024-phylogeny-informed-subsampling</code> repository that contains the code needed to run our experiment software: <a href="https://github.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling" class="uri">https://github.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling</a>.</p>
+<p>Once cloned, <code>cd</code> into your local <code>GECCO-2024-phylogeny-informed-subsampling</code> repository directory.
+Then, initialize and update all of the git submodules:</p>
+<pre><code>git submodule update --init --recursive</code></pre>
+<p>Once the submodules are updated, you should be able to compile either the diagnostics or program synthesis experiment code.
+To specify which experiment you would like to compile, adjust the <code>PROJECT</code> variable in the <code>Makefile</code>.</p>
 <ul>
-<li>EOP: End of program</li>
-<li>Reg: local register
-<ul>
-<li>Reg[0] indicates the value at the register specified by an instruction’s first <em>argument</em>, Reg[1] indicates the value at the register specified by an instruction’s second argument, and Reg[2] indicates the value at the register specified by the instruction’s third argument.</li>
-<li>Reg[0], Reg[1], <em>etc</em>: Register 0, Register 1, <em>etc.</em></li>
-</ul></li>
-<li>Input: input buffer
-<ul>
-<li>Follows same scheme as Reg</li>
-</ul></li>
-<li>Output: output buffer
-<ul>
-<li>Follows same scheme as Reg</li>
-</ul></li>
-<li>Global: global memory buffer
-<ul>
-<li>Follows same scheme as Reg</li>
-</ul></li>
-<li>Arg: Instruction argument
-<ul>
-<li>Arg[i] indicates the i’th instruction argument (an integer encoded in the genome)</li>
-<li>E.g., Arg[0] is an instruction’s first argument</li>
-</ul></li>
+<li><code>PROJECT := prog_synth</code> for compiling the program synthesis code</li>
+<li><code>PROJECT := diagnostics</code> for compiling the selection scheme diagnostics code</li>
 </ul>
-<p>Instructions that would produce undefined behavior (e.g., division by zero) are treated as no operations.</p>
-<div id="default-instructions" class="section level2 hasAnchor" number="3.1">
-<h2><span class="header-section-number">3.1</span> Default Instructions<a href="signalgp-instruction-set.html#default-instructions" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>I.e., instructions used across all diagnostic tasks.</p>
-<table>
-<colgroup>
-<col width="30%" />
-<col width="38%" />
-<col width="30%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="left">Instruction</th>
-<th align="center">Arguments Used</th>
-<th align="left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left"><code>Nop</code></td>
-<td align="center">0</td>
-<td align="left">No operation</td>
-</tr>
-<tr class="even">
-<td align="left"><code>Not</code></td>
-<td align="center">1</td>
-<td align="left">Reg[0] = !Reg[0]</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>Inc</code></td>
-<td align="center">1</td>
-<td align="left">Reg[0] = Reg[0] + 1</td>
-</tr>
-<tr class="even">
-<td align="left"><code>Dec</code></td>
-<td align="center">1</td>
-<td align="left">Reg[0] = Reg[0] - 1</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>Add</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] + Reg[2]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>Sub</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] - Reg[2]</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>Mult</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] * Reg[2]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>Div</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] / Reg[2]</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>Mod</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] % Reg[2]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>Nand</code></td>
-<td align="center">2</td>
-<td align="left">Reg[0] = !(R1g[0] &amp; Reg[2])</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>TestEqu</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] == Reg[2]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>TestNEqu</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] != Reg[2]</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>TestLess</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] &lt; Reg[2]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>TestLessEqu</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] &lt;= Reg[2]</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>TestGreater</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] &gt; Reg[2]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>TestGreaterEqu</code></td>
-<td align="center">3</td>
-<td align="left">Reg[0] = Reg[1] &gt;= Reg[2]</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>SetMem</code></td>
-<td align="center">2</td>
-<td align="left">Reg[0] = Arg[1]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>Terminal</code></td>
-<td align="center">1</td>
-<td align="left">Reg[0] = double value encoded by instruction tag</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>CopyMem</code></td>
-<td align="center">2</td>
-<td align="left">Reg[0] = Reg[1]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>SwapMem</code></td>
-<td align="center">2</td>
-<td align="left">Swap(Reg[0], Reg[1])</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>InputToWorking</code></td>
-<td align="center">2</td>
-<td align="left">Reg[0] = Input[1]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>WorkingToOutput</code></td>
-<td align="center">2</td>
-<td align="left">Output[1] = Reg[0]</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>If</code></td>
-<td align="center">1</td>
-<td align="left">If Reg[0] != 0, proceed. Otherwise skip to the next <code>Close</code> or EOP.</td>
-</tr>
-<tr class="even">
-<td align="left"><code>While</code></td>
-<td align="center">1</td>
-<td align="left">While Reg[0] != 0, loop. Otherwise skip to next <code>Close</code> or EOP.</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>Close</code></td>
-<td align="center">0</td>
-<td align="left">Indicate the end of a control block of code (e.g., loop, if).</td>
-</tr>
-<tr class="even">
-<td align="left"><code>Break</code></td>
-<td align="center">0</td>
-<td align="left">Break out of current control flow (e.g., loop).</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>Call</code></td>
-<td align="center">0</td>
-<td align="left">Call a function, using this instruction’s tag to determine which function is called.</td>
-</tr>
-<tr class="even">
-<td align="left"><code>Routine</code></td>
-<td align="center">0</td>
-<td align="left">Same as call, but local memory is shared. Sort of like a jump that will jump back when the routine ends.</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>Return</code></td>
-<td align="center">0</td>
-<td align="left">Return from the current function call.</td>
-</tr>
-<tr class="even">
-<td align="left"><code>WorkingToGlobal</code></td>
-<td align="center">2</td>
-<td align="left">Global[1] = Reg[0]</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>GlobalToWorking</code></td>
-<td align="center">2</td>
-<td align="left">Reg[1] = Global[0]</td>
-</tr>
-<tr class="even">
-<td align="left"><code>FullGlobalToWorking</code></td>
-<td align="center">0</td>
-<td align="left">Copy entire global memory buffer into working memory buffer</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>FullWorkingToGlobal</code></td>
-<td align="center">0</td>
-<td align="left">Copy entire working memory buffer into global memory buffer</td>
-</tr>
-</tbody>
-</table>
-<p>Note that <code>Nand</code> performs a bitwise operation.</p>
-</div>
-<div id="problem-specific-instructions" class="section level2 hasAnchor" number="3.2">
-<h2><span class="header-section-number">3.2</span> Problem-specific instructions<a href="signalgp-instruction-set.html#problem-specific-instructions" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Each problem has problem-specific instructions for producing output.</p>
-<div id="bouncing-balls" class="section level3 hasAnchor" number="3.2.1">
-<h3><span class="header-section-number">3.2.1</span> Bouncing Balls<a href="signalgp-instruction-set.html#bouncing-balls" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>To compile in debug mode, run <code>make debug</code> from repository directory, and to compile in release mode (all optimizations turned on), run <code>make native</code>.</p>
+<p>If you get the following error:</p>
+<pre><code>third-party/Empirical/include/emp/matching/../../../third-party/robin-hood-hashing/src/include/robin_hood.h:54:14: fatal error: sys/auxv.h: No such file or directory
+   54 | #    include &lt;sys/auxv.h&gt; // for getauxval</code></pre>
+<p>you can fix it by doing the following:</p>
+<pre><code>cd third-party/Empirical/third-party/robin-hood-hashing
+git checkout master</code></pre>
+<p>Once you have an executable, you can generate a configuration file by running:</p>
 <ul>
-<li>SubmitOutput</li>
-</ul>
-</div>
-<div id="dice-game" class="section level3 hasAnchor" number="3.2.2">
-<h3><span class="header-section-number">3.2.2</span> Dice Game<a href="signalgp-instruction-set.html#dice-game" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<ul>
-<li>SubmitOutput</li>
-</ul>
-</div>
-<div id="fizz-buzz" class="section level3 hasAnchor" number="3.2.3">
-<h3><span class="header-section-number">3.2.3</span> Fizz Buzz<a href="signalgp-instruction-set.html#fizz-buzz" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<ul>
-<li>SubmitFizz</li>
-<li>SubmitBuzz</li>
-<li>SubmitFizzBuzz</li>
-<li>SubmitEcho</li>
-</ul>
-</div>
-<div id="for-loop-index" class="section level3 hasAnchor" number="3.2.4">
-<h3><span class="header-section-number">3.2.4</span> For loop index<a href="signalgp-instruction-set.html#for-loop-index" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<ul>
-<li>SubmitOutput</li>
-</ul>
-</div>
-<div id="gcd" class="section level3 hasAnchor" number="3.2.5">
-<h3><span class="header-section-number">3.2.5</span> GCD<a href="signalgp-instruction-set.html#gcd" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<ul>
-<li>SubmitOutput</li>
-</ul>
-</div>
-<div id="grade" class="section level3 hasAnchor" number="3.2.6">
-<h3><span class="header-section-number">3.2.6</span> Grade<a href="signalgp-instruction-set.html#grade" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<ul>
-<li>SubmitA</li>
-<li>SubmitB</li>
-<li>SubmitC</li>
-<li>SubmitD</li>
-<li>SubmitF</li>
-</ul>
-</div>
-<div id="median" class="section level3 hasAnchor" number="3.2.7">
-<h3><span class="header-section-number">3.2.7</span> Median<a href="signalgp-instruction-set.html#median" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<ul>
-<li>SubmitOutput</li>
-</ul>
-</div>
-<div id="small-or-large" class="section level3 hasAnchor" number="3.2.8">
-<h3><span class="header-section-number">3.2.8</span> Small or large<a href="signalgp-instruction-set.html#small-or-large" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<ul>
-<li>SubmitSmall</li>
-<li>SubmitLarge</li>
-<li>SubmitNeither</li>
-</ul>
-</div>
-<div id="smallest" class="section level3 hasAnchor" number="3.2.9">
-<h3><span class="header-section-number">3.2.9</span> Smallest<a href="signalgp-instruction-set.html#smallest" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<ul>
-<li>SubmitOutput</li>
-</ul>
-</div>
-<div id="snow-day" class="section level3 hasAnchor" number="3.2.10">
-<h3><span class="header-section-number">3.2.10</span> Snow Day<a href="signalgp-instruction-set.html#snow-day" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<ul>
-<li>SubmitOutput</li>
+<li><code>./prog_synth --gen prog_synth.cfg</code> or</li>
+<li><code>./diagnostics --gen diagnostics.cfg</code></li>
 </ul>
 
-</div>
-</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="data-availability.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="local-compilation.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="signalgp-instruction-set.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="exploitation-rate-diagnostic-experiments.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -619,7 +356,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/tree/main/../docs/gp-instruction-set.md",
+"link": "https://github.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/tree/main/../docs/local-compilation.md",
 "text": "Edit"
 },
 "history": {

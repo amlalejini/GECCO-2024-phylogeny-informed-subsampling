@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 6 Contradictory objectives diagnostic | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’</title>
+  <meta name="description" content="Supplemental material" />
+  <meta name="generator" content="bookdown 0.37 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 6 Contradictory objectives diagnostic | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Supplemental material" />
+  <meta name="github-repo" content="amlalejini/GECCO-2024-phylogeny-informed-subsampling" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 6 Contradictory objectives diagnostic | Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’" />
+  
+  <meta name="twitter:description" content="Supplemental material" />
+  
+
+<meta name="author" content="Alexander Lalejini, Marcos Sanson, Jack Garbus, Matthew Andres Moreno, and Emily Dolson" />
+
+
+<meta name="date" content="2024-01-27" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="exploitation-rate-diagnostic-experiments.html"/>
+<link rel="next" href="multi-path-exploration-diagnostic.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Supplemental material</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#about-our-supplemental-material"><i class="fa fa-check"></i><b>1.1</b> About our supplemental material</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#contributing-authors"><i class="fa fa-check"></i><b>1.2</b> Contributing authors</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="data-availability.html"><a href="data-availability.html"><i class="fa fa-check"></i><b>2</b> Data Availability</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="data-availability.html"><a href="data-availability.html#source-code"><i class="fa fa-check"></i><b>2.1</b> Source code</a>
+<ul>
+<li class="chapter" data-level="2.1.1" data-path="data-availability.html"><a href="data-availability.html#experiment-software-dependencies"><i class="fa fa-check"></i><b>2.1.1</b> Experiment software dependencies</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="data-availability.html"><a href="data-availability.html#training-and-testing-sets"><i class="fa fa-check"></i><b>2.2</b> Training and testing sets</a></li>
+<li class="chapter" data-level="2.3" data-path="data-availability.html"><a href="data-availability.html#experimental-results"><i class="fa fa-check"></i><b>2.3</b> Experimental results</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html"><i class="fa fa-check"></i><b>3</b> SignalGP instruction set</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#default-instructions"><i class="fa fa-check"></i><b>3.1</b> Default Instructions</a></li>
+<li class="chapter" data-level="3.2" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#problem-specific-instructions"><i class="fa fa-check"></i><b>3.2</b> Problem-specific instructions</a>
+<ul>
+<li class="chapter" data-level="3.2.1" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#bouncing-balls"><i class="fa fa-check"></i><b>3.2.1</b> Bouncing Balls</a></li>
+<li class="chapter" data-level="3.2.2" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#dice-game"><i class="fa fa-check"></i><b>3.2.2</b> Dice Game</a></li>
+<li class="chapter" data-level="3.2.3" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#fizz-buzz"><i class="fa fa-check"></i><b>3.2.3</b> Fizz Buzz</a></li>
+<li class="chapter" data-level="3.2.4" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#for-loop-index"><i class="fa fa-check"></i><b>3.2.4</b> For loop index</a></li>
+<li class="chapter" data-level="3.2.5" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#gcd"><i class="fa fa-check"></i><b>3.2.5</b> GCD</a></li>
+<li class="chapter" data-level="3.2.6" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#grade"><i class="fa fa-check"></i><b>3.2.6</b> Grade</a></li>
+<li class="chapter" data-level="3.2.7" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#median"><i class="fa fa-check"></i><b>3.2.7</b> Median</a></li>
+<li class="chapter" data-level="3.2.8" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#small-or-large"><i class="fa fa-check"></i><b>3.2.8</b> Small or large</a></li>
+<li class="chapter" data-level="3.2.9" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#smallest"><i class="fa fa-check"></i><b>3.2.9</b> Smallest</a></li>
+<li class="chapter" data-level="3.2.10" data-path="signalgp-instruction-set.html"><a href="signalgp-instruction-set.html#snow-day"><i class="fa fa-check"></i><b>3.2.10</b> Snow Day</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="local-compilation.html"><a href="local-compilation.html"><i class="fa fa-check"></i><b>4</b> Local compilation</a></li>
+<li class="chapter" data-level="5" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html"><i class="fa fa-check"></i><b>5</b> Exploitation rate diagnostic experiments</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#dependencies"><i class="fa fa-check"></i><b>5.1</b> Dependencies</a></li>
+<li class="chapter" data-level="5.2" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#setup"><i class="fa fa-check"></i><b>5.2</b> Setup</a>
+<ul>
+<li class="chapter" data-level="5.2.1" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#load-experiment-summary-data"><i class="fa fa-check"></i><b>5.2.1</b> Load experiment summary data</a></li>
+<li class="chapter" data-level="5.2.2" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#load-experiment-time-series-data"><i class="fa fa-check"></i><b>5.2.2</b> Load experiment time series data</a></li>
+<li class="chapter" data-level="5.2.3" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#plotting-helper-functions"><i class="fa fa-check"></i><b>5.2.3</b> Plotting helper functions</a></li>
+</ul></li>
+<li class="chapter" data-level="5.3" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#aggregate-score"><i class="fa fa-check"></i><b>5.3</b> Aggregate score</a>
+<ul>
+<li class="chapter" data-level="5.3.1" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#final---lexicase-selection"><i class="fa fa-check"></i><b>5.3.1</b> Final - Lexicase selection</a></li>
+<li class="chapter" data-level="5.3.2" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#final---tournament-selection"><i class="fa fa-check"></i><b>5.3.2</b> Final - Tournament selection</a></li>
+<li class="chapter" data-level="5.3.3" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#statistical-analysis"><i class="fa fa-check"></i><b>5.3.3</b> Statistical analysis</a></li>
+<li class="chapter" data-level="5.3.4" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#over-time---lexicase"><i class="fa fa-check"></i><b>5.3.4</b> Over time - Lexicase</a></li>
+<li class="chapter" data-level="5.3.5" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#over-time---tournament"><i class="fa fa-check"></i><b>5.3.5</b> Over time - Tournament</a></li>
+</ul></li>
+<li class="chapter" data-level="5.4" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#number-unique-individual-selected"><i class="fa fa-check"></i><b>5.4</b> Number unique individual selected</a></li>
+<li class="chapter" data-level="5.5" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#manuscript-figures"><i class="fa fa-check"></i><b>5.5</b> Manuscript figures</a>
+<ul>
+<li class="chapter" data-level="5.5.1" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#lexicase-selection-manuscript-figure"><i class="fa fa-check"></i><b>5.5.1</b> Lexicase selection manuscript figure</a></li>
+<li class="chapter" data-level="5.5.2" data-path="exploitation-rate-diagnostic-experiments.html"><a href="exploitation-rate-diagnostic-experiments.html#tournament-selection-manuscript-figures"><i class="fa fa-check"></i><b>5.5.2</b> Tournament selection manuscript figures</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html"><i class="fa fa-check"></i><b>6</b> Contradictory objectives diagnostic</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#dependencies-1"><i class="fa fa-check"></i><b>6.1</b> Dependencies</a></li>
+<li class="chapter" data-level="6.2" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#setup-1"><i class="fa fa-check"></i><b>6.2</b> Setup</a>
+<ul>
+<li class="chapter" data-level="6.2.1" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#load-experiment-summary-data-1"><i class="fa fa-check"></i><b>6.2.1</b> Load experiment summary data</a></li>
+<li class="chapter" data-level="6.2.2" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#load-experiment-time-series-data-1"><i class="fa fa-check"></i><b>6.2.2</b> Load experiment time series data</a></li>
+<li class="chapter" data-level="6.2.3" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#plotting-helper-functions-1"><i class="fa fa-check"></i><b>6.2.3</b> Plotting helper functions</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#population-wide-satisfactory-trait-coverage"><i class="fa fa-check"></i><b>6.3</b> Population-wide satisfactory trait coverage</a>
+<ul>
+<li class="chapter" data-level="6.3.1" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#final---lexicase-selection-1"><i class="fa fa-check"></i><b>6.3.1</b> Final - Lexicase selection</a></li>
+<li class="chapter" data-level="6.3.2" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#over-time---lexicase-selection"><i class="fa fa-check"></i><b>6.3.2</b> Over time - lexicase selection</a></li>
+<li class="chapter" data-level="6.3.3" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#final---tournament-selection-1"><i class="fa fa-check"></i><b>6.3.3</b> Final - Tournament selection</a></li>
+<li class="chapter" data-level="6.3.4" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#over-time---tournament-selection"><i class="fa fa-check"></i><b>6.3.4</b> Over time - tournament selection</a></li>
+</ul></li>
+<li class="chapter" data-level="6.4" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#mrca-changes"><i class="fa fa-check"></i><b>6.4</b> MRCA changes</a></li>
+<li class="chapter" data-level="6.5" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#mean-genotype-deleterious-steps"><i class="fa fa-check"></i><b>6.5</b> Mean genotype deleterious steps</a></li>
+<li class="chapter" data-level="6.6" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#mean-genotype-pairwise-distance"><i class="fa fa-check"></i><b>6.6</b> Mean genotype pairwise distance</a></li>
+<li class="chapter" data-level="6.7" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#number-unique-individual-selected-1"><i class="fa fa-check"></i><b>6.7</b> Number unique individual selected</a></li>
+<li class="chapter" data-level="6.8" data-path="contradictory-objectives-diagnostic.html"><a href="contradictory-objectives-diagnostic.html#manuscript-figures-1"><i class="fa fa-check"></i><b>6.8</b> Manuscript figures</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html"><i class="fa fa-check"></i><b>7</b> Multi-path exploration diagnostic</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#dependencies-2"><i class="fa fa-check"></i><b>7.1</b> Dependencies</a></li>
+<li class="chapter" data-level="7.2" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#setup-2"><i class="fa fa-check"></i><b>7.2</b> Setup</a>
+<ul>
+<li class="chapter" data-level="7.2.1" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#load-experiment-summary-data-2"><i class="fa fa-check"></i><b>7.2.1</b> Load experiment summary data</a></li>
+<li class="chapter" data-level="7.2.2" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#load-experiment-time-series-data-2"><i class="fa fa-check"></i><b>7.2.2</b> Load experiment time series data</a></li>
+<li class="chapter" data-level="7.2.3" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#plotting-helper-functions-2"><i class="fa fa-check"></i><b>7.2.3</b> Plotting helper functions</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#aggregate-score-1"><i class="fa fa-check"></i><b>7.3</b> Aggregate score</a>
+<ul>
+<li class="chapter" data-level="7.3.1" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#final---lexicase-selection-2"><i class="fa fa-check"></i><b>7.3.1</b> Final - Lexicase selection</a></li>
+<li class="chapter" data-level="7.3.2" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#over-time---lexicase-selection-1"><i class="fa fa-check"></i><b>7.3.2</b> Over time - Lexicase selection</a></li>
+</ul></li>
+<li class="chapter" data-level="7.4" data-path="multi-path-exploration-diagnostic.html"><a href="multi-path-exploration-diagnostic.html#manuscript-figures-2"><i class="fa fa-check"></i><b>7.4</b> Manuscript figures</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html"><i class="fa fa-check"></i><b>8</b> Program synthesis experiments</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#dependencies-3"><i class="fa fa-check"></i><b>8.1</b> Dependencies</a></li>
+<li class="chapter" data-level="8.2" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#setup-3"><i class="fa fa-check"></i><b>8.2</b> Setup</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#load-summary-data"><i class="fa fa-check"></i><b>8.2.1</b> Load summary data</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#problem-solving-success-statistics"><i class="fa fa-check"></i><b>8.3</b> Problem-solving success statistics</a></li>
+<li class="chapter" data-level="8.4" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#average-number-of-unique-candidates-selected"><i class="fa fa-check"></i><b>8.4</b> Average number of unique candidates selected</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with ❤ and bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Supplemental Material for ‘Runtime phylogenetic analysis enables extreme subsampling for test-based problems’</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="contradictory-objectives-diagnostic" class="section level1 hasAnchor" number="6">
+<h1><span class="header-section-number">Chapter 6</span> Contradictory objectives diagnostic<a href="contradictory-objectives-diagnostic.html#contradictory-objectives-diagnostic" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="contradictory-objectives-diagnostic.html#cb52-1" aria-hidden="true" tabindex="-1"></a>experiment_slug <span class="ot">&lt;-</span> <span class="st">&quot;2023-12-28-phylo-sampling-diag&quot;</span></span>
+<span id="cb52-2"><a href="contradictory-objectives-diagnostic.html#cb52-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-3"><a href="contradictory-objectives-diagnostic.html#cb52-3" aria-hidden="true" tabindex="-1"></a>working_directory <span class="ot">&lt;-</span> <span class="fu">paste0</span>(</span>
+<span id="cb52-4"><a href="contradictory-objectives-diagnostic.html#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;experiments/&quot;</span>,</span>
+<span id="cb52-5"><a href="contradictory-objectives-diagnostic.html#cb52-5" aria-hidden="true" tabindex="-1"></a>  experiment_slug,</span>
+<span id="cb52-6"><a href="contradictory-objectives-diagnostic.html#cb52-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;/analysis/&quot;</span></span>
+<span id="cb52-7"><a href="contradictory-objectives-diagnostic.html#cb52-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb52-8"><a href="contradictory-objectives-diagnostic.html#cb52-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-9"><a href="contradictory-objectives-diagnostic.html#cb52-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">exists</span>(<span class="st">&quot;bookdown_wd_prefix&quot;</span>)) {</span>
+<span id="cb52-10"><a href="contradictory-objectives-diagnostic.html#cb52-10" aria-hidden="true" tabindex="-1"></a>  working_directory <span class="ot">&lt;-</span> <span class="fu">paste0</span>(</span>
+<span id="cb52-11"><a href="contradictory-objectives-diagnostic.html#cb52-11" aria-hidden="true" tabindex="-1"></a>    bookdown_wd_prefix,</span>
+<span id="cb52-12"><a href="contradictory-objectives-diagnostic.html#cb52-12" aria-hidden="true" tabindex="-1"></a>    working_directory</span>
+<span id="cb52-13"><a href="contradictory-objectives-diagnostic.html#cb52-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb52-14"><a href="contradictory-objectives-diagnostic.html#cb52-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div id="dependencies-1" class="section level2 hasAnchor" number="6.1">
+<h2><span class="header-section-number">6.1</span> Dependencies<a href="contradictory-objectives-diagnostic.html#dependencies-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="contradictory-objectives-diagnostic.html#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb53-2"><a href="contradictory-objectives-diagnostic.html#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb53-3"><a href="contradictory-objectives-diagnostic.html#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
+<span id="cb53-4"><a href="contradictory-objectives-diagnostic.html#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(khroma)</span>
+<span id="cb53-5"><a href="contradictory-objectives-diagnostic.html#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstatix)</span>
+<span id="cb53-6"><a href="contradictory-objectives-diagnostic.html#cb53-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb53-7"><a href="contradictory-objectives-diagnostic.html#cb53-7" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="contradictory-objectives-diagnostic.html#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(version)</span></code></pre></div>
+<pre><code>##                _                           
+## platform       aarch64-apple-darwin20      
+## arch           aarch64                     
+## os             darwin20                    
+## system         aarch64, darwin20           
+## status                                     
+## major          4                           
+## minor          2.1                         
+## year           2022                        
+## month          06                          
+## day            23                          
+## svn rev        82513                       
+## language       R                           
+## version.string R version 4.2.1 (2022-06-23)
+## nickname       Funny-Looking Kid</code></pre>
+</div>
+<div id="setup-1" class="section level2 hasAnchor" number="6.2">
+<h2><span class="header-section-number">6.2</span> Setup<a href="contradictory-objectives-diagnostic.html#setup-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="contradictory-objectives-diagnostic.html#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure our default graphing theme</span></span>
+<span id="cb56-2"><a href="contradictory-objectives-diagnostic.html#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_cowplot</span>())</span>
+<span id="cb56-3"><a href="contradictory-objectives-diagnostic.html#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a directory to store plots</span></span>
+<span id="cb56-4"><a href="contradictory-objectives-diagnostic.html#cb56-4" aria-hidden="true" tabindex="-1"></a>plot_directory <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;plots/&quot;</span>)</span>
+<span id="cb56-5"><a href="contradictory-objectives-diagnostic.html#cb56-5" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(plot_directory, <span class="at">showWarnings=</span><span class="cn">FALSE</span>)</span>
+<span id="cb56-6"><a href="contradictory-objectives-diagnostic.html#cb56-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Constants</span></span>
+<span id="cb56-7"><a href="contradictory-objectives-diagnostic.html#cb56-7" aria-hidden="true" tabindex="-1"></a>focal_diagnostic <span class="ot">&lt;-</span> <span class="st">&quot;contradictory-objectives&quot;</span></span></code></pre></div>
+<div id="load-experiment-summary-data-1" class="section level3 hasAnchor" number="6.2.1">
+<h3><span class="header-section-number">6.2.1</span> Load experiment summary data<a href="contradictory-objectives-diagnostic.html#load-experiment-summary-data-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="contradictory-objectives-diagnostic.html#cb57-1" aria-hidden="true" tabindex="-1"></a>summary_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/aggregate.csv&quot;</span>)</span>
+<span id="cb57-2"><a href="contradictory-objectives-diagnostic.html#cb57-2" aria-hidden="true" tabindex="-1"></a>summary_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(summary_data_loc)</span></code></pre></div>
+<pre><code>## Rows: 1080 Columns: 58
+## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (5): DIAGNOSTIC, EVAL_FIT_EST_MODE, EVAL_MODE, SELECTION, STOP_MODE
+## dbl (53): ACCURACY, CREDIT, DIAGNOSTIC_DIMENSIONALITY, EVAL_MAX_PHYLO_SEARCH...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="contradictory-objectives-diagnostic.html#cb59-1" aria-hidden="true" tabindex="-1"></a>summary_data <span class="ot">&lt;-</span> summary_data <span class="sc">%&gt;%</span></span>
+<span id="cb59-2"><a href="contradictory-objectives-diagnostic.html#cb59-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb59-3"><a href="contradictory-objectives-diagnostic.html#cb59-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">evals_per_gen =</span> <span class="fu">case_when</span>(</span>
+<span id="cb59-4"><a href="contradictory-objectives-diagnostic.html#cb59-4" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;cohort-full-compete&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span> <span class="sc">/</span> NUM_COHORTS,</span>
+<span id="cb59-5"><a href="contradictory-objectives-diagnostic.html#cb59-5" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;cohort&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span> <span class="sc">/</span> NUM_COHORTS,</span>
+<span id="cb59-6"><a href="contradictory-objectives-diagnostic.html#cb59-6" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;down-sample&quot;</span> <span class="sc">~</span> TEST_DOWNSAMPLE_RATE,</span>
+<span id="cb59-7"><a href="contradictory-objectives-diagnostic.html#cb59-7" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span>,</span>
+<span id="cb59-8"><a href="contradictory-objectives-diagnostic.html#cb59-8" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;indiv-rand-sample&quot;</span> <span class="sc">~</span> TEST_DOWNSAMPLE_RATE,</span>
+<span id="cb59-9"><a href="contradictory-objectives-diagnostic.html#cb59-9" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;phylo-informed-sample&quot;</span> <span class="sc">~</span> TEST_DOWNSAMPLE_RATE</span>
+<span id="cb59-10"><a href="contradictory-objectives-diagnostic.html#cb59-10" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb59-11"><a href="contradictory-objectives-diagnostic.html#cb59-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_FIT_EST_MODE =</span> <span class="fu">case_when</span>(</span>
+<span id="cb59-12"><a href="contradictory-objectives-diagnostic.html#cb59-12" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE <span class="sc">==</span> <span class="st">&quot;ancestor-opt&quot;</span> <span class="sc">~</span> <span class="st">&quot;ancestor&quot;</span>,</span>
+<span id="cb59-13"><a href="contradictory-objectives-diagnostic.html#cb59-13" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE <span class="sc">==</span> <span class="st">&quot;relative-opt&quot;</span> <span class="sc">~</span> <span class="st">&quot;relative&quot;</span>,</span>
+<span id="cb59-14"><a href="contradictory-objectives-diagnostic.html#cb59-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> EVAL_FIT_EST_MODE</span>
+<span id="cb59-15"><a href="contradictory-objectives-diagnostic.html#cb59-15" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb59-16"><a href="contradictory-objectives-diagnostic.html#cb59-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">.keep =</span> <span class="st">&quot;all&quot;</span></span>
+<span id="cb59-17"><a href="contradictory-objectives-diagnostic.html#cb59-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb59-18"><a href="contradictory-objectives-diagnostic.html#cb59-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb59-19"><a href="contradictory-objectives-diagnostic.html#cb59-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">eval_label =</span> <span class="fu">case_when</span>(</span>
+<span id="cb59-20"><a href="contradictory-objectives-diagnostic.html#cb59-20" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Clean up down-sample label</span></span>
+<span id="cb59-21"><a href="contradictory-objectives-diagnostic.html#cb59-21" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;down-sample&quot;</span> <span class="sc">&amp;</span> EVAL_FIT_EST_MODE <span class="sc">!=</span> <span class="st">&quot;none&quot;</span> <span class="sc">~</span> <span class="fu">paste</span>(<span class="st">&quot;down-sample&quot;</span>, EVAL_FIT_EST_MODE, <span class="at">sep=</span><span class="st">&quot;-&quot;</span>),</span>
+<span id="cb59-22"><a href="contradictory-objectives-diagnostic.html#cb59-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> EVAL_MODE</span>
+<span id="cb59-23"><a href="contradictory-objectives-diagnostic.html#cb59-23" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb59-24"><a href="contradictory-objectives-diagnostic.html#cb59-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb59-25"><a href="contradictory-objectives-diagnostic.html#cb59-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb59-26"><a href="contradictory-objectives-diagnostic.html#cb59-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">evals_per_gen =</span> <span class="fu">as.factor</span>(evals_per_gen),</span>
+<span id="cb59-27"><a href="contradictory-objectives-diagnostic.html#cb59-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">DIAGNOSTIC =</span> <span class="fu">as.factor</span>(DIAGNOSTIC),</span>
+<span id="cb59-28"><a href="contradictory-objectives-diagnostic.html#cb59-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">SELECTION =</span> <span class="fu">as.factor</span>(SELECTION),</span>
+<span id="cb59-29"><a href="contradictory-objectives-diagnostic.html#cb59-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_MODE =</span> <span class="fu">as.factor</span>(EVAL_MODE),</span>
+<span id="cb59-30"><a href="contradictory-objectives-diagnostic.html#cb59-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">NUM_COHORTS =</span> <span class="fu">as.factor</span>(NUM_COHORTS),</span>
+<span id="cb59-31"><a href="contradictory-objectives-diagnostic.html#cb59-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">TEST_DOWNSAMPLE_RATE =</span> <span class="fu">as.factor</span>(TEST_DOWNSAMPLE_RATE),</span>
+<span id="cb59-32"><a href="contradictory-objectives-diagnostic.html#cb59-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_FIT_EST_MODE =</span> <span class="fu">factor</span>(</span>
+<span id="cb59-33"><a href="contradictory-objectives-diagnostic.html#cb59-33" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE,</span>
+<span id="cb59-34"><a href="contradictory-objectives-diagnostic.html#cb59-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(</span>
+<span id="cb59-35"><a href="contradictory-objectives-diagnostic.html#cb59-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb59-36"><a href="contradictory-objectives-diagnostic.html#cb59-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;ancestor&quot;</span>,</span>
+<span id="cb59-37"><a href="contradictory-objectives-diagnostic.html#cb59-37" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;relative&quot;</span></span>
+<span id="cb59-38"><a href="contradictory-objectives-diagnostic.html#cb59-38" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb59-39"><a href="contradictory-objectives-diagnostic.html#cb59-39" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(</span>
+<span id="cb59-40"><a href="contradictory-objectives-diagnostic.html#cb59-40" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;None&quot;</span>,</span>
+<span id="cb59-41"><a href="contradictory-objectives-diagnostic.html#cb59-41" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Ancestor&quot;</span>,</span>
+<span id="cb59-42"><a href="contradictory-objectives-diagnostic.html#cb59-42" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Relative&quot;</span></span>
+<span id="cb59-43"><a href="contradictory-objectives-diagnostic.html#cb59-43" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb59-44"><a href="contradictory-objectives-diagnostic.html#cb59-44" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb59-45"><a href="contradictory-objectives-diagnostic.html#cb59-45" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb59-46"><a href="contradictory-objectives-diagnostic.html#cb59-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-47"><a href="contradictory-objectives-diagnostic.html#cb59-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Grab just the contradictory objectives data</span></span>
+<span id="cb59-48"><a href="contradictory-objectives-diagnostic.html#cb59-48" aria-hidden="true" tabindex="-1"></a>con_obj_summary_data <span class="ot">&lt;-</span> <span class="fu">filter</span>(</span>
+<span id="cb59-49"><a href="contradictory-objectives-diagnostic.html#cb59-49" aria-hidden="true" tabindex="-1"></a>  summary_data,</span>
+<span id="cb59-50"><a href="contradictory-objectives-diagnostic.html#cb59-50" aria-hidden="true" tabindex="-1"></a>  DIAGNOSTIC <span class="sc">==</span> <span class="st">&quot;contradictory-objectives&quot;</span></span>
+<span id="cb59-51"><a href="contradictory-objectives-diagnostic.html#cb59-51" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="load-experiment-time-series-data-1" class="section level3 hasAnchor" number="6.2.2">
+<h3><span class="header-section-number">6.2.2</span> Load experiment time series data<a href="contradictory-objectives-diagnostic.html#load-experiment-time-series-data-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="contradictory-objectives-diagnostic.html#cb60-1" aria-hidden="true" tabindex="-1"></a>ts_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/time_series.csv&quot;</span>)</span>
+<span id="cb60-2"><a href="contradictory-objectives-diagnostic.html#cb60-2" aria-hidden="true" tabindex="-1"></a>ts_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(ts_data_loc)</span></code></pre></div>
+<pre><code>## Rows: 108000 Columns: 28
+## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (4): DIAGNOSTIC, EVAL_FIT_EST_MODE, EVAL_MODE, SELECTION
+## dbl (24): NUM_COHORTS, SEED, TEST_DOWNSAMPLE_RATE, ave_depth, deleterious_st...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="contradictory-objectives-diagnostic.html#cb62-1" aria-hidden="true" tabindex="-1"></a>ts_data <span class="ot">&lt;-</span> ts_data <span class="sc">%&gt;%</span></span>
+<span id="cb62-2"><a href="contradictory-objectives-diagnostic.html#cb62-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb62-3"><a href="contradictory-objectives-diagnostic.html#cb62-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">evals_per_gen =</span> <span class="fu">case_when</span>(</span>
+<span id="cb62-4"><a href="contradictory-objectives-diagnostic.html#cb62-4" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;cohort-full-compete&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span> <span class="sc">/</span> NUM_COHORTS,</span>
+<span id="cb62-5"><a href="contradictory-objectives-diagnostic.html#cb62-5" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;cohort&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span> <span class="sc">/</span> NUM_COHORTS,</span>
+<span id="cb62-6"><a href="contradictory-objectives-diagnostic.html#cb62-6" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;down-sample&quot;</span> <span class="sc">~</span> TEST_DOWNSAMPLE_RATE,</span>
+<span id="cb62-7"><a href="contradictory-objectives-diagnostic.html#cb62-7" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">~</span> <span class="fl">1.0</span>,</span>
+<span id="cb62-8"><a href="contradictory-objectives-diagnostic.html#cb62-8" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;indiv-rand-sample&quot;</span> <span class="sc">~</span> TEST_DOWNSAMPLE_RATE,</span>
+<span id="cb62-9"><a href="contradictory-objectives-diagnostic.html#cb62-9" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;phylo-informed-sample&quot;</span> <span class="sc">~</span> TEST_DOWNSAMPLE_RATE</span>
+<span id="cb62-10"><a href="contradictory-objectives-diagnostic.html#cb62-10" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb62-11"><a href="contradictory-objectives-diagnostic.html#cb62-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_FIT_EST_MODE =</span> <span class="fu">case_when</span>(</span>
+<span id="cb62-12"><a href="contradictory-objectives-diagnostic.html#cb62-12" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE <span class="sc">==</span> <span class="st">&quot;ancestor-opt&quot;</span> <span class="sc">~</span> <span class="st">&quot;ancestor&quot;</span>,</span>
+<span id="cb62-13"><a href="contradictory-objectives-diagnostic.html#cb62-13" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE <span class="sc">==</span> <span class="st">&quot;relative-opt&quot;</span> <span class="sc">~</span> <span class="st">&quot;relative&quot;</span>,</span>
+<span id="cb62-14"><a href="contradictory-objectives-diagnostic.html#cb62-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> EVAL_FIT_EST_MODE</span>
+<span id="cb62-15"><a href="contradictory-objectives-diagnostic.html#cb62-15" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb62-16"><a href="contradictory-objectives-diagnostic.html#cb62-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">.keep =</span> <span class="st">&quot;all&quot;</span></span>
+<span id="cb62-17"><a href="contradictory-objectives-diagnostic.html#cb62-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb62-18"><a href="contradictory-objectives-diagnostic.html#cb62-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb62-19"><a href="contradictory-objectives-diagnostic.html#cb62-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">eval_label =</span> <span class="fu">case_when</span>(</span>
+<span id="cb62-20"><a href="contradictory-objectives-diagnostic.html#cb62-20" aria-hidden="true" tabindex="-1"></a>      EVAL_MODE <span class="sc">==</span> <span class="st">&quot;down-sample&quot;</span> <span class="sc">&amp;</span> EVAL_FIT_EST_MODE <span class="sc">!=</span> <span class="st">&quot;none&quot;</span> <span class="sc">~</span> <span class="fu">paste</span>(<span class="st">&quot;down-sample&quot;</span>, EVAL_FIT_EST_MODE, <span class="at">sep=</span><span class="st">&quot;-&quot;</span>),</span>
+<span id="cb62-21"><a href="contradictory-objectives-diagnostic.html#cb62-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> EVAL_MODE</span>
+<span id="cb62-22"><a href="contradictory-objectives-diagnostic.html#cb62-22" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb62-23"><a href="contradictory-objectives-diagnostic.html#cb62-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb62-24"><a href="contradictory-objectives-diagnostic.html#cb62-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb62-25"><a href="contradictory-objectives-diagnostic.html#cb62-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">evals_per_gen =</span> <span class="fu">as.factor</span>(evals_per_gen),</span>
+<span id="cb62-26"><a href="contradictory-objectives-diagnostic.html#cb62-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">DIAGNOSTIC =</span> <span class="fu">as.factor</span>(DIAGNOSTIC),</span>
+<span id="cb62-27"><a href="contradictory-objectives-diagnostic.html#cb62-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">SELECTION =</span> <span class="fu">as.factor</span>(SELECTION),</span>
+<span id="cb62-28"><a href="contradictory-objectives-diagnostic.html#cb62-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_MODE =</span> <span class="fu">as.factor</span>(EVAL_MODE),</span>
+<span id="cb62-29"><a href="contradictory-objectives-diagnostic.html#cb62-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">NUM_COHORTS =</span> <span class="fu">as.factor</span>(NUM_COHORTS),</span>
+<span id="cb62-30"><a href="contradictory-objectives-diagnostic.html#cb62-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">TEST_DOWNSAMPLE_RATE =</span> <span class="fu">as.factor</span>(TEST_DOWNSAMPLE_RATE),</span>
+<span id="cb62-31"><a href="contradictory-objectives-diagnostic.html#cb62-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">EVAL_FIT_EST_MODE =</span> <span class="fu">factor</span>(</span>
+<span id="cb62-32"><a href="contradictory-objectives-diagnostic.html#cb62-32" aria-hidden="true" tabindex="-1"></a>      EVAL_FIT_EST_MODE,</span>
+<span id="cb62-33"><a href="contradictory-objectives-diagnostic.html#cb62-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(</span>
+<span id="cb62-34"><a href="contradictory-objectives-diagnostic.html#cb62-34" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb62-35"><a href="contradictory-objectives-diagnostic.html#cb62-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;ancestor&quot;</span>,</span>
+<span id="cb62-36"><a href="contradictory-objectives-diagnostic.html#cb62-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;relative&quot;</span></span>
+<span id="cb62-37"><a href="contradictory-objectives-diagnostic.html#cb62-37" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb62-38"><a href="contradictory-objectives-diagnostic.html#cb62-38" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(</span>
+<span id="cb62-39"><a href="contradictory-objectives-diagnostic.html#cb62-39" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;None&quot;</span>,</span>
+<span id="cb62-40"><a href="contradictory-objectives-diagnostic.html#cb62-40" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Ancestor&quot;</span>,</span>
+<span id="cb62-41"><a href="contradictory-objectives-diagnostic.html#cb62-41" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Relative&quot;</span></span>
+<span id="cb62-42"><a href="contradictory-objectives-diagnostic.html#cb62-42" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb62-43"><a href="contradictory-objectives-diagnostic.html#cb62-43" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb62-44"><a href="contradictory-objectives-diagnostic.html#cb62-44" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb62-45"><a href="contradictory-objectives-diagnostic.html#cb62-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-46"><a href="contradictory-objectives-diagnostic.html#cb62-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Grab just the contradictory objectives data</span></span>
+<span id="cb62-47"><a href="contradictory-objectives-diagnostic.html#cb62-47" aria-hidden="true" tabindex="-1"></a>con_obj_ts_data <span class="ot">&lt;-</span> ts_data <span class="sc">%&gt;%</span></span>
+<span id="cb62-48"><a href="contradictory-objectives-diagnostic.html#cb62-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DIAGNOSTIC <span class="sc">==</span> <span class="st">&quot;contradictory-objectives&quot;</span>)</span></code></pre></div>
+<p>Summarize time series data:</p>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="contradictory-objectives-diagnostic.html#cb63-1" aria-hidden="true" tabindex="-1"></a>ts_summary_data <span class="ot">&lt;-</span> ts_data <span class="sc">%&gt;%</span></span>
+<span id="cb63-2"><a href="contradictory-objectives-diagnostic.html#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(SEED, DIAGNOSTIC, SELECTION, evals_per_gen, eval_label) <span class="sc">%&gt;%</span></span>
+<span id="cb63-3"><a href="contradictory-objectives-diagnostic.html#cb63-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb63-4"><a href="contradictory-objectives-diagnostic.html#cb63-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb63-5"><a href="contradictory-objectives-diagnostic.html#cb63-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_num_unique_selected =</span> <span class="fu">mean</span>(num_unique_selected),</span>
+<span id="cb63-6"><a href="contradictory-objectives-diagnostic.html#cb63-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_optimal_trait_coverage_loss =</span> <span class="fu">sum</span>(optimal_trait_coverage_loss)</span>
+<span id="cb63-7"><a href="contradictory-objectives-diagnostic.html#cb63-7" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<pre><code>## `summarise()` has grouped output by &#39;SEED&#39;, &#39;DIAGNOSTIC&#39;, &#39;SELECTION&#39;,
+## &#39;evals_per_gen&#39;. You can override using the `.groups` argument.</code></pre>
+</div>
+<div id="plotting-helper-functions-1" class="section level3 hasAnchor" number="6.2.3">
+<h3><span class="header-section-number">6.2.3</span> Plotting helper functions<a href="contradictory-objectives-diagnostic.html#plotting-helper-functions-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The following function assist with exploratory plotting of different measurements from summary and time series data.
+Note that for these plots, standard lexicase reference is rendered at equivalent number of generations (instead of evaluations).</p>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="contradictory-objectives-diagnostic.html#cb65-1" aria-hidden="true" tabindex="-1"></a>build_plot_summary_data <span class="ot">&lt;-</span> <span class="cf">function</span>(data, diagnostic, selection, response) {</span>
+<span id="cb65-2"><a href="contradictory-objectives-diagnostic.html#cb65-2" aria-hidden="true" tabindex="-1"></a>  diag_data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(DIAGNOSTIC <span class="sc">==</span> diagnostic)</span>
+<span id="cb65-3"><a href="contradictory-objectives-diagnostic.html#cb65-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-4"><a href="contradictory-objectives-diagnostic.html#cb65-4" aria-hidden="true" tabindex="-1"></a>  full_median <span class="ot">&lt;-</span> <span class="fu">median</span>(</span>
+<span id="cb65-5"><a href="contradictory-objectives-diagnostic.html#cb65-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(</span>
+<span id="cb65-6"><a href="contradictory-objectives-diagnostic.html#cb65-6" aria-hidden="true" tabindex="-1"></a>      diag_data,</span>
+<span id="cb65-7"><a href="contradictory-objectives-diagnostic.html#cb65-7" aria-hidden="true" tabindex="-1"></a>      eval_label <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> SELECTION <span class="sc">==</span> selection</span>
+<span id="cb65-8"><a href="contradictory-objectives-diagnostic.html#cb65-8" aria-hidden="true" tabindex="-1"></a>    )[[response]]</span>
+<span id="cb65-9"><a href="contradictory-objectives-diagnostic.html#cb65-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb65-10"><a href="contradictory-objectives-diagnostic.html#cb65-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-11"><a href="contradictory-objectives-diagnostic.html#cb65-11" aria-hidden="true" tabindex="-1"></a>  plot <span class="ot">&lt;-</span> diag_data <span class="sc">%&gt;%</span></span>
+<span id="cb65-12"><a href="contradictory-objectives-diagnostic.html#cb65-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(</span>
+<span id="cb65-13"><a href="contradictory-objectives-diagnostic.html#cb65-13" aria-hidden="true" tabindex="-1"></a>      eval_label <span class="sc">!=</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> SELECTION <span class="sc">==</span> selection</span>
+<span id="cb65-14"><a href="contradictory-objectives-diagnostic.html#cb65-14" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb65-15"><a href="contradictory-objectives-diagnostic.html#cb65-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(</span>
+<span id="cb65-16"><a href="contradictory-objectives-diagnostic.html#cb65-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes_string</span>(</span>
+<span id="cb65-17"><a href="contradictory-objectives-diagnostic.html#cb65-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">x =</span> <span class="st">&quot;eval_label&quot;</span>,</span>
+<span id="cb65-18"><a href="contradictory-objectives-diagnostic.html#cb65-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">y =</span> response,</span>
+<span id="cb65-19"><a href="contradictory-objectives-diagnostic.html#cb65-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">fill =</span> <span class="st">&quot;eval_label&quot;</span></span>
+<span id="cb65-20"><a href="contradictory-objectives-diagnostic.html#cb65-20" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb65-21"><a href="contradictory-objectives-diagnostic.html#cb65-21" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-22"><a href="contradictory-objectives-diagnostic.html#cb65-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(</span>
+<span id="cb65-23"><a href="contradictory-objectives-diagnostic.html#cb65-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">yintercept =</span> full_median,</span>
+<span id="cb65-24"><a href="contradictory-objectives-diagnostic.html#cb65-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="fl">1.0</span>,</span>
+<span id="cb65-25"><a href="contradictory-objectives-diagnostic.html#cb65-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.7</span>,</span>
+<span id="cb65-26"><a href="contradictory-objectives-diagnostic.html#cb65-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;black&quot;</span>,</span>
+<span id="cb65-27"><a href="contradictory-objectives-diagnostic.html#cb65-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span></span>
+<span id="cb65-28"><a href="contradictory-objectives-diagnostic.html#cb65-28" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-29"><a href="contradictory-objectives-diagnostic.html#cb65-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_flat_violin</span>(</span>
+<span id="cb65-30"><a href="contradictory-objectives-diagnostic.html#cb65-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="fu">position_nudge</span>(<span class="at">x =</span> .<span class="dv">2</span>, <span class="at">y =</span> <span class="dv">0</span>),</span>
+<span id="cb65-31"><a href="contradictory-objectives-diagnostic.html#cb65-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> .<span class="dv">8</span>,</span>
+<span id="cb65-32"><a href="contradictory-objectives-diagnostic.html#cb65-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">adjust =</span> <span class="fl">1.5</span></span>
+<span id="cb65-33"><a href="contradictory-objectives-diagnostic.html#cb65-33" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-34"><a href="contradictory-objectives-diagnostic.html#cb65-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(</span>
+<span id="cb65-35"><a href="contradictory-objectives-diagnostic.html#cb65-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">color =</span> eval_label),</span>
+<span id="cb65-36"><a href="contradictory-objectives-diagnostic.html#cb65-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="fu">position_jitter</span>(<span class="at">width =</span> .<span class="dv">15</span>),</span>
+<span id="cb65-37"><a href="contradictory-objectives-diagnostic.html#cb65-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> .<span class="dv">5</span>,</span>
+<span id="cb65-38"><a href="contradictory-objectives-diagnostic.html#cb65-38" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.8</span></span>
+<span id="cb65-39"><a href="contradictory-objectives-diagnostic.html#cb65-39" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-40"><a href="contradictory-objectives-diagnostic.html#cb65-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(</span>
+<span id="cb65-41"><a href="contradictory-objectives-diagnostic.html#cb65-41" aria-hidden="true" tabindex="-1"></a>      <span class="at">width =</span> .<span class="dv">1</span>,</span>
+<span id="cb65-42"><a href="contradictory-objectives-diagnostic.html#cb65-42" aria-hidden="true" tabindex="-1"></a>      <span class="at">outlier.shape =</span> <span class="cn">NA</span>,</span>
+<span id="cb65-43"><a href="contradictory-objectives-diagnostic.html#cb65-43" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb65-44"><a href="contradictory-objectives-diagnostic.html#cb65-44" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-45"><a href="contradictory-objectives-diagnostic.html#cb65-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb65-46"><a href="contradictory-objectives-diagnostic.html#cb65-46" aria-hidden="true" tabindex="-1"></a>      <span class="co"># limits = c(-0.5, 100)</span></span>
+<span id="cb65-47"><a href="contradictory-objectives-diagnostic.html#cb65-47" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-48"><a href="contradictory-objectives-diagnostic.html#cb65-48" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_bright</span>() <span class="sc">+</span></span>
+<span id="cb65-49"><a href="contradictory-objectives-diagnostic.html#cb65-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_bright</span>() <span class="sc">+</span></span>
+<span id="cb65-50"><a href="contradictory-objectives-diagnostic.html#cb65-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(</span>
+<span id="cb65-51"><a href="contradictory-objectives-diagnostic.html#cb65-51" aria-hidden="true" tabindex="-1"></a>      SELECTION <span class="sc">~</span> evals_per_gen,</span>
+<span id="cb65-52"><a href="contradictory-objectives-diagnostic.html#cb65-52" aria-hidden="true" tabindex="-1"></a>      <span class="co"># nrow=2,</span></span>
+<span id="cb65-53"><a href="contradictory-objectives-diagnostic.html#cb65-53" aria-hidden="true" tabindex="-1"></a>      <span class="at">labeller =</span> label_both</span>
+<span id="cb65-54"><a href="contradictory-objectives-diagnostic.html#cb65-54" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-55"><a href="contradictory-objectives-diagnostic.html#cb65-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb65-56"><a href="contradictory-objectives-diagnostic.html#cb65-56" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb65-57"><a href="contradictory-objectives-diagnostic.html#cb65-57" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(</span>
+<span id="cb65-58"><a href="contradictory-objectives-diagnostic.html#cb65-58" aria-hidden="true" tabindex="-1"></a>        <span class="at">angle =</span> <span class="dv">30</span>,</span>
+<span id="cb65-59"><a href="contradictory-objectives-diagnostic.html#cb65-59" aria-hidden="true" tabindex="-1"></a>        <span class="at">hjust =</span> <span class="dv">1</span></span>
+<span id="cb65-60"><a href="contradictory-objectives-diagnostic.html#cb65-60" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb65-61"><a href="contradictory-objectives-diagnostic.html#cb65-61" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.border =</span> <span class="fu">element_rect</span>(<span class="at">color =</span> <span class="st">&quot;gray&quot;</span>, <span class="at">size =</span> <span class="dv">2</span>)</span>
+<span id="cb65-62"><a href="contradictory-objectives-diagnostic.html#cb65-62" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb65-63"><a href="contradictory-objectives-diagnostic.html#cb65-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-64"><a href="contradictory-objectives-diagnostic.html#cb65-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(plot)</span>
+<span id="cb65-65"><a href="contradictory-objectives-diagnostic.html#cb65-65" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb65-66"><a href="contradictory-objectives-diagnostic.html#cb65-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-67"><a href="contradictory-objectives-diagnostic.html#cb65-67" aria-hidden="true" tabindex="-1"></a>build_plot_time_series_single_sampling <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb65-68"><a href="contradictory-objectives-diagnostic.html#cb65-68" aria-hidden="true" tabindex="-1"></a>  data,</span>
+<span id="cb65-69"><a href="contradictory-objectives-diagnostic.html#cb65-69" aria-hidden="true" tabindex="-1"></a>  diagnostic,</span>
+<span id="cb65-70"><a href="contradictory-objectives-diagnostic.html#cb65-70" aria-hidden="true" tabindex="-1"></a>  selection,</span>
+<span id="cb65-71"><a href="contradictory-objectives-diagnostic.html#cb65-71" aria-hidden="true" tabindex="-1"></a>  sampling_level,</span>
+<span id="cb65-72"><a href="contradictory-objectives-diagnostic.html#cb65-72" aria-hidden="true" tabindex="-1"></a>  response</span>
+<span id="cb65-73"><a href="contradictory-objectives-diagnostic.html#cb65-73" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb65-74"><a href="contradictory-objectives-diagnostic.html#cb65-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-75"><a href="contradictory-objectives-diagnostic.html#cb65-75" aria-hidden="true" tabindex="-1"></a>  diag_data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(</span>
+<span id="cb65-76"><a href="contradictory-objectives-diagnostic.html#cb65-76" aria-hidden="true" tabindex="-1"></a>    DIAGNOSTIC <span class="sc">==</span> diagnostic <span class="sc">&amp;</span></span>
+<span id="cb65-77"><a href="contradictory-objectives-diagnostic.html#cb65-77" aria-hidden="true" tabindex="-1"></a>    SELECTION <span class="sc">==</span> selection <span class="sc">&amp;</span></span>
+<span id="cb65-78"><a href="contradictory-objectives-diagnostic.html#cb65-78" aria-hidden="true" tabindex="-1"></a>    evals_per_gen <span class="sc">==</span> sampling_level</span>
+<span id="cb65-79"><a href="contradictory-objectives-diagnostic.html#cb65-79" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb65-80"><a href="contradictory-objectives-diagnostic.html#cb65-80" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb65-81"><a href="contradictory-objectives-diagnostic.html#cb65-81" aria-hidden="true" tabindex="-1"></a>    <span class="at">sampling_level_label =</span> sampling_level</span>
+<span id="cb65-82"><a href="contradictory-objectives-diagnostic.html#cb65-82" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb65-83"><a href="contradictory-objectives-diagnostic.html#cb65-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-84"><a href="contradictory-objectives-diagnostic.html#cb65-84" aria-hidden="true" tabindex="-1"></a>  full_diag_data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(</span>
+<span id="cb65-85"><a href="contradictory-objectives-diagnostic.html#cb65-85" aria-hidden="true" tabindex="-1"></a>    DIAGNOSTIC <span class="sc">==</span> diagnostic <span class="sc">&amp;</span> SELECTION <span class="sc">==</span> selection <span class="sc">&amp;</span> eval_label <span class="sc">==</span> <span class="st">&quot;full&quot;</span></span>
+<span id="cb65-86"><a href="contradictory-objectives-diagnostic.html#cb65-86" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb65-87"><a href="contradictory-objectives-diagnostic.html#cb65-87" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb65-88"><a href="contradictory-objectives-diagnostic.html#cb65-88" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Ensure that median line will sit in same facet</span></span>
+<span id="cb65-89"><a href="contradictory-objectives-diagnostic.html#cb65-89" aria-hidden="true" tabindex="-1"></a>    <span class="at">sampling_level_label =</span> sampling_level</span>
+<span id="cb65-90"><a href="contradictory-objectives-diagnostic.html#cb65-90" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb65-91"><a href="contradictory-objectives-diagnostic.html#cb65-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-92"><a href="contradictory-objectives-diagnostic.html#cb65-92" aria-hidden="true" tabindex="-1"></a>  plot <span class="ot">&lt;-</span> diag_data <span class="sc">%&gt;%</span></span>
+<span id="cb65-93"><a href="contradictory-objectives-diagnostic.html#cb65-93" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(</span>
+<span id="cb65-94"><a href="contradictory-objectives-diagnostic.html#cb65-94" aria-hidden="true" tabindex="-1"></a>      eval_label <span class="sc">!=</span> <span class="st">&quot;full&quot;</span></span>
+<span id="cb65-95"><a href="contradictory-objectives-diagnostic.html#cb65-95" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb65-96"><a href="contradictory-objectives-diagnostic.html#cb65-96" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(</span>
+<span id="cb65-97"><a href="contradictory-objectives-diagnostic.html#cb65-97" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes_string</span>(</span>
+<span id="cb65-98"><a href="contradictory-objectives-diagnostic.html#cb65-98" aria-hidden="true" tabindex="-1"></a>        <span class="at">x =</span> <span class="st">&quot;ts_step&quot;</span>,</span>
+<span id="cb65-99"><a href="contradictory-objectives-diagnostic.html#cb65-99" aria-hidden="true" tabindex="-1"></a>        <span class="co"># x = &quot;evaluations&quot;,</span></span>
+<span id="cb65-100"><a href="contradictory-objectives-diagnostic.html#cb65-100" aria-hidden="true" tabindex="-1"></a>        <span class="at">y =</span> {{ response }}</span>
+<span id="cb65-101"><a href="contradictory-objectives-diagnostic.html#cb65-101" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb65-102"><a href="contradictory-objectives-diagnostic.html#cb65-102" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-103"><a href="contradictory-objectives-diagnostic.html#cb65-103" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_summary</span>(</span>
+<span id="cb65-104"><a href="contradictory-objectives-diagnostic.html#cb65-104" aria-hidden="true" tabindex="-1"></a>      <span class="at">geom =</span> <span class="st">&quot;line&quot;</span>,</span>
+<span id="cb65-105"><a href="contradictory-objectives-diagnostic.html#cb65-105" aria-hidden="true" tabindex="-1"></a>      <span class="at">fun =</span> mean,</span>
+<span id="cb65-106"><a href="contradictory-objectives-diagnostic.html#cb65-106" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(</span>
+<span id="cb65-107"><a href="contradictory-objectives-diagnostic.html#cb65-107" aria-hidden="true" tabindex="-1"></a>        <span class="at">color =</span> eval_label</span>
+<span id="cb65-108"><a href="contradictory-objectives-diagnostic.html#cb65-108" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb65-109"><a href="contradictory-objectives-diagnostic.html#cb65-109" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-110"><a href="contradictory-objectives-diagnostic.html#cb65-110" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_summary</span>(</span>
+<span id="cb65-111"><a href="contradictory-objectives-diagnostic.html#cb65-111" aria-hidden="true" tabindex="-1"></a>      <span class="at">geom =</span> <span class="st">&quot;ribbon&quot;</span>,</span>
+<span id="cb65-112"><a href="contradictory-objectives-diagnostic.html#cb65-112" aria-hidden="true" tabindex="-1"></a>      <span class="at">fun.data =</span> <span class="st">&quot;mean_cl_boot&quot;</span>,</span>
+<span id="cb65-113"><a href="contradictory-objectives-diagnostic.html#cb65-113" aria-hidden="true" tabindex="-1"></a>      <span class="at">fun.args =</span> <span class="fu">list</span>(<span class="at">conf.int =</span> <span class="fl">0.95</span>),</span>
+<span id="cb65-114"><a href="contradictory-objectives-diagnostic.html#cb65-114" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.2</span>,</span>
+<span id="cb65-115"><a href="contradictory-objectives-diagnostic.html#cb65-115" aria-hidden="true" tabindex="-1"></a>      <span class="at">linetype =</span> <span class="dv">0</span>,</span>
+<span id="cb65-116"><a href="contradictory-objectives-diagnostic.html#cb65-116" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(</span>
+<span id="cb65-117"><a href="contradictory-objectives-diagnostic.html#cb65-117" aria-hidden="true" tabindex="-1"></a>        <span class="at">color =</span> eval_label,</span>
+<span id="cb65-118"><a href="contradictory-objectives-diagnostic.html#cb65-118" aria-hidden="true" tabindex="-1"></a>        <span class="at">fill =</span> eval_label</span>
+<span id="cb65-119"><a href="contradictory-objectives-diagnostic.html#cb65-119" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb65-120"><a href="contradictory-objectives-diagnostic.html#cb65-120" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-121"><a href="contradictory-objectives-diagnostic.html#cb65-121" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_bright</span>() <span class="sc">+</span></span>
+<span id="cb65-122"><a href="contradictory-objectives-diagnostic.html#cb65-122" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_bright</span>() <span class="sc">+</span></span>
+<span id="cb65-123"><a href="contradictory-objectives-diagnostic.html#cb65-123" aria-hidden="true" tabindex="-1"></a>    <span class="co"># facet_wrap(</span></span>
+<span id="cb65-124"><a href="contradictory-objectives-diagnostic.html#cb65-124" aria-hidden="true" tabindex="-1"></a>    <span class="co">#   ~ sampling_level_label,</span></span>
+<span id="cb65-125"><a href="contradictory-objectives-diagnostic.html#cb65-125" aria-hidden="true" tabindex="-1"></a>    <span class="co">#   ncol = 1,</span></span>
+<span id="cb65-126"><a href="contradictory-objectives-diagnostic.html#cb65-126" aria-hidden="true" tabindex="-1"></a>    <span class="co">#   labeller = label_both</span></span>
+<span id="cb65-127"><a href="contradictory-objectives-diagnostic.html#cb65-127" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ) +</span></span>
+<span id="cb65-128"><a href="contradictory-objectives-diagnostic.html#cb65-128" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb65-129"><a href="contradictory-objectives-diagnostic.html#cb65-129" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.position =</span> <span class="st">&quot;right&quot;</span></span>
+<span id="cb65-130"><a href="contradictory-objectives-diagnostic.html#cb65-130" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-131"><a href="contradictory-objectives-diagnostic.html#cb65-131" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stat_summary</span>(</span>
+<span id="cb65-132"><a href="contradictory-objectives-diagnostic.html#cb65-132" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> full_diag_data,</span>
+<span id="cb65-133"><a href="contradictory-objectives-diagnostic.html#cb65-133" aria-hidden="true" tabindex="-1"></a>      <span class="at">geom =</span> <span class="st">&quot;line&quot;</span>,</span>
+<span id="cb65-134"><a href="contradictory-objectives-diagnostic.html#cb65-134" aria-hidden="true" tabindex="-1"></a>      <span class="at">fun =</span> median,</span>
+<span id="cb65-135"><a href="contradictory-objectives-diagnostic.html#cb65-135" aria-hidden="true" tabindex="-1"></a>      <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span>,</span>
+<span id="cb65-136"><a href="contradictory-objectives-diagnostic.html#cb65-136" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;black&quot;</span></span>
+<span id="cb65-137"><a href="contradictory-objectives-diagnostic.html#cb65-137" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb65-138"><a href="contradictory-objectives-diagnostic.html#cb65-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-139"><a href="contradictory-objectives-diagnostic.html#cb65-139" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(plot)</span>
+<span id="cb65-140"><a href="contradictory-objectives-diagnostic.html#cb65-140" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb65-141"><a href="contradictory-objectives-diagnostic.html#cb65-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-142"><a href="contradictory-objectives-diagnostic.html#cb65-142" aria-hidden="true" tabindex="-1"></a>build_plot_time_series <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb65-143"><a href="contradictory-objectives-diagnostic.html#cb65-143" aria-hidden="true" tabindex="-1"></a>  data,</span>
+<span id="cb65-144"><a href="contradictory-objectives-diagnostic.html#cb65-144" aria-hidden="true" tabindex="-1"></a>  diagnostic,</span>
+<span id="cb65-145"><a href="contradictory-objectives-diagnostic.html#cb65-145" aria-hidden="true" tabindex="-1"></a>  selection,</span>
+<span id="cb65-146"><a href="contradictory-objectives-diagnostic.html#cb65-146" aria-hidden="true" tabindex="-1"></a>  response</span>
+<span id="cb65-147"><a href="contradictory-objectives-diagnostic.html#cb65-147" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb65-148"><a href="contradictory-objectives-diagnostic.html#cb65-148" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Build 1% sampling plot and 10% sampling plot</span></span>
+<span id="cb65-149"><a href="contradictory-objectives-diagnostic.html#cb65-149" aria-hidden="true" tabindex="-1"></a>  p_01 <span class="ot">&lt;-</span> data  <span class="sc">%&gt;%</span> <span class="fu">build_plot_time_series_single_sampling</span>(</span>
+<span id="cb65-150"><a href="contradictory-objectives-diagnostic.html#cb65-150" aria-hidden="true" tabindex="-1"></a>    diagnostic,</span>
+<span id="cb65-151"><a href="contradictory-objectives-diagnostic.html#cb65-151" aria-hidden="true" tabindex="-1"></a>    selection,</span>
+<span id="cb65-152"><a href="contradictory-objectives-diagnostic.html#cb65-152" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;0.01&quot;</span>,</span>
+<span id="cb65-153"><a href="contradictory-objectives-diagnostic.html#cb65-153" aria-hidden="true" tabindex="-1"></a>    response</span>
+<span id="cb65-154"><a href="contradictory-objectives-diagnostic.html#cb65-154" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb65-155"><a href="contradictory-objectives-diagnostic.html#cb65-155" aria-hidden="true" tabindex="-1"></a>  p_10 <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">build_plot_time_series_single_sampling</span>(</span>
+<span id="cb65-156"><a href="contradictory-objectives-diagnostic.html#cb65-156" aria-hidden="true" tabindex="-1"></a>    diagnostic,</span>
+<span id="cb65-157"><a href="contradictory-objectives-diagnostic.html#cb65-157" aria-hidden="true" tabindex="-1"></a>    selection,</span>
+<span id="cb65-158"><a href="contradictory-objectives-diagnostic.html#cb65-158" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;0.1&quot;</span>,</span>
+<span id="cb65-159"><a href="contradictory-objectives-diagnostic.html#cb65-159" aria-hidden="true" tabindex="-1"></a>    response</span>
+<span id="cb65-160"><a href="contradictory-objectives-diagnostic.html#cb65-160" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb65-161"><a href="contradictory-objectives-diagnostic.html#cb65-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-162"><a href="contradictory-objectives-diagnostic.html#cb65-162" aria-hidden="true" tabindex="-1"></a>  title <span class="ot">&lt;-</span> <span class="fu">ggdraw</span>() <span class="sc">+</span></span>
+<span id="cb65-163"><a href="contradictory-objectives-diagnostic.html#cb65-163" aria-hidden="true" tabindex="-1"></a>    <span class="fu">draw_label</span>(</span>
+<span id="cb65-164"><a href="contradictory-objectives-diagnostic.html#cb65-164" aria-hidden="true" tabindex="-1"></a>      <span class="fu">paste0</span>(diagnostic, <span class="st">&quot; - &quot;</span>, selection),</span>
+<span id="cb65-165"><a href="contradictory-objectives-diagnostic.html#cb65-165" aria-hidden="true" tabindex="-1"></a>      <span class="at">fontface =</span> <span class="st">&#39;bold&#39;</span>,</span>
+<span id="cb65-166"><a href="contradictory-objectives-diagnostic.html#cb65-166" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="dv">0</span>,</span>
+<span id="cb65-167"><a href="contradictory-objectives-diagnostic.html#cb65-167" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="dv">0</span></span>
+<span id="cb65-168"><a href="contradictory-objectives-diagnostic.html#cb65-168" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb65-169"><a href="contradictory-objectives-diagnostic.html#cb65-169" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb65-170"><a href="contradictory-objectives-diagnostic.html#cb65-170" aria-hidden="true" tabindex="-1"></a>      <span class="co"># add margin on the left of the drawing canvas,</span></span>
+<span id="cb65-171"><a href="contradictory-objectives-diagnostic.html#cb65-171" aria-hidden="true" tabindex="-1"></a>      <span class="co"># so title is aligned with left edge of first plot</span></span>
+<span id="cb65-172"><a href="contradictory-objectives-diagnostic.html#cb65-172" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">7</span>)</span>
+<span id="cb65-173"><a href="contradictory-objectives-diagnostic.html#cb65-173" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb65-174"><a href="contradictory-objectives-diagnostic.html#cb65-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-175"><a href="contradictory-objectives-diagnostic.html#cb65-175" aria-hidden="true" tabindex="-1"></a>  plot <span class="ot">&lt;-</span> <span class="fu">plot_grid</span>(</span>
+<span id="cb65-176"><a href="contradictory-objectives-diagnostic.html#cb65-176" aria-hidden="true" tabindex="-1"></a>    title,</span>
+<span id="cb65-177"><a href="contradictory-objectives-diagnostic.html#cb65-177" aria-hidden="true" tabindex="-1"></a>    p_01 <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;1% subsampling&quot;</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>),</span>
+<span id="cb65-178"><a href="contradictory-objectives-diagnostic.html#cb65-178" aria-hidden="true" tabindex="-1"></a>    p_10 <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;10% subsampling&quot;</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>),</span>
+<span id="cb65-179"><a href="contradictory-objectives-diagnostic.html#cb65-179" aria-hidden="true" tabindex="-1"></a>    <span class="at">nrow =</span> <span class="dv">3</span>,</span>
+<span id="cb65-180"><a href="contradictory-objectives-diagnostic.html#cb65-180" aria-hidden="true" tabindex="-1"></a>    <span class="at">ncol =</span> <span class="dv">1</span>,</span>
+<span id="cb65-181"><a href="contradictory-objectives-diagnostic.html#cb65-181" aria-hidden="true" tabindex="-1"></a>    <span class="at">rel_heights =</span> <span class="fu">c</span>(<span class="fl">0.075</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb65-182"><a href="contradictory-objectives-diagnostic.html#cb65-182" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb65-183"><a href="contradictory-objectives-diagnostic.html#cb65-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-184"><a href="contradictory-objectives-diagnostic.html#cb65-184" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(plot)</span>
+<span id="cb65-185"><a href="contradictory-objectives-diagnostic.html#cb65-185" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</div>
+<div id="population-wide-satisfactory-trait-coverage" class="section level2 hasAnchor" number="6.3">
+<h2><span class="header-section-number">6.3</span> Population-wide satisfactory trait coverage<a href="contradictory-objectives-diagnostic.html#population-wide-satisfactory-trait-coverage" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="final---lexicase-selection-1" class="section level3 hasAnchor" number="6.3.1">
+<h3><span class="header-section-number">6.3.1</span> Final - Lexicase selection<a href="contradictory-objectives-diagnostic.html#final---lexicase-selection-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="contradictory-objectives-diagnostic.html#cb66-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> summary_data <span class="sc">%&gt;%</span> <span class="fu">build_plot_summary_data</span>(</span>
+<span id="cb66-2"><a href="contradictory-objectives-diagnostic.html#cb66-2" aria-hidden="true" tabindex="-1"></a>  focal_diagnostic,</span>
+<span id="cb66-3"><a href="contradictory-objectives-diagnostic.html#cb66-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;lexicase&quot;</span>,</span>
+<span id="cb66-4"><a href="contradictory-objectives-diagnostic.html#cb66-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;pop_optimal_trait_coverage&quot;</span></span>
+<span id="cb66-5"><a href="contradictory-objectives-diagnostic.html#cb66-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb66-6"><a href="contradictory-objectives-diagnostic.html#cb66-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(</span>
+<span id="cb66-7"><a href="contradictory-objectives-diagnostic.html#cb66-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="fu">paste0</span>(plot_directory, <span class="st">&quot;con-obj-sat-cov-final-lex.pdf&quot;</span>),</span>
+<span id="cb66-8"><a href="contradictory-objectives-diagnostic.html#cb66-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> p <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Contradictory objectives - Lexicase selection&quot;</span>),</span>
+<span id="cb66-9"><a href="contradictory-objectives-diagnostic.html#cb66-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">15</span>,</span>
+<span id="cb66-10"><a href="contradictory-objectives-diagnostic.html#cb66-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">10</span></span>
+<span id="cb66-11"><a href="contradictory-objectives-diagnostic.html#cb66-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div id="statistics" class="section level4 hasAnchor" number="6.3.1.1">
+<h4><span class="header-section-number">6.3.1.1</span> Statistics<a href="contradictory-objectives-diagnostic.html#statistics" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>First, we’ll create a table of median / mean values for easy reference.</p>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="contradictory-objectives-diagnostic.html#cb67-1" aria-hidden="true" tabindex="-1"></a>con_obj_summary_data <span class="sc">%&gt;%</span></span>
+<span id="cb67-2"><a href="contradictory-objectives-diagnostic.html#cb67-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(DIAGNOSTIC, SELECTION, evals_per_gen, eval_label) <span class="sc">%&gt;%</span></span>
+<span id="cb67-3"><a href="contradictory-objectives-diagnostic.html#cb67-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb67-4"><a href="contradictory-objectives-diagnostic.html#cb67-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">cov_median =</span> <span class="fu">median</span>(pop_optimal_trait_coverage),</span>
+<span id="cb67-5"><a href="contradictory-objectives-diagnostic.html#cb67-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">cov_mean =</span> <span class="fu">mean</span>(pop_optimal_trait_coverage),</span>
+<span id="cb67-6"><a href="contradictory-objectives-diagnostic.html#cb67-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">replicates =</span> <span class="fu">n</span>()</span>
+<span id="cb67-7"><a href="contradictory-objectives-diagnostic.html#cb67-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb67-8"><a href="contradictory-objectives-diagnostic.html#cb67-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code></pre></div>
+<pre><code>## `summarise()` has grouped output by &#39;DIAGNOSTIC&#39;, &#39;SELECTION&#39;, &#39;evals_per_gen&#39;.
+## You can override using the `.groups` argument.</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="24%" />
+<col width="10%" />
+<col width="13%" />
+<col width="21%" />
+<col width="10%" />
+<col width="8%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">DIAGNOSTIC</th>
+<th align="left">SELECTION</th>
+<th align="left">evals_per_gen</th>
+<th align="left">eval_label</th>
+<th align="right">cov_median</th>
+<th align="right">cov_mean</th>
+<th align="right">replicates</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">contradictory-objectives</td>
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">down-sample</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">contradictory-objectives</td>
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">down-sample-ancestor</td>
+<td align="right">2.5</td>
+<td align="right">3.25</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">contradictory-objectives</td>
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">indiv-rand-sample</td>
+<td align="right">8.0</td>
+<td align="right">8.20</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">contradictory-objectives</td>
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">8.5</td>
+<td align="right">8.90</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">contradictory-objectives</td>
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">down-sample</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">contradictory-objectives</td>
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">down-sample-ancestor</td>
+<td align="right">17.5</td>
+<td align="right">18.15</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">contradictory-objectives</td>
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">indiv-rand-sample</td>
+<td align="right">24.5</td>
+<td align="right">24.10</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">contradictory-objectives</td>
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">24.0</td>
+<td align="right">24.25</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">contradictory-objectives</td>
+<td align="left">lexicase</td>
+<td align="left">1</td>
+<td align="left">full</td>
+<td align="right">38.0</td>
+<td align="right">37.85</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">contradictory-objectives</td>
+<td align="left">tournament</td>
+<td align="left">0.01</td>
+<td align="left">down-sample</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">contradictory-objectives</td>
+<td align="left">tournament</td>
+<td align="left">0.01</td>
+<td align="left">down-sample-ancestor</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">contradictory-objectives</td>
+<td align="left">tournament</td>
+<td align="left">0.01</td>
+<td align="left">indiv-rand-sample</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">contradictory-objectives</td>
+<td align="left">tournament</td>
+<td align="left">0.01</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">contradictory-objectives</td>
+<td align="left">tournament</td>
+<td align="left">0.1</td>
+<td align="left">down-sample</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">contradictory-objectives</td>
+<td align="left">tournament</td>
+<td align="left">0.1</td>
+<td align="left">down-sample-ancestor</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">contradictory-objectives</td>
+<td align="left">tournament</td>
+<td align="left">0.1</td>
+<td align="left">indiv-rand-sample</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">contradictory-objectives</td>
+<td align="left">tournament</td>
+<td align="left">0.1</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">contradictory-objectives</td>
+<td align="left">tournament</td>
+<td align="left">1</td>
+<td align="left">full</td>
+<td align="right">1.0</td>
+<td align="right">1.00</td>
+<td align="right">20</td>
+</tr>
+</tbody>
+</table>
+<p>Next, we run a Kruskal-Wallis test to check for differences.
+For these tests, we only compare within a single subsampling level (<code>evals_per_gen</code>) and within the same selection scheme.</p>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="contradictory-objectives-diagnostic.html#cb69-1" aria-hidden="true" tabindex="-1"></a>kw_test <span class="ot">&lt;-</span> con_obj_summary_data <span class="sc">%&gt;%</span></span>
+<span id="cb69-2"><a href="contradictory-objectives-diagnostic.html#cb69-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(eval_label <span class="sc">!=</span> <span class="st">&quot;full&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb69-3"><a href="contradictory-objectives-diagnostic.html#cb69-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(SELECTION, evals_per_gen) <span class="sc">%&gt;%</span></span>
+<span id="cb69-4"><a href="contradictory-objectives-diagnostic.html#cb69-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kruskal_test</span>(pop_optimal_trait_coverage <span class="sc">~</span> eval_label) <span class="sc">%&gt;%</span></span>
+<span id="cb69-5"><a href="contradictory-objectives-diagnostic.html#cb69-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sig =</span> (p <span class="sc">&lt;</span> <span class="fl">0.05</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb69-6"><a href="contradictory-objectives-diagnostic.html#cb69-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(</span>
+<span id="cb69-7"><a href="contradictory-objectives-diagnostic.html#cb69-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;comparison_group&quot;</span>,</span>
+<span id="cb69-8"><a href="contradictory-objectives-diagnostic.html#cb69-8" aria-hidden="true" tabindex="-1"></a>    SELECTION,</span>
+<span id="cb69-9"><a href="contradictory-objectives-diagnostic.html#cb69-9" aria-hidden="true" tabindex="-1"></a>    evals_per_gen,</span>
+<span id="cb69-10"><a href="contradictory-objectives-diagnostic.html#cb69-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">sep =</span> <span class="st">&quot;_&quot;</span>,</span>
+<span id="cb69-11"><a href="contradictory-objectives-diagnostic.html#cb69-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">remove =</span> <span class="cn">FALSE</span></span>
+<span id="cb69-12"><a href="contradictory-objectives-diagnostic.html#cb69-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb69-13"><a href="contradictory-objectives-diagnostic.html#cb69-13" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(kw_test)</span></code></pre></div>
+<table>
+<colgroup>
+<col width="15%" />
+<col width="10%" />
+<col width="12%" />
+<col width="24%" />
+<col width="2%" />
+<col width="9%" />
+<col width="2%" />
+<col width="3%" />
+<col width="13%" />
+<col width="4%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">comparison_group</th>
+<th align="left">SELECTION</th>
+<th align="left">evals_per_gen</th>
+<th align="left">.y.</th>
+<th align="right">n</th>
+<th align="right">statistic</th>
+<th align="right">df</th>
+<th align="right">p</th>
+<th align="left">method</th>
+<th align="left">sig</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">lexicase_0.01</td>
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="right">80</td>
+<td align="right">58.24682</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="left">Kruskal-Wallis</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">lexicase_0.1</td>
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="right">80</td>
+<td align="right">62.11510</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="left">Kruskal-Wallis</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">tournament_0.01</td>
+<td align="left">tournament</td>
+<td align="left">0.01</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="right">80</td>
+<td align="right">NaN</td>
+<td align="right">3</td>
+<td align="right">NaN</td>
+<td align="left">Kruskal-Wallis</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">tournament_0.1</td>
+<td align="left">tournament</td>
+<td align="left">0.1</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="right">80</td>
+<td align="right">NaN</td>
+<td align="right">3</td>
+<td align="right">NaN</td>
+<td align="left">Kruskal-Wallis</td>
+<td align="left">NA</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="contradictory-objectives-diagnostic.html#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Grab group names of significant comparisons</span></span>
+<span id="cb70-2"><a href="contradictory-objectives-diagnostic.html#cb70-2" aria-hidden="true" tabindex="-1"></a>sig_kw_groups <span class="ot">&lt;-</span> <span class="fu">filter</span>(kw_test, p <span class="sc">&lt;</span> <span class="fl">0.05</span>)<span class="sc">$</span>comparison_group</span>
+<span id="cb70-3"><a href="contradictory-objectives-diagnostic.html#cb70-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-4"><a href="contradictory-objectives-diagnostic.html#cb70-4" aria-hidden="true" tabindex="-1"></a>wrs_test <span class="ot">&lt;-</span> con_obj_summary_data <span class="sc">%&gt;%</span></span>
+<span id="cb70-5"><a href="contradictory-objectives-diagnostic.html#cb70-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(</span>
+<span id="cb70-6"><a href="contradictory-objectives-diagnostic.html#cb70-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;comparison_group&quot;</span>,</span>
+<span id="cb70-7"><a href="contradictory-objectives-diagnostic.html#cb70-7" aria-hidden="true" tabindex="-1"></a>    SELECTION,</span>
+<span id="cb70-8"><a href="contradictory-objectives-diagnostic.html#cb70-8" aria-hidden="true" tabindex="-1"></a>    evals_per_gen,</span>
+<span id="cb70-9"><a href="contradictory-objectives-diagnostic.html#cb70-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">sep =</span> <span class="st">&quot;_&quot;</span>,</span>
+<span id="cb70-10"><a href="contradictory-objectives-diagnostic.html#cb70-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">remove =</span> <span class="cn">FALSE</span></span>
+<span id="cb70-11"><a href="contradictory-objectives-diagnostic.html#cb70-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb70-12"><a href="contradictory-objectives-diagnostic.html#cb70-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb70-13"><a href="contradictory-objectives-diagnostic.html#cb70-13" aria-hidden="true" tabindex="-1"></a>    eval_label <span class="sc">!=</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> comparison_group <span class="sc">%in%</span> sig_kw_groups</span>
+<span id="cb70-14"><a href="contradictory-objectives-diagnostic.html#cb70-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb70-15"><a href="contradictory-objectives-diagnostic.html#cb70-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(SELECTION, evals_per_gen) <span class="sc">%&gt;%</span></span>
+<span id="cb70-16"><a href="contradictory-objectives-diagnostic.html#cb70-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pairwise_wilcox_test</span>(pop_optimal_trait_coverage <span class="sc">~</span> eval_label) <span class="sc">%&gt;%</span></span>
+<span id="cb70-17"><a href="contradictory-objectives-diagnostic.html#cb70-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adjust_pvalue</span>(<span class="at">method =</span> <span class="st">&quot;holm&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-18"><a href="contradictory-objectives-diagnostic.html#cb70-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_significance</span>(<span class="st">&quot;p.adj&quot;</span>)</span>
+<span id="cb70-19"><a href="contradictory-objectives-diagnostic.html#cb70-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-20"><a href="contradictory-objectives-diagnostic.html#cb70-20" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(wrs_test)</span></code></pre></div>
+<table>
+<colgroup>
+<col width="7%" />
+<col width="9%" />
+<col width="19%" />
+<col width="14%" />
+<col width="15%" />
+<col width="2%" />
+<col width="2%" />
+<col width="7%" />
+<col width="6%" />
+<col width="6%" />
+<col width="9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">SELECTION</th>
+<th align="left">evals_per_gen</th>
+<th align="left">.y.</th>
+<th align="left">group1</th>
+<th align="left">group2</th>
+<th align="right">n1</th>
+<th align="right">n2</th>
+<th align="right">statistic</th>
+<th align="right">p</th>
+<th align="right">p.adj</th>
+<th align="left">p.adj.signif</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample</td>
+<td align="left">down-sample-ancestor</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">50</td>
+<td align="right">3.20e-06</td>
+<td align="right">1.91e-05</td>
+<td align="left">****</td>
+</tr>
+<tr class="even">
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample</td>
+<td align="left">indiv-rand-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">0</td>
+<td align="right">0.00e+00</td>
+<td align="right">1.00e-07</td>
+<td align="left">****</td>
+</tr>
+<tr class="odd">
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">0</td>
+<td align="right">0.00e+00</td>
+<td align="right">1.00e-07</td>
+<td align="left">****</td>
+</tr>
+<tr class="even">
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample-ancestor</td>
+<td align="left">indiv-rand-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">37</td>
+<td align="right">9.80e-06</td>
+<td align="right">2.93e-05</td>
+<td align="left">****</td>
+</tr>
+<tr class="odd">
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample-ancestor</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">28</td>
+<td align="right">3.20e-06</td>
+<td align="right">1.91e-05</td>
+<td align="left">****</td>
+</tr>
+<tr class="even">
+<td align="left">lexicase</td>
+<td align="left">0.01</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">indiv-rand-sample</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">181</td>
+<td align="right">6.14e-01</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+<tr class="odd">
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample</td>
+<td align="left">down-sample-ancestor</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">0</td>
+<td align="right">0.00e+00</td>
+<td align="right">1.00e-07</td>
+<td align="left">****</td>
+</tr>
+<tr class="even">
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample</td>
+<td align="left">indiv-rand-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">0</td>
+<td align="right">0.00e+00</td>
+<td align="right">1.00e-07</td>
+<td align="left">****</td>
+</tr>
+<tr class="odd">
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">0</td>
+<td align="right">0.00e+00</td>
+<td align="right">1.00e-07</td>
+<td align="left">****</td>
+</tr>
+<tr class="even">
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample-ancestor</td>
+<td align="left">indiv-rand-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">31</td>
+<td align="right">4.90e-06</td>
+<td align="right">1.95e-05</td>
+<td align="left">****</td>
+</tr>
+<tr class="odd">
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">down-sample-ancestor</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">24</td>
+<td align="right">1.90e-06</td>
+<td align="right">1.32e-05</td>
+<td align="left">****</td>
+</tr>
+<tr class="even">
+<td align="left">lexicase</td>
+<td align="left">0.1</td>
+<td align="left">pop_optimal_trait_coverage</td>
+<td align="left">indiv-rand-sample</td>
+<td align="left">phylo-informed-sample</td>
+<td align="right">20</td>
+<td align="right">20</td>
+<td align="right">203</td>
+<td align="right">9.46e-01</td>
+<td align="right">1.00e+00</td>
+<td align="left">ns</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="over-time---lexicase-selection" class="section level3 hasAnchor" number="6.3.2">
+<h3><span class="header-section-number">6.3.2</span> Over time - lexicase selection<a href="contradictory-objectives-diagnostic.html#over-time---lexicase-selection" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="contradictory-objectives-diagnostic.html#cb71-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> ts_data  <span class="sc">%&gt;%</span> <span class="fu">build_plot_time_series</span>(</span>
+<span id="cb71-2"><a href="contradictory-objectives-diagnostic.html#cb71-2" aria-hidden="true" tabindex="-1"></a>  focal_diagnostic,</span>
+<span id="cb71-3"><a href="contradictory-objectives-diagnostic.html#cb71-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;lexicase&quot;</span>,</span>
+<span id="cb71-4"><a href="contradictory-objectives-diagnostic.html#cb71-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;pop_optimal_trait_coverage&quot;</span></span>
+<span id="cb71-5"><a href="contradictory-objectives-diagnostic.html#cb71-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb71-6"><a href="contradictory-objectives-diagnostic.html#cb71-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(</span>
+<span id="cb71-7"><a href="contradictory-objectives-diagnostic.html#cb71-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="fu">paste0</span>(plot_directory, <span class="st">&quot;con-obj-sat-cov-ts-lex.pdf&quot;</span>),</span>
+<span id="cb71-8"><a href="contradictory-objectives-diagnostic.html#cb71-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> p,</span>
+<span id="cb71-9"><a href="contradictory-objectives-diagnostic.html#cb71-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">15</span>,</span>
+<span id="cb71-10"><a href="contradictory-objectives-diagnostic.html#cb71-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">10</span></span>
+<span id="cb71-11"><a href="contradictory-objectives-diagnostic.html#cb71-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="final---tournament-selection-1" class="section level3 hasAnchor" number="6.3.3">
+<h3><span class="header-section-number">6.3.3</span> Final - Tournament selection<a href="contradictory-objectives-diagnostic.html#final---tournament-selection-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="contradictory-objectives-diagnostic.html#cb72-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> summary_data <span class="sc">%&gt;%</span> <span class="fu">build_plot_summary_data</span>(</span>
+<span id="cb72-2"><a href="contradictory-objectives-diagnostic.html#cb72-2" aria-hidden="true" tabindex="-1"></a>  focal_diagnostic,</span>
+<span id="cb72-3"><a href="contradictory-objectives-diagnostic.html#cb72-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;tournament&quot;</span>,</span>
+<span id="cb72-4"><a href="contradictory-objectives-diagnostic.html#cb72-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;pop_optimal_trait_coverage&quot;</span></span>
+<span id="cb72-5"><a href="contradictory-objectives-diagnostic.html#cb72-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb72-6"><a href="contradictory-objectives-diagnostic.html#cb72-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(</span>
+<span id="cb72-7"><a href="contradictory-objectives-diagnostic.html#cb72-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="fu">paste0</span>(plot_directory, <span class="st">&quot;con-obj-sat-cov-final-tourn.pdf&quot;</span>),</span>
+<span id="cb72-8"><a href="contradictory-objectives-diagnostic.html#cb72-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> p <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Contradictory objectives - Tournament selection&quot;</span>),</span>
+<span id="cb72-9"><a href="contradictory-objectives-diagnostic.html#cb72-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">15</span>,</span>
+<span id="cb72-10"><a href="contradictory-objectives-diagnostic.html#cb72-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">10</span></span>
+<span id="cb72-11"><a href="contradictory-objectives-diagnostic.html#cb72-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="over-time---tournament-selection" class="section level3 hasAnchor" number="6.3.4">
+<h3><span class="header-section-number">6.3.4</span> Over time - tournament selection<a href="contradictory-objectives-diagnostic.html#over-time---tournament-selection" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="contradictory-objectives-diagnostic.html#cb73-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> ts_data  <span class="sc">%&gt;%</span> <span class="fu">build_plot_time_series</span>(</span>
+<span id="cb73-2"><a href="contradictory-objectives-diagnostic.html#cb73-2" aria-hidden="true" tabindex="-1"></a>  focal_diagnostic,</span>
+<span id="cb73-3"><a href="contradictory-objectives-diagnostic.html#cb73-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;tournament&quot;</span>,</span>
+<span id="cb73-4"><a href="contradictory-objectives-diagnostic.html#cb73-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;pop_optimal_trait_coverage&quot;</span></span>
+<span id="cb73-5"><a href="contradictory-objectives-diagnostic.html#cb73-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb73-6"><a href="contradictory-objectives-diagnostic.html#cb73-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(</span>
+<span id="cb73-7"><a href="contradictory-objectives-diagnostic.html#cb73-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="fu">paste0</span>(plot_directory, <span class="st">&quot;con-obj-sat-cov-ts-tourn.pdf&quot;</span>),</span>
+<span id="cb73-8"><a href="contradictory-objectives-diagnostic.html#cb73-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> p,</span>
+<span id="cb73-9"><a href="contradictory-objectives-diagnostic.html#cb73-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">15</span>,</span>
+<span id="cb73-10"><a href="contradictory-objectives-diagnostic.html#cb73-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">10</span></span>
+<span id="cb73-11"><a href="contradictory-objectives-diagnostic.html#cb73-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+</div>
+<div id="mrca-changes" class="section level2 hasAnchor" number="6.4">
+<h2><span class="header-section-number">6.4</span> MRCA changes<a href="contradictory-objectives-diagnostic.html#mrca-changes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="contradictory-objectives-diagnostic.html#cb74-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> summary_data <span class="sc">%&gt;%</span> <span class="fu">build_plot_summary_data</span>(</span>
+<span id="cb74-2"><a href="contradictory-objectives-diagnostic.html#cb74-2" aria-hidden="true" tabindex="-1"></a>  focal_diagnostic,</span>
+<span id="cb74-3"><a href="contradictory-objectives-diagnostic.html#cb74-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;lexicase&quot;</span>,</span>
+<span id="cb74-4"><a href="contradictory-objectives-diagnostic.html#cb74-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;phylo_mrca_changes&quot;</span></span>
+<span id="cb74-5"><a href="contradictory-objectives-diagnostic.html#cb74-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb74-6"><a href="contradictory-objectives-diagnostic.html#cb74-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(</span>
+<span id="cb74-7"><a href="contradictory-objectives-diagnostic.html#cb74-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="fu">paste0</span>(plot_directory, <span class="st">&quot;con-obj-mrca-chgs-final-lex.pdf&quot;</span>),</span>
+<span id="cb74-8"><a href="contradictory-objectives-diagnostic.html#cb74-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> p <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Contradictory objectives - Lexicase selection&quot;</span>),</span>
+<span id="cb74-9"><a href="contradictory-objectives-diagnostic.html#cb74-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">15</span>,</span>
+<span id="cb74-10"><a href="contradictory-objectives-diagnostic.html#cb74-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">10</span></span>
+<span id="cb74-11"><a href="contradictory-objectives-diagnostic.html#cb74-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="mean-genotype-deleterious-steps" class="section level2 hasAnchor" number="6.5">
+<h2><span class="header-section-number">6.5</span> Mean genotype deleterious steps<a href="contradictory-objectives-diagnostic.html#mean-genotype-deleterious-steps" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="contradictory-objectives-diagnostic.html#cb75-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> summary_data <span class="sc">%&gt;%</span> <span class="fu">build_plot_summary_data</span>(</span>
+<span id="cb75-2"><a href="contradictory-objectives-diagnostic.html#cb75-2" aria-hidden="true" tabindex="-1"></a>  focal_diagnostic,</span>
+<span id="cb75-3"><a href="contradictory-objectives-diagnostic.html#cb75-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;lexicase&quot;</span>,</span>
+<span id="cb75-4"><a href="contradictory-objectives-diagnostic.html#cb75-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;phylo_mean_genoetype_deleterious_steps&quot;</span></span>
+<span id="cb75-5"><a href="contradictory-objectives-diagnostic.html#cb75-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb75-6"><a href="contradictory-objectives-diagnostic.html#cb75-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(</span>
+<span id="cb75-7"><a href="contradictory-objectives-diagnostic.html#cb75-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="fu">paste0</span>(plot_directory, <span class="st">&quot;con-obj-del-steps-final-lex.pdf&quot;</span>),</span>
+<span id="cb75-8"><a href="contradictory-objectives-diagnostic.html#cb75-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> p <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Contradictory objectives - Lexicase selection&quot;</span>),</span>
+<span id="cb75-9"><a href="contradictory-objectives-diagnostic.html#cb75-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">15</span>,</span>
+<span id="cb75-10"><a href="contradictory-objectives-diagnostic.html#cb75-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">10</span></span>
+<span id="cb75-11"><a href="contradictory-objectives-diagnostic.html#cb75-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="mean-genotype-pairwise-distance" class="section level2 hasAnchor" number="6.6">
+<h2><span class="header-section-number">6.6</span> Mean genotype pairwise distance<a href="contradictory-objectives-diagnostic.html#mean-genotype-pairwise-distance" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb76"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb76-1"><a href="contradictory-objectives-diagnostic.html#cb76-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> summary_data <span class="sc">%&gt;%</span> <span class="fu">build_plot_summary_data</span>(</span>
+<span id="cb76-2"><a href="contradictory-objectives-diagnostic.html#cb76-2" aria-hidden="true" tabindex="-1"></a>  focal_diagnostic,</span>
+<span id="cb76-3"><a href="contradictory-objectives-diagnostic.html#cb76-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;lexicase&quot;</span>,</span>
+<span id="cb76-4"><a href="contradictory-objectives-diagnostic.html#cb76-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;phylo_mean_genotype_pairwise_distance&quot;</span></span>
+<span id="cb76-5"><a href="contradictory-objectives-diagnostic.html#cb76-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb76-6"><a href="contradictory-objectives-diagnostic.html#cb76-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(</span>
+<span id="cb76-7"><a href="contradictory-objectives-diagnostic.html#cb76-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="fu">paste0</span>(plot_directory, <span class="st">&quot;con-obj-pw-dist-final-lex.pdf&quot;</span>),</span>
+<span id="cb76-8"><a href="contradictory-objectives-diagnostic.html#cb76-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> p <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Contradictory objectives - Lexicase selection&quot;</span>),</span>
+<span id="cb76-9"><a href="contradictory-objectives-diagnostic.html#cb76-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">15</span>,</span>
+<span id="cb76-10"><a href="contradictory-objectives-diagnostic.html#cb76-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">10</span></span>
+<span id="cb76-11"><a href="contradictory-objectives-diagnostic.html#cb76-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="number-unique-individual-selected-1" class="section level2 hasAnchor" number="6.7">
+<h2><span class="header-section-number">6.7</span> Number unique individual selected<a href="contradictory-objectives-diagnostic.html#number-unique-individual-selected-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="contradictory-objectives-diagnostic.html#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="fu">build_plot_summary_data</span>(</span>
+<span id="cb77-2"><a href="contradictory-objectives-diagnostic.html#cb77-2" aria-hidden="true" tabindex="-1"></a>  ts_summary_data,</span>
+<span id="cb77-3"><a href="contradictory-objectives-diagnostic.html#cb77-3" aria-hidden="true" tabindex="-1"></a>  focal_diagnostic,</span>
+<span id="cb77-4"><a href="contradictory-objectives-diagnostic.html#cb77-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;lexicase&quot;</span>,</span>
+<span id="cb77-5"><a href="contradictory-objectives-diagnostic.html#cb77-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;avg_num_unique_selected&quot;</span></span>
+<span id="cb77-6"><a href="contradictory-objectives-diagnostic.html#cb77-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><img src="phylogeny-informed-subsampling-supplemental_files/figure-html/unnamed-chunk-45-1.png" width="672" /></p>
+</div>
+<div id="manuscript-figures-1" class="section level2 hasAnchor" number="6.8">
+<h2><span class="header-section-number">6.8</span> Manuscript figures<a href="contradictory-objectives-diagnostic.html#manuscript-figures-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Time series graphs don’t add a ton here, so just final graphs.</p>
+<div class="sourceCode" id="cb78"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb78-1"><a href="contradictory-objectives-diagnostic.html#cb78-1" aria-hidden="true" tabindex="-1"></a>build_final_score_manuscript_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb78-2"><a href="contradictory-objectives-diagnostic.html#cb78-2" aria-hidden="true" tabindex="-1"></a>  selection,</span>
+<span id="cb78-3"><a href="contradictory-objectives-diagnostic.html#cb78-3" aria-hidden="true" tabindex="-1"></a>  subsample_rate</span>
+<span id="cb78-4"><a href="contradictory-objectives-diagnostic.html#cb78-4" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb78-5"><a href="contradictory-objectives-diagnostic.html#cb78-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb78-6"><a href="contradictory-objectives-diagnostic.html#cb78-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Extract median values for max aggregate score at same evaluation level as sampling regimes</span></span>
+<span id="cb78-7"><a href="contradictory-objectives-diagnostic.html#cb78-7" aria-hidden="true" tabindex="-1"></a>  max_eval <span class="ot">&lt;-</span> <span class="fu">max</span>(</span>
+<span id="cb78-8"><a href="contradictory-objectives-diagnostic.html#cb78-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(con_obj_summary_data, evals_per_gen <span class="sc">==</span> subsample_rate)<span class="sc">$</span>evaluations</span>
+<span id="cb78-9"><a href="contradictory-objectives-diagnostic.html#cb78-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb78-10"><a href="contradictory-objectives-diagnostic.html#cb78-10" aria-hidden="true" tabindex="-1"></a>  full_eval_steps <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb78-11"><a href="contradictory-objectives-diagnostic.html#cb78-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">levels</span>(</span>
+<span id="cb78-12"><a href="contradictory-objectives-diagnostic.html#cb78-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as.factor</span>(</span>
+<span id="cb78-13"><a href="contradictory-objectives-diagnostic.html#cb78-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">filter</span>(con_obj_summary_data, eval_label <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> evaluations <span class="sc">&gt;=</span> max_eval)<span class="sc">$</span>evaluations <span class="co"># nolint: line_length_linter.</span></span>
+<span id="cb78-14"><a href="contradictory-objectives-diagnostic.html#cb78-14" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb78-15"><a href="contradictory-objectives-diagnostic.html#cb78-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb78-16"><a href="contradictory-objectives-diagnostic.html#cb78-16" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb78-17"><a href="contradictory-objectives-diagnostic.html#cb78-17" aria-hidden="true" tabindex="-1"></a>  full_eval <span class="ot">&lt;-</span> full_eval_steps[<span class="fu">which.min</span>( full_eval_steps  <span class="sc">-</span> max_eval )]</span>
+<span id="cb78-18"><a href="contradictory-objectives-diagnostic.html#cb78-18" aria-hidden="true" tabindex="-1"></a>  full_median_score_evals <span class="ot">&lt;-</span> <span class="fu">median</span>(</span>
+<span id="cb78-19"><a href="contradictory-objectives-diagnostic.html#cb78-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(</span>
+<span id="cb78-20"><a href="contradictory-objectives-diagnostic.html#cb78-20" aria-hidden="true" tabindex="-1"></a>      con_obj_summary_data,</span>
+<span id="cb78-21"><a href="contradictory-objectives-diagnostic.html#cb78-21" aria-hidden="true" tabindex="-1"></a>      SELECTION <span class="sc">==</span> selection <span class="sc">&amp;</span> eval_label <span class="sc">==</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span> evaluations <span class="sc">==</span> full_eval</span>
+<span id="cb78-22"><a href="contradictory-objectives-diagnostic.html#cb78-22" aria-hidden="true" tabindex="-1"></a>    )<span class="sc">$</span>pop_optimal_trait_coverage</span>
+<span id="cb78-23"><a href="contradictory-objectives-diagnostic.html#cb78-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb78-24"><a href="contradictory-objectives-diagnostic.html#cb78-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb78-25"><a href="contradictory-objectives-diagnostic.html#cb78-25" aria-hidden="true" tabindex="-1"></a>  plot <span class="ot">&lt;-</span> con_obj_summary_data <span class="sc">%&gt;%</span></span>
+<span id="cb78-26"><a href="contradictory-objectives-diagnostic.html#cb78-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(</span>
+<span id="cb78-27"><a href="contradictory-objectives-diagnostic.html#cb78-27" aria-hidden="true" tabindex="-1"></a>      eval_label <span class="sc">!=</span> <span class="st">&quot;full&quot;</span> <span class="sc">&amp;</span></span>
+<span id="cb78-28"><a href="contradictory-objectives-diagnostic.html#cb78-28" aria-hidden="true" tabindex="-1"></a>      SELECTION <span class="sc">==</span> selection <span class="sc">&amp;</span></span>
+<span id="cb78-29"><a href="contradictory-objectives-diagnostic.html#cb78-29" aria-hidden="true" tabindex="-1"></a>      evals_per_gen <span class="sc">==</span> subsample_rate</span>
+<span id="cb78-30"><a href="contradictory-objectives-diagnostic.html#cb78-30" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb78-31"><a href="contradictory-objectives-diagnostic.html#cb78-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(</span>
+<span id="cb78-32"><a href="contradictory-objectives-diagnostic.html#cb78-32" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(</span>
+<span id="cb78-33"><a href="contradictory-objectives-diagnostic.html#cb78-33" aria-hidden="true" tabindex="-1"></a>        <span class="at">x =</span> eval_label,</span>
+<span id="cb78-34"><a href="contradictory-objectives-diagnostic.html#cb78-34" aria-hidden="true" tabindex="-1"></a>        <span class="at">y =</span> pop_optimal_trait_coverage,</span>
+<span id="cb78-35"><a href="contradictory-objectives-diagnostic.html#cb78-35" aria-hidden="true" tabindex="-1"></a>        <span class="at">fill =</span> eval_label</span>
+<span id="cb78-36"><a href="contradictory-objectives-diagnostic.html#cb78-36" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb78-37"><a href="contradictory-objectives-diagnostic.html#cb78-37" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb78-38"><a href="contradictory-objectives-diagnostic.html#cb78-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(</span>
+<span id="cb78-39"><a href="contradictory-objectives-diagnostic.html#cb78-39" aria-hidden="true" tabindex="-1"></a>      <span class="at">yintercept =</span> full_median_score_evals,</span>
+<span id="cb78-40"><a href="contradictory-objectives-diagnostic.html#cb78-40" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="fl">1.0</span>,</span>
+<span id="cb78-41"><a href="contradictory-objectives-diagnostic.html#cb78-41" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.7</span>,</span>
+<span id="cb78-42"><a href="contradictory-objectives-diagnostic.html#cb78-42" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;black&quot;</span>,</span>
+<span id="cb78-43"><a href="contradictory-objectives-diagnostic.html#cb78-43" aria-hidden="true" tabindex="-1"></a>      <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span></span>
+<span id="cb78-44"><a href="contradictory-objectives-diagnostic.html#cb78-44" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb78-45"><a href="contradictory-objectives-diagnostic.html#cb78-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_flat_violin</span>(</span>
+<span id="cb78-46"><a href="contradictory-objectives-diagnostic.html#cb78-46" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="fu">position_nudge</span>(<span class="at">x =</span> .<span class="dv">2</span>, <span class="at">y =</span> <span class="dv">0</span>),</span>
+<span id="cb78-47"><a href="contradictory-objectives-diagnostic.html#cb78-47" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> .<span class="dv">8</span>,</span>
+<span id="cb78-48"><a href="contradictory-objectives-diagnostic.html#cb78-48" aria-hidden="true" tabindex="-1"></a>      <span class="at">adjust =</span> <span class="fl">1.5</span></span>
+<span id="cb78-49"><a href="contradictory-objectives-diagnostic.html#cb78-49" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb78-50"><a href="contradictory-objectives-diagnostic.html#cb78-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(</span>
+<span id="cb78-51"><a href="contradictory-objectives-diagnostic.html#cb78-51" aria-hidden="true" tabindex="-1"></a>      <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">color =</span> eval_label),</span>
+<span id="cb78-52"><a href="contradictory-objectives-diagnostic.html#cb78-52" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="fu">position_jitter</span>(<span class="at">width =</span> .<span class="dv">15</span>),</span>
+<span id="cb78-53"><a href="contradictory-objectives-diagnostic.html#cb78-53" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> .<span class="dv">5</span>,</span>
+<span id="cb78-54"><a href="contradictory-objectives-diagnostic.html#cb78-54" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.8</span></span>
+<span id="cb78-55"><a href="contradictory-objectives-diagnostic.html#cb78-55" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb78-56"><a href="contradictory-objectives-diagnostic.html#cb78-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(</span>
+<span id="cb78-57"><a href="contradictory-objectives-diagnostic.html#cb78-57" aria-hidden="true" tabindex="-1"></a>      <span class="at">width =</span> .<span class="dv">1</span>,</span>
+<span id="cb78-58"><a href="contradictory-objectives-diagnostic.html#cb78-58" aria-hidden="true" tabindex="-1"></a>      <span class="at">outlier.shape =</span> <span class="cn">NA</span>,</span>
+<span id="cb78-59"><a href="contradictory-objectives-diagnostic.html#cb78-59" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb78-60"><a href="contradictory-objectives-diagnostic.html#cb78-60" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb78-61"><a href="contradictory-objectives-diagnostic.html#cb78-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb78-62"><a href="contradictory-objectives-diagnostic.html#cb78-62" aria-hidden="true" tabindex="-1"></a>      <span class="at">name =</span> <span class="st">&quot;Satisfactory trait coverage&quot;</span>,</span>
+<span id="cb78-63"><a href="contradictory-objectives-diagnostic.html#cb78-63" aria-hidden="true" tabindex="-1"></a>      <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>)</span>
+<span id="cb78-64"><a href="contradictory-objectives-diagnostic.html#cb78-64" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb78-65"><a href="contradictory-objectives-diagnostic.html#cb78-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_discrete</span>(</span>
+<span id="cb78-66"><a href="contradictory-objectives-diagnostic.html#cb78-66" aria-hidden="true" tabindex="-1"></a>      <span class="at">name =</span> <span class="st">&quot;Subsampling regime&quot;</span>,</span>
+<span id="cb78-67"><a href="contradictory-objectives-diagnostic.html#cb78-67" aria-hidden="true" tabindex="-1"></a>      <span class="at">breaks =</span> <span class="fu">c</span>(<span class="st">&quot;down-sample&quot;</span>, <span class="st">&quot;down-sample-ancestor&quot;</span>, <span class="st">&quot;indiv-rand-sample&quot;</span>, <span class="st">&quot;phylo-informed-sample&quot;</span>),</span>
+<span id="cb78-68"><a href="contradictory-objectives-diagnostic.html#cb78-68" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;DS</span><span class="sc">\n</span><span class="st">(no est.)&quot;</span>, <span class="st">&quot;DS+EST&quot;</span>, <span class="st">&quot;IRS&quot;</span>, <span class="st">&quot;ABS&quot;</span>)</span>
+<span id="cb78-69"><a href="contradictory-objectives-diagnostic.html#cb78-69" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb78-70"><a href="contradictory-objectives-diagnostic.html#cb78-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_bright</span>() <span class="sc">+</span></span>
+<span id="cb78-71"><a href="contradictory-objectives-diagnostic.html#cb78-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_bright</span>() <span class="sc">+</span></span>
+<span id="cb78-72"><a href="contradictory-objectives-diagnostic.html#cb78-72" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb78-73"><a href="contradictory-objectives-diagnostic.html#cb78-73" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb78-74"><a href="contradictory-objectives-diagnostic.html#cb78-74" aria-hidden="true" tabindex="-1"></a>      <span class="co"># axis.text.x = element_text(</span></span>
+<span id="cb78-75"><a href="contradictory-objectives-diagnostic.html#cb78-75" aria-hidden="true" tabindex="-1"></a>      <span class="co">#   angle = 30,</span></span>
+<span id="cb78-76"><a href="contradictory-objectives-diagnostic.html#cb78-76" aria-hidden="true" tabindex="-1"></a>      <span class="co">#   hjust = 1</span></span>
+<span id="cb78-77"><a href="contradictory-objectives-diagnostic.html#cb78-77" aria-hidden="true" tabindex="-1"></a>      <span class="co"># ),</span></span>
+<span id="cb78-78"><a href="contradictory-objectives-diagnostic.html#cb78-78" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb78-79"><a href="contradictory-objectives-diagnostic.html#cb78-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(plot)</span>
+<span id="cb78-80"><a href="contradictory-objectives-diagnostic.html#cb78-80" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Build end-of-run plots (fixed number of evaluations)</p>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="contradictory-objectives-diagnostic.html#cb79-1" aria-hidden="true" tabindex="-1"></a>plot_final_lex_01 <span class="ot">&lt;-</span> <span class="fu">build_final_score_manuscript_plot</span>(</span>
+<span id="cb79-2"><a href="contradictory-objectives-diagnostic.html#cb79-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;lexicase&quot;</span>,</span>
+<span id="cb79-3"><a href="contradictory-objectives-diagnostic.html#cb79-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;0.01&quot;</span></span>
+<span id="cb79-4"><a href="contradictory-objectives-diagnostic.html#cb79-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb79-5"><a href="contradictory-objectives-diagnostic.html#cb79-5" aria-hidden="true" tabindex="-1"></a>plot_final_lex_10 <span class="ot">&lt;-</span> <span class="fu">build_final_score_manuscript_plot</span>(</span>
+<span id="cb79-6"><a href="contradictory-objectives-diagnostic.html#cb79-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;lexicase&quot;</span>,</span>
+<span id="cb79-7"><a href="contradictory-objectives-diagnostic.html#cb79-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;0.1&quot;</span></span>
+<span id="cb79-8"><a href="contradictory-objectives-diagnostic.html#cb79-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>Combine into single figure</p>
+<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="contradictory-objectives-diagnostic.html#cb80-1" aria-hidden="true" tabindex="-1"></a>lex_fig <span class="ot">&lt;-</span> <span class="fu">plot_grid</span>(</span>
+<span id="cb80-2"><a href="contradictory-objectives-diagnostic.html#cb80-2" aria-hidden="true" tabindex="-1"></a>  plot_final_lex_01 <span class="sc">+</span></span>
+<span id="cb80-3"><a href="contradictory-objectives-diagnostic.html#cb80-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># labs(</span></span>
+<span id="cb80-4"><a href="contradictory-objectives-diagnostic.html#cb80-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">#   title = &quot;1% subsampling&quot;</span></span>
+<span id="cb80-5"><a href="contradictory-objectives-diagnostic.html#cb80-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ) +</span></span>
+<span id="cb80-6"><a href="contradictory-objectives-diagnostic.html#cb80-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb80-7"><a href="contradictory-objectives-diagnostic.html#cb80-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="st">&quot;cm&quot;</span>)</span>
+<span id="cb80-8"><a href="contradictory-objectives-diagnostic.html#cb80-8" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb80-9"><a href="contradictory-objectives-diagnostic.html#cb80-9" aria-hidden="true" tabindex="-1"></a>  plot_final_lex_10 <span class="sc">+</span></span>
+<span id="cb80-10"><a href="contradictory-objectives-diagnostic.html#cb80-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># labs(</span></span>
+<span id="cb80-11"><a href="contradictory-objectives-diagnostic.html#cb80-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#   title = &quot;10% subsampling&quot;</span></span>
+<span id="cb80-12"><a href="contradictory-objectives-diagnostic.html#cb80-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ) +</span></span>
+<span id="cb80-13"><a href="contradictory-objectives-diagnostic.html#cb80-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb80-14"><a href="contradictory-objectives-diagnostic.html#cb80-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb80-15"><a href="contradictory-objectives-diagnostic.html#cb80-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb80-16"><a href="contradictory-objectives-diagnostic.html#cb80-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb80-17"><a href="contradictory-objectives-diagnostic.html#cb80-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="st">&quot;cm&quot;</span>)</span>
+<span id="cb80-18"><a href="contradictory-objectives-diagnostic.html#cb80-18" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb80-19"><a href="contradictory-objectives-diagnostic.html#cb80-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="dv">1</span>,</span>
+<span id="cb80-20"><a href="contradictory-objectives-diagnostic.html#cb80-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb80-21"><a href="contradictory-objectives-diagnostic.html#cb80-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">align =</span> <span class="st">&quot;h&quot;</span>,</span>
+<span id="cb80-22"><a href="contradictory-objectives-diagnostic.html#cb80-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;a) 1% subsampling&quot;</span>, <span class="st">&quot;b) 10% subsampling&quot;</span>),</span>
+<span id="cb80-23"><a href="contradictory-objectives-diagnostic.html#cb80-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">rel_widths =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb80-24"><a href="contradictory-objectives-diagnostic.html#cb80-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb80-25"><a href="contradictory-objectives-diagnostic.html#cb80-25" aria-hidden="true" tabindex="-1"></a>lex_fig</span></code></pre></div>
+<p><img src="phylogeny-informed-subsampling-supplemental_files/figure-html/unnamed-chunk-48-1.png" width="672" /></p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="contradictory-objectives-diagnostic.html#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(</span>
+<span id="cb81-2"><a href="contradictory-objectives-diagnostic.html#cb81-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="fu">paste0</span>(plot_directory, <span class="st">&quot;2023-12-28-con-obj-lex-fig.pdf&quot;</span>),</span>
+<span id="cb81-3"><a href="contradictory-objectives-diagnostic.html#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> lex_fig,</span>
+<span id="cb81-4"><a href="contradictory-objectives-diagnostic.html#cb81-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">base_width =</span> <span class="dv">7</span>,</span>
+<span id="cb81-5"><a href="contradictory-objectives-diagnostic.html#cb81-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">base_height =</span> <span class="dv">4</span>,</span>
+<span id="cb81-6"><a href="contradictory-objectives-diagnostic.html#cb81-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dpi =</span> <span class="dv">600</span></span>
+<span id="cb81-7"><a href="contradictory-objectives-diagnostic.html#cb81-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="exploitation-rate-diagnostic-experiments.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="multi-path-exploration-diagnostic.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/tree/main/../experiments/2023-12-28-phylo-sampling-diag/analysis/2023-12-28-con-obj.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["phylogeny-informed-subsampling-supplemental.pdf"],
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>
