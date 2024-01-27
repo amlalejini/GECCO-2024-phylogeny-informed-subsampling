@@ -1,4 +1,4 @@
-# 2023-12-28 - Contradictory objectives diagnostics
+# Multi-path exploration diagnostic
 
 ```{r}
 experiment_slug <- "2023-12-28-phylo-sampling-diag"
@@ -523,7 +523,7 @@ build_final_score_manuscript_plot <- function(
     ) +
     scale_y_continuous(
       name = "Aggregate score",
-      limits = c(0, 10010)
+      limits = c(0, 4000)
     ) +
     scale_x_discrete(
       name = "Subsampling regime",
@@ -561,16 +561,10 @@ Combine into single figure
 ```{r}
 lex_fig <- plot_grid(
   plot_final_lex_01 +
-    # labs(
-    #   title = "1% subsampling"
-    # ) +
     theme(
       plot.margin = margin(1, 0, 0, 0, "cm")
     ),
   plot_final_lex_10 +
-    # labs(
-    #   title = "10% subsampling"
-    # ) +
     theme(
       axis.text.y = element_blank(),
       axis.title.y = element_blank(),
@@ -588,7 +582,7 @@ save_plot(
   filename = paste0(plot_directory, "2023-12-28-explore-lex-fig.pdf"),
   plot = lex_fig,
   base_width = 7,
-  base_height = 4,
+  base_height = 3,
   dpi = 600
 )
 ```

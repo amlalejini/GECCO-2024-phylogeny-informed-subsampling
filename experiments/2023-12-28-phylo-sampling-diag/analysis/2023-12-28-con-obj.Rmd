@@ -1,4 +1,4 @@
-# 2023-12-28 - Contradictory objectives diagnostics
+# Contradictory objectives diagnostic
 
 ```{r}
 experiment_slug <- "2023-12-28-phylo-sampling-diag"
@@ -161,7 +161,7 @@ con_obj_ts_data <- ts_data %>%
 
 ```
 
-Summarize time series data
+Summarize time series data:
 
 ```{r}
 ts_summary_data <- ts_data %>%
@@ -619,7 +619,7 @@ build_final_score_manuscript_plot <- function(
     scale_x_discrete(
       name = "Subsampling regime",
       breaks = c("down-sample", "down-sample-ancestor", "indiv-rand-sample", "phylo-informed-sample"),
-      labels = c("DS", "DS+EST", "IRS", "ABS")
+      labels = c("DS\n(no est.)", "DS+EST", "IRS", "ABS")
     ) +
     scale_fill_bright() +
     scale_color_bright() +
