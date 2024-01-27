@@ -1,4 +1,4 @@
-book_filename: "phylogeny-informed-estimation-supplemental"
+book_filename: "phylogeny-informed-subsampling-supplemental"
 language:
   ui:
     chapter_name: "Chapter "
@@ -6,9 +6,11 @@ delete_merged_file: true
 rmd_files: ["index.Rmd",
             "../docs/data-availability.md",
             "../docs/gp-instruction-set.md",
-            "../docs/estimation-distance-analysis.md",
-            "../experiments/2023-05-10-diagnostics/analysis/2023-05-10-diagnostics.Rmd",
-            "../experiments/2023-05-08-psynth/analysis/2023-05-08-psynth.Rmd",
+            "../docs/local-compilation.md",
+            "../experiments/2023-12-28-phylo-sampling-diag/analysis/2023-12-28-exploitation-rate.Rmd",
+            "../experiments/2023-12-28-phylo-sampling-diag/analysis/2023-12-28-con-obj.Rmd",
+            "../experiments/2023-12-28-phylo-sampling-diag/analysis/2023-12-28-explore.Rmd",
+            "../experiments/2023-12-30-psynth/analysis/2023-12-30.rmd",
             "tail.Rmd"
            ]
 # new_session: yes

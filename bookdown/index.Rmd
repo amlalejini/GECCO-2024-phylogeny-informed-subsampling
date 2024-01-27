@@ -1,6 +1,6 @@
 ---
-title: "Supplemental Material for Phylogeny-informed fitness estimation"
-author: "Alexander Lalejini, Matthew Andres Moreno, Jose Guadalupe Hernandez, and Emily Dolson"
+title: "Supplemental Material for 'Runtime phylogenetic analysis enables extreme subsampling for test-based problems'"
+author: "Alexander Lalejini, Marcos Sanson, Jack Garbus, Matthew Andres Moreno, and Emily Dolson"
 date: "`r Sys.Date()`"
 output: bookdown::gitbook
 documentclass: book
@@ -8,17 +8,21 @@ bibliography: ["packages.bib", "supplemental.bib"]
 biblio-style: apalike
 nocite: '@*'
 link-citations: yes
-github-repo: amlalejini/GPTP-2023-phylogeny-informed-evaluation
+github-repo: amlalejini/GECCO-2024-phylogeny-informed-subsampling
 description: "Supplemental material"
 ---
 
 ```{r, include=FALSE}
+library(knitr)
 bookdown_wd_prefix <- "../"
+opts_chunk$set(
+  tidy.opts = list(width.cutoff = 60),
+  tidy=TRUE
+)
 ```
 
 # Introduction
 
-This is the supplemental material for our submission to Genetic Programming Theory and Practice XX.
 This is not intended as a stand-alone document, but as a companion to our manuscript.
 
 ## About our supplemental material
@@ -26,19 +30,19 @@ This is not intended as a stand-alone document, but as a companion to our manusc
 As you may have noticed (unless you're reading a pdf version of this), our supplemental material is hosted using [GitHub pages](https://pages.github.com/).
 We compiled our data analyses and supplemental documentation into this nifty web-accessible book using [bookdown](https://bookdown.org).
 
-The source code/configuration files for this supplemental material can be found in [this GitHub repository](https://github.com/amlalejini/GPTP-2023-phylogeny-informed-evaluation).
+The source code/configuration files for this supplemental material can be found in [this GitHub repository](https://github.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling).
 
 Our supplemental material includes the following:
 
 - Data availability (Section \@ref(data-availability))
+- Local compilation (Section \@ref(local-compilation))
 - GP instruction set (Section \@ref(signalgp-instruction-set))
-- Analysis notebooks for each experiment (including source code)
-  - Selection scheme diagnostics (Section \@ref(selection-scheme-diagnostic-experiments))
-  - Program synthesis problems (Section \@ref(program-synthesis-experiments))
+  <!-- - Selection scheme diagnostics (Section \@ref(selection-scheme-diagnostic-experiments))
+  - Program synthesis problems (Section \@ref(program-synthesis-experiments)) -->
 
 ## Contributing authors
 
 - Alexander Lalejini
-- Matthew Andres Moreno
-- Jose Guadalupe Hernandez
+- Marcos Sanson
+- Jack Garbus
 - Emily Dolson
