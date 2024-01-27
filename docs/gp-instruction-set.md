@@ -31,23 +31,23 @@ I.e., instructions used across all diagnostic tasks.
 | `Not` | 1 | Reg[0] = !Reg[0] |
 | `Inc` | 1 | Reg[0] = Reg[0] + 1 |
 | `Dec` | 1 | Reg[0] = Reg[0] - 1 |
-| `Add` | 3 | Reg[2] = Reg[0] + Reg[1] |
-| `Sub` | 3 | Reg[2] = Reg[0] - Reg[1] |
-| `Mult`  | 3 | Reg[2] = Reg[0] * Reg[1] |
-| `Div` | 3 | Reg[2] = Reg[0] / Reg[1] |
-| `Mod` | 3 | Reg[2] = Reg[0] % Reg[1] |
-| `Nand` | 2 | Reg[2] = !(Reg[0] & Reg[1]) |
-| `TestEqu`  | 3 | Reg[2] = Reg[0] == Reg[1] |
-| `TestNEqu` | 3 | Reg[2] = Reg[0] != Reg[1] |
-| `TestLess` | 3 | Reg[2] = Reg[0] < Reg[1] |
-| `TestLessEqu` | 3 | Reg[2] = Reg[0] <= Reg[1] |
-| `TestGreater`  | 3 | Reg[2] = Reg[0] > Reg[1] |
-| `TestGreaterEqu`  | 3 | Reg[2] = Reg[0] >= Reg[1] |
+| `Add` | 3 | Reg[0] = Reg[1] + Reg[2] |
+| `Sub` | 3 | Reg[0] = Reg[1] - Reg[2] |
+| `Mult`  | 3 | Reg[0] = Reg[1] * Reg[2] |
+| `Div` | 3 | Reg[0] = Reg[1] / Reg[2] |
+| `Mod` | 3 | Reg[0] = Reg[1] % Reg[2] |
+| `Nand` | 2 | Reg[0] = !(R1g[0] & Reg[2]) |
+| `TestEqu`  | 3 | Reg[0] = Reg[1] == Reg[2] |
+| `TestNEqu` | 3 | Reg[0] = Reg[1] != Reg[2] |
+| `TestLess` | 3 | Reg[0] = Reg[1] < Reg[2] |
+| `TestLessEqu` | 3 | Reg[0] = Reg[1] <= Reg[2] |
+| `TestGreater`  | 3 | Reg[0] = Reg[1] > Reg[2] |
+| `TestGreaterEqu`  | 3 | Reg[0] = Reg[1] >= Reg[2] |
 | `SetMem` | 2 | Reg[0] = Arg[1] |
 | `Terminal`  | 1 | Reg[0] = double value encoded by instruction tag |
 | `CopyMem` | 2 | Reg[0] = Reg[1] |
 | `SwapMem` | 2   | Swap(Reg[0], Reg[1]) |
-| `InputToWorking`  | 2    | Reg[1] = Input[0] |
+| `InputToWorking`  | 2    | Reg[0] = Input[1] |
 | `WorkingToOutput`  | 2    | Output[1] = Reg[0] |
 | `If`      | 1   | If Reg[0] != 0, proceed. Otherwise skip to the next `Close` or EOP. |
 | `While` | 1     | While Reg[0] != 0, loop. Otherwise skip to next `Close` or EOP. |
@@ -67,6 +67,14 @@ Note that `Nand` performs a bitwise operation.
 
 Each problem has problem-specific instructions for producing output.
 
+### Bouncing Balls
+
+- SubmitOutput
+
+### Dice Game
+
+- SubmitOutput
+
 ### Fizz Buzz
 
 - SubmitFizz
@@ -74,7 +82,11 @@ Each problem has problem-specific instructions for producing output.
 - SubmitFizzBuzz
 - SubmitEcho
 
-### Median
+### For loop index
+
+- SubmitOutput
+
+### GCD
 
 - SubmitOutput
 
@@ -86,8 +98,20 @@ Each problem has problem-specific instructions for producing output.
 - SubmitD
 - SubmitF
 
+### Median
+
+- SubmitOutput
+
 ### Small or large
 
 - SubmitSmall
 - SubmitLarge
 - SubmitNeither
+
+### Smallest
+
+- SubmitOutput
+
+### Snow Day
+
+- SubmitOutput
