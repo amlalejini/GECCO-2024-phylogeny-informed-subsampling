@@ -140,6 +140,96 @@ save_kable(solution_table, paste0(plot_directory, "solution_counts_table.pdf"))
 solution_table
 ```
 
+```{r}
+# Summarize avg num selected
+# -- Not totally great because weird stuff happens when a solution is found (population collapses, etc)
+ts_data_loc <- paste0(working_directory, "data/time_series.csv")
+ts_data <- read_csv(ts_data_loc)
+
+ts_data <- ts_data %>%
+  mutate(
+    eval_mode_row = case_when(
+      EVAL_MODE == "full" & TEST_DOWNSAMPLE_RATE == "1" ~ "down-sample",
+      EVAL_MODE == "full" & NUM_COHORTS == "1" ~ "cohort",
+      .default = EVAL_MODE
+    ),
+    evals_per_gen = case_when(
+      EVAL_MODE == "cohort" ~ 1.0 / NUM_COHORTS,
+      EVAL_MODE == "down-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "indiv-rand-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "phylo-informed-sample" ~ TEST_DOWNSAMPLE_RATE,
+      EVAL_MODE == "full" ~ 1.0
+    ),
+    EVAL_FIT_EST_MODE = case_when(
+      EVAL_FIT_EST_MODE == "ancestor-opt" ~ "ancestor",
+      EVAL_FIT_EST_MODE == "relative-opt" ~ "relative",
+      .default = EVAL_FIT_EST_MODE
+    ),
+    est_mode_with_depth = paste(
+      EVAL_FIT_EST_MODE,
+      EVAL_MAX_PHYLO_SEARCH_DEPTH,
+      sep = "-"
+    ),
+    eval_mode_est_mode_depth = paste(
+      EVAL_MODE,
+      EVAL_FIT_EST_MODE,
+      EVAL_MAX_PHYLO_SEARCH_DEPTH,
+      sep = "-"
+    ),
+    .keep = "all"
+  ) %>%
+  mutate(
+    eval_label = case_when(
+      # Clean up down-sample label
+      EVAL_MODE == "down-sample" & EVAL_FIT_EST_MODE != "none" ~ paste("down-sample", EVAL_FIT_EST_MODE, sep="-"),
+      .default = EVAL_MODE
+    ),
+  ) %>%
+  mutate(
+    evals_per_gen = as.factor(evals_per_gen),
+    est_mode_with_depth = as.factor(est_mode_with_depth),
+    eval_mode_est_mode_depth = as.factor(eval_mode_est_mode_depth),
+    EVAL_MAX_PHYLO_SEARCH_DEPTH = as.factor(EVAL_MAX_PHYLO_SEARCH_DEPTH),
+    PROBLEM = as.factor(PROBLEM),
+    SELECTION = as.factor(SELECTION),
+    EVAL_MODE = as.factor(EVAL_MODE),
+    NUM_COHORTS = as.factor(NUM_COHORTS),
+    TEST_DOWNSAMPLE_RATE = as.factor(TEST_DOWNSAMPLE_RATE),
+    EVAL_FIT_EST_MODE = factor(
+      EVAL_FIT_EST_MODE,
+      levels = c(
+        "none",
+        "ancestor",
+        "relative"
+      ),
+      labels = c(
+        "None",
+        "Ancestor",
+        "Relative"
+      )
+    ),
+    .keep = "all"
+  )
+
+ts_avgs <- ts_data %>%
+  group_by(
+    SEED,
+    eval_label,
+    evals_per_gen,
+    PROBLEM
+  ) %>%
+  summarize(
+    n = n(),
+    avg_num_unique_selected = mean(num_unique_selected),
+    avg_entropy_selected_ids = mean(entropy_selected_ids)
+  ) %>%
+  mutate(
+    eval_label = as.factor(eval_label),
+    evals_per_gen = as.factor(evals_per_gen),
+    PROBLEM = as.factor(PROBLEM)
+  )
+```
+
 ## Problem-solving success statistics
 
 ```{r}
@@ -209,4 +299,94 @@ fisher_results <- fisher_results %>%
 fisher_table <- kbl(fisher_results) %>% kable_styling()
 save_kable(fisher_table, paste0(plot_directory, "stats_table.pdf"))
 fisher_table
+```
+
+## Average number of unique candidates selected
+
+```{r}
+
+full_avgs <- ts_data %>%
+  filter(eval_label == "full") %>%
+  group_by(PROBLEM) %>%
+  summarize(
+    n = n(),
+    median_num_unique_selected = median(num_unique_selected),
+    median_entropy_selected_ids = median(entropy_selected_ids),
+    avg_num_unique_selected = mean(num_unique_selected),
+    avg_entropy_selected_ids = mean(entropy_selected_ids)
+  )
+
+
+build_plot_summary_data <- function(
+  data,
+  response
+) {
+  plot <- data %>%
+    filter(
+      eval_label != "full"
+    ) %>%
+    ggplot(
+      aes_string(
+        x = "eval_label",
+        y = response,
+        fill = "eval_label"
+      )
+    ) +
+    geom_flat_violin(
+      position = position_nudge(x = .2, y = 0),
+      alpha = .8,
+      adjust = 1.5
+    ) +
+    geom_point(
+      mapping = aes(color = eval_label),
+      position = position_jitter(width = .15),
+      size = .5,
+      alpha = 0.8
+    ) +
+    geom_boxplot(
+      width = .1,
+      outlier.shape = NA,
+      alpha = 0.5
+    ) +
+    scale_y_continuous(
+      # limits = c(-0.5, 100)
+    ) +
+    scale_fill_bright() +
+    scale_color_bright() +
+    facet_grid(
+      PROBLEM ~ evals_per_gen,
+      # nrow=2,
+      labeller = label_both
+    ) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(
+        angle = 30,
+        hjust = 1
+      ),
+      panel.border = element_rect(color = "gray", size = 2)
+    )
+
+  return(plot)
+}
+
+plt <- build_plot_summary_data(
+  ts_avgs,
+  "avg_num_unique_selected"
+)
+ggsave(
+  filename = paste0(plot_directory, "avg_num_unique_selected.pdf"),
+  plot = plt
+)
+
+
+plt <- build_plot_summary_data(
+  ts_avgs,
+  "avg_entropy_selected_ids"
+)
+ggsave(
+  filename = paste0(plot_directory, "avg_entropy_selected_ids.pdf"),
+  plot = plt
+)
+
 ```

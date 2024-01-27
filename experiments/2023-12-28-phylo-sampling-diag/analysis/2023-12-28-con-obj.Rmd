@@ -175,7 +175,8 @@ ts_summary_data <- ts_data %>%
 
 ### Plotting helper functions
 
-Functions to assist with quick plotting of different measurements from summary and timeseries data.
+The following function assist with exploratory plotting of different measurements from summary and time series data.
+Note that for these plots, standard lexicase reference is rendered at equivalent number of generations (instead of evaluations).
 
 ```{r}
 build_plot_summary_data <- function(data, diagnostic, selection, response) {
