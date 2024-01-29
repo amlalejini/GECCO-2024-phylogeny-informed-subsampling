@@ -1,6 +1,6 @@
 # SignalGP instruction set
 
-Below, we document the instruction set used in our GP system for our 2023 GPTP experiments.
+Below, we document the instruction set used in our GP system for our experiments.
 
 Abbreviations:
 
