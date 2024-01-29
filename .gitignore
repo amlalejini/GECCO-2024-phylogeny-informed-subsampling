@@ -59,3 +59,5 @@ data/
 
 # python environment
 pyenv/
+
+*.zip
