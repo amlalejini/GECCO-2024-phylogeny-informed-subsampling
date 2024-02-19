@@ -23,7 +23,7 @@
 <meta name="author" content="Alexander Lalejini, Marcos Sanson, Jack Garbus, Matthew Andres Moreno, and Emily Dolson" />
 
 
-<meta name="date" content="2024-01-27" />
+<meta name="date" content="2024-02-19" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -269,6 +269,9 @@ div.csl-indent {
 </ul></li>
 <li class="chapter" data-level="8.3" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#problem-solving-success-statistics"><i class="fa fa-check"></i><b>8.3</b> Problem-solving success statistics</a></li>
 <li class="chapter" data-level="8.4" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#average-number-of-unique-candidates-selected"><i class="fa fa-check"></i><b>8.4</b> Average number of unique candidates selected</a></li>
+<li class="chapter" data-level="8.5" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#phylogeny-informed-trait-estimation-distance"><i class="fa fa-check"></i><b>8.5</b> Phylogeny-informed Trait Estimation Distance</a></li>
+<li class="chapter" data-level="8.6" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#phylogeny-informed-trait-estimation-outcomes"><i class="fa fa-check"></i><b>8.6</b> Phylogeny-informed Trait Estimation Outcomes</a></li>
+<li class="chapter" data-level="8.7" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#distribution-of-trait-estimation-error-magnidue"><i class="fa fa-check"></i><b>8.7</b> Distribution of Trait Estimation Error Magnidue</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
@@ -347,7 +350,7 @@ div.csl-indent {
 <div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="multi-path-exploration-diagnostic.html#cb87-1" aria-hidden="true" tabindex="-1"></a>summary_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/aggregate.csv&quot;</span>)</span>
 <span id="cb87-2"><a href="multi-path-exploration-diagnostic.html#cb87-2" aria-hidden="true" tabindex="-1"></a>summary_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(summary_data_loc)</span></code></pre></div>
 <pre><code>## Rows: 1080 Columns: 58
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (5): DIAGNOSTIC, EVAL_FIT_EST_MODE, EVAL_MODE, SELECTION, STOP_MODE
 ## dbl (53): ACCURACY, CREDIT, DIAGNOSTIC_DIMENSIONALITY, EVAL_MAX_PHYLO_SEARCH...
@@ -410,7 +413,7 @@ div.csl-indent {
 <div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="multi-path-exploration-diagnostic.html#cb90-1" aria-hidden="true" tabindex="-1"></a>ts_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/time_series.csv&quot;</span>)</span>
 <span id="cb90-2"><a href="multi-path-exploration-diagnostic.html#cb90-2" aria-hidden="true" tabindex="-1"></a>ts_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(ts_data_loc)</span></code></pre></div>
 <pre><code>## Rows: 108000 Columns: 28
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (4): DIAGNOSTIC, EVAL_FIT_EST_MODE, EVAL_MODE, SELECTION
 ## dbl (24): NUM_COHORTS, SEED, TEST_DOWNSAMPLE_RATE, ave_depth, deleterious_st...

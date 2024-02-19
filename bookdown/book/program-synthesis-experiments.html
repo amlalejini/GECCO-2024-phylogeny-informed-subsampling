@@ -23,7 +23,7 @@
 <meta name="author" content="Alexander Lalejini, Marcos Sanson, Jack Garbus, Matthew Andres Moreno, and Emily Dolson" />
 
 
-<meta name="date" content="2024-01-27" />
+<meta name="date" content="2024-02-19" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -269,6 +269,9 @@ div.csl-indent {
 </ul></li>
 <li class="chapter" data-level="8.3" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#problem-solving-success-statistics"><i class="fa fa-check"></i><b>8.3</b> Problem-solving success statistics</a></li>
 <li class="chapter" data-level="8.4" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#average-number-of-unique-candidates-selected"><i class="fa fa-check"></i><b>8.4</b> Average number of unique candidates selected</a></li>
+<li class="chapter" data-level="8.5" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#phylogeny-informed-trait-estimation-distance"><i class="fa fa-check"></i><b>8.5</b> Phylogeny-informed Trait Estimation Distance</a></li>
+<li class="chapter" data-level="8.6" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#phylogeny-informed-trait-estimation-outcomes"><i class="fa fa-check"></i><b>8.6</b> Phylogeny-informed Trait Estimation Outcomes</a></li>
+<li class="chapter" data-level="8.7" data-path="program-synthesis-experiments.html"><a href="program-synthesis-experiments.html#distribution-of-trait-estimation-error-magnidue"><i class="fa fa-check"></i><b>8.7</b> Distribution of Trait Estimation Error Magnidue</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
@@ -300,13 +303,14 @@ div.csl-indent {
 <span id="cb106-5"><a href="program-synthesis-experiments.html#cb106-5" aria-hidden="true" tabindex="-1"></a>  experiment_slug,</span>
 <span id="cb106-6"><a href="program-synthesis-experiments.html#cb106-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;/analysis/&quot;</span></span>
 <span id="cb106-7"><a href="program-synthesis-experiments.html#cb106-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb106-8"><a href="program-synthesis-experiments.html#cb106-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb106-9"><a href="program-synthesis-experiments.html#cb106-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">exists</span>(<span class="st">&quot;bookdown_wd_prefix&quot;</span>)) {</span>
-<span id="cb106-10"><a href="program-synthesis-experiments.html#cb106-10" aria-hidden="true" tabindex="-1"></a>  working_directory <span class="ot">&lt;-</span> <span class="fu">paste0</span>(</span>
-<span id="cb106-11"><a href="program-synthesis-experiments.html#cb106-11" aria-hidden="true" tabindex="-1"></a>    bookdown_wd_prefix,</span>
-<span id="cb106-12"><a href="program-synthesis-experiments.html#cb106-12" aria-hidden="true" tabindex="-1"></a>    working_directory</span>
-<span id="cb106-13"><a href="program-synthesis-experiments.html#cb106-13" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb106-14"><a href="program-synthesis-experiments.html#cb106-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb106-8"><a href="program-synthesis-experiments.html#cb106-8" aria-hidden="true" tabindex="-1"></a><span class="co"># &quot;&quot;</span></span>
+<span id="cb106-9"><a href="program-synthesis-experiments.html#cb106-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-10"><a href="program-synthesis-experiments.html#cb106-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">exists</span>(<span class="st">&quot;bookdown_wd_prefix&quot;</span>)) {</span>
+<span id="cb106-11"><a href="program-synthesis-experiments.html#cb106-11" aria-hidden="true" tabindex="-1"></a>  working_directory <span class="ot">&lt;-</span> <span class="fu">paste0</span>(</span>
+<span id="cb106-12"><a href="program-synthesis-experiments.html#cb106-12" aria-hidden="true" tabindex="-1"></a>    bookdown_wd_prefix,</span>
+<span id="cb106-13"><a href="program-synthesis-experiments.html#cb106-13" aria-hidden="true" tabindex="-1"></a>    working_directory</span>
+<span id="cb106-14"><a href="program-synthesis-experiments.html#cb106-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb106-15"><a href="program-synthesis-experiments.html#cb106-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <div id="dependencies-3" class="section level2 hasAnchor" number="8.1">
 <h2><span class="header-section-number">8.1</span> Dependencies<a href="program-synthesis-experiments.html#dependencies-3" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <div class="sourceCode" id="cb107"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb107-1"><a href="program-synthesis-experiments.html#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
@@ -352,7 +356,7 @@ div.csl-indent {
 <div class="sourceCode" id="cb114"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb114-1"><a href="program-synthesis-experiments.html#cb114-1" aria-hidden="true" tabindex="-1"></a>summary_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/aggregate.csv&quot;</span>)</span>
 <span id="cb114-2"><a href="program-synthesis-experiments.html#cb114-2" aria-hidden="true" tabindex="-1"></a>summary_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(summary_data_loc)</span></code></pre></div>
 <pre><code>## Rows: 5000 Columns: 73
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr (11): ANCESTOR_FILE_PATH, EVAL_FIT_EST_MODE, EVAL_MODE, POP_INIT_MODE, P...
 ## dbl (62): EVAL_CPU_CYCLES_PER_TEST, EVAL_MAX_PHYLO_SEARCH_DEPTH, MAX_ACTIVE_...
@@ -441,8 +445,8 @@ div.csl-indent {
 <span id="cb116-80"><a href="program-synthesis-experiments.html#cb116-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">replicates =</span> <span class="fu">n</span>(),</span>
 <span id="cb116-81"><a href="program-synthesis-experiments.html#cb116-81" aria-hidden="true" tabindex="-1"></a>    <span class="at">no_solution_count =</span> <span class="fu">n</span>() <span class="sc">-</span> <span class="fu">sum</span>(found_solution <span class="sc">==</span> <span class="st">&quot;1&quot;</span>)</span>
 <span id="cb116-82"><a href="program-synthesis-experiments.html#cb116-82" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
-<pre><code>## `summarise()` has grouped output by &#39;PROBLEM&#39;, &#39;evals_per_gen&#39;, &#39;eval_mode_row&#39;, &#39;EVAL_FIT_EST_MODE&#39;, &#39;est_mode_with_depth&#39;, &#39;eval_mode_est_mode_depth&#39;, &#39;EVAL_MODE&#39;, &#39;eval_label&#39;. You can override using the
-## `.groups` argument.</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;PROBLEM&#39;, &#39;evals_per_gen&#39;, &#39;eval_mode_row&#39;, &#39;EVAL_FIT_EST_MODE&#39;, &#39;est_mode_with_depth&#39;, &#39;eval_mode_est_mode_depth&#39;,
+## &#39;EVAL_MODE&#39;, &#39;eval_label&#39;. You can override using the `.groups` argument.</code></pre>
 <div class="sourceCode" id="cb118"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb118-1"><a href="program-synthesis-experiments.html#cb118-1" aria-hidden="true" tabindex="-1"></a><span class="co"># print(solution_counts, n=208)</span></span>
 <span id="cb118-2"><a href="program-synthesis-experiments.html#cb118-2" aria-hidden="true" tabindex="-1"></a>solution_table <span class="ot">&lt;-</span> <span class="fu">kable</span>(solution_counts) <span class="sc">%&gt;%</span></span>
 <span id="cb118-3"><a href="program-synthesis-experiments.html#cb118-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">latex_options =</span> <span class="st">&quot;striped&quot;</span>, <span class="at">font_size =</span> <span class="dv">25</span>)</span>
@@ -3918,7 +3922,7 @@ full
 <span id="cb121-3"><a href="program-synthesis-experiments.html#cb121-3" aria-hidden="true" tabindex="-1"></a>ts_data_loc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(working_directory, <span class="st">&quot;data/time_series.csv&quot;</span>)</span>
 <span id="cb121-4"><a href="program-synthesis-experiments.html#cb121-4" aria-hidden="true" tabindex="-1"></a>ts_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(ts_data_loc)</span></code></pre></div>
 <pre><code>## Rows: 99773 Columns: 24
-## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (6): EVAL_FIT_EST_MODE, EVAL_MODE, PROBLEM, SELECTION, TESTING_SET_PATH...
 ## dbl (18): EVAL_MAX_PHYLO_SEARCH_DEPTH, NUM_COHORTS, SEED, TEST_DOWNSAMPLE_RA...
@@ -6963,6 +6967,97 @@ ns
 <span id="cb133-7"><a href="program-synthesis-experiments.html#cb133-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> plt</span>
 <span id="cb133-8"><a href="program-synthesis-experiments.html#cb133-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <pre><code>## Saving 7 x 5 in image</code></pre>
+</div>
+<div id="phylogeny-informed-trait-estimation-distance" class="section level2 hasAnchor" number="8.5">
+<h2><span class="header-section-number">8.5</span> Phylogeny-informed Trait Estimation Distance<a href="program-synthesis-experiments.html#phylogeny-informed-trait-estimation-distance" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>How is trait estimation distance distributed across sampling conditions and GP problems?</p>
+<p>Source materials for this analysis are available <a href="https://osf.io/7mg3q">here</a>.</p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/col%3Deval-mode%2Belement%3Dpoly%2Bhue%3Dtest-downsample-rate%2Bstat%3Ddensity%2Bviz%3Dfacethist%2Bx%3Dtraining-cases-estimation-dist%2Bext%3D.png" height="200" alt="" />
+<p class="caption">Histograms showing frequency of lookback distances for phylogeny-informed estimation.</p>
+</div>
+<blockquote>
+<p><strong>Distribution of Estimation Distance and Downsample Rate.</strong>
+As would be expected, more severe downsample rates thickened the tail of longer-distance trait estmations.
+However, under both downsampling rates, estimations at the maximimum allowed distance of 8 generations back were rare.
+Note that this visualization is a histogram and does not include confidence intervals.</p>
+</blockquote>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/col%3Deval-mode%2Belement%3Dpoly%2Bhue%3Dproblem%2Brow%3Dtest-downsample-rate%2Bstat%3Ddensity%2Bviz%3Dfacethist%2Bx%3Dtraining-cases-estimation-dist%2Bext%3D.png" height="400" alt="" />
+<p class="caption">Histograms showing frequency of lookback distances for phylogeny-informed estimation.</p>
+</div>
+<blockquote>
+<p><strong>Distribution of Estimation Distance by Program Synthesis Problem.</strong>
+Estimation distance distributions appear similar between problems.</p>
+</blockquote>
+</div>
+<div id="phylogeny-informed-trait-estimation-outcomes" class="section level2 hasAnchor" number="8.6">
+<h2><span class="header-section-number">8.6</span> Phylogeny-informed Trait Estimation Outcomes<a href="program-synthesis-experiments.html#phylogeny-informed-trait-estimation-outcomes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>What fraction of estimations are correct, incorrect, and failed?
+First visualization includes trivial (distance 0) estimations and second visualization excludes them.</p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Dwithtrivial-inclfail%2Bcol%3Deval-mode%2Bhue%3Dtrait-error-type%2Bmultiple%3Dfill%2Brow%3Dtest-downsample-rate%2Bstat%3Dproportion%2Bviz%3Dfacethist%2Bx%3Dproblem%2Bext%3D.png" height="400" alt="" />
+<p class="caption">Stackplots of trait estimation outcomes.</p>
+</div>
+<blockquote>
+<p><strong>Estimation Outcomes, Including Trival Estimations.</strong>
+As expected, correct estimations occur less frequenetly at the severe 1% downsample rate.
+Except for the bouncing balls problem, more than half of estimations are correct at all downsample rates.
+Estimation accuracy appears to be overall roughly comparable across all downsampling methods.</p>
+</blockquote>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Dnontrivial-inclfail%2Bcol%3Deval-mode%2Bhue%3Dtrait-error-type%2Bmultiple%3Dfill%2Brow%3Dtest-downsample-rate%2Bstat%3Dproportion%2Bviz%3Dfacethist%2Bx%3Dproblem%2Bext%3D.png" height="400" alt="" />
+<p class="caption">Stackplots of trait estimation outcomes.</p>
+</div>
+<blockquote>
+<p><strong>Estimation Outcomes, Excluding Trival Estimations.</strong>
+As expected, higher fractions of incorrect estimations are observed when including only nontrivial estimations.
+(Distance zero estimations are equivalent to the true trait value unless execution is nondeterministic.)</p>
+<p>This effect is especially apparent for the bouncing balls and gcd problems under naive downsampling.
+At the 1% downsample rate, fewer than 25% of estimations are correct for these problems.
+However, as shown below, these problems are both continuous (rather than binary) with much estimation error being of small magnitude.</p>
+</blockquote>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Dpercent-correct%2Bcol%3Deval-mode%2Bhue%3Dproblem%2Brow%3Dtest-downsample-rate%2Bviz%3Dfacetline%2Bx%3Dtraining-cases-estimation-dist%2By%3Dtrait-estimation-error%2Bext%3D.png" height="400" alt="" />
+<p class="caption">Lineplot of estimatior rates by estimation distances.</p>
+</div>
+<blockquote>
+<p><strong>Percent Estimates Correct versus Lookup Distance.</strong>
+For all surveyed conditions, estimation accuracy decreases when moving from trivial distance zero estimation to nontrivial distance one estimation.
+However, in many (but not all) conditions the fraction of correct estimations appears to plateau past lookup distance 2.
+The bouncing balls and gcd problems have the highest estimation errors at long estimation distance.
+Interestingly, estimation error appears to spike earlier for these problems under 1% downsampling than under 10% downsampling — particularly, under naive downsampling.
+Other problems appear to show similar relationships between estimation error and lookup distance for both downsampling rates.</p>
+<p>Shaded intervals are bootstrapped 95% confidence intervals.
+This visualization excludes failed estimations.</p>
+</blockquote>
+</div>
+<div id="distribution-of-trait-estimation-error-magnidue" class="section level2 hasAnchor" number="8.7">
+<h2><span class="header-section-number">8.7</span> Distribution of Trait Estimation Error Magnidue<a href="program-synthesis-experiments.html#distribution-of-trait-estimation-error-magnidue" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>When trait estimation error occurs, how large is it?
+Note that some problems have binary traits, so the magnitude of error is limited to 0 or 1.
+Here, estimation error is calculated as a fraction of the true trait value.</p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Derror-magnitude%2Bhue%3Dproblem%2Bviz%3Dvsplot%2Bx%3Dproblem%2By%3Dtrait-estimation-error%2Bext%3D.png" height="400" alt="" />
+<p class="caption">Strip plot of estimation error magnitudes.</p>
+</div>
+<blockquote>
+<p><strong>Distribution of Estimation Error.</strong>
+Estimation error is generally unimodal, with bouncing balls having the tightest clustering of error near 0.0.
+For discrete traits, all estimation error is either -1 or 1.
+Note that this visualization excludes correct estimations (error magnitude exactly 0.0) and failed estimations.</p>
+</blockquote>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Derror-magnitude%2Bcol%3Deval-mode%2Bhue%3Dproblem%2Brow%3Dtest-downsample-rate%2Bviz%3Dfacetline%2Bx%3Dtraining-cases-estimation-dist%2By%3Dtrait-estimation-error%2Bext%3D.png" height="400" alt="" />
+<p class="caption">Lineplot of estimation error rates.</p>
+</div>
+<blockquote>
+<p><strong>Trait Estimation Error versus Lookup Distance.</strong>
+When estimation error occurs, its magnitude is not obviously related to trait estimation distance.
+Note that binary traits estimation errors are all of magnitude 1.0.</p>
+<p>Shaded intervals are bootstrapped 95% confidence intervals.
+This visualization excludes failed estimations.</p>
+</blockquote>
 
 </div>
 </div>
