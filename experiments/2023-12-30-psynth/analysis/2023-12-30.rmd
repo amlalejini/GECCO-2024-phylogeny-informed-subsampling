@@ -390,3 +390,71 @@ ggsave(
 )
 
 ```
+
+## Phylogeny-informed Trait Estimation Distance
+
+How is trait estimation distance distributed across sampling conditions and GP problems?
+
+Source materials for this analysis are available [here](https://osf.io/7mg3q).
+
+
+> ![Histograms showing frequency of lookback distances for phylogeny-informed estimation.](https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/col%3Deval-mode%2Belement%3Dpoly%2Bhue%3Dtest-downsample-rate%2Bstat%3Ddensity%2Bviz%3Dfacethist%2Bx%3Dtraining-cases-estimation-dist%2Bext%3D.png){height=200px}
+> **Distribution of Estimation Distance and Downsample Rate.**
+> As would be expected, more severe downsample rates thickened the tail of longer-distance trait estmations.
+> However, under both downsampling rates, estimations at the maximimum allowed distance of 8 generations back were rare.
+> Note that this visualization is a histogram and does not include confidence intervals.
+
+> ![Histograms showing frequency of lookback distances for phylogeny-informed estimation.](https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/col%3Deval-mode%2Belement%3Dpoly%2Bhue%3Dproblem%2Brow%3Dtest-downsample-rate%2Bstat%3Ddensity%2Bviz%3Dfacethist%2Bx%3Dtraining-cases-estimation-dist%2Bext%3D.png){height=400px}
+> **Distribution of Estimation Distance by Program Synthesis Problem.**
+> Estimation distance distributions appear similar between problems.
+
+## Phylogeny-informed Trait Estimation Outcomes
+
+What fraction of estimations are correct, incorrect, and failed?
+First visualization includes trivial (distance 0) estimations and second visualization excludes them.
+
+> ![Stackplots of trait estimation outcomes.](https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Dwithtrivial-inclfail%2Bcol%3Deval-mode%2Bhue%3Dtrait-error-type%2Bmultiple%3Dfill%2Brow%3Dtest-downsample-rate%2Bstat%3Dproportion%2Bviz%3Dfacethist%2Bx%3Dproblem%2Bext%3D.png){height=400px}
+> **Estimation Outcomes, Including Trival Estimations.**
+As expected, correct estimations occur less frequenetly at the severe 1% downsample rate.
+Except for the bouncing balls problem, more than half of estimations are correct at all downsample rates.
+Estimation accuracy appears to be overall roughly comparable across all downsampling methods.
+
+> ![Stackplots of trait estimation outcomes.](https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Dnontrivial-inclfail%2Bcol%3Deval-mode%2Bhue%3Dtrait-error-type%2Bmultiple%3Dfill%2Brow%3Dtest-downsample-rate%2Bstat%3Dproportion%2Bviz%3Dfacethist%2Bx%3Dproblem%2Bext%3D.png){height=400px}
+> **Estimation Outcomes, Excluding Trival Estimations.**
+> As expected, higher fractions of incorrect estimations are observed when including only nontrivial estimations.
+> (Distance zero estimations are equivalent to the true trait value unless execution is nondeterministic.)
+>
+> This effect is especially apparent for the bouncing balls and gcd problems under naive downsampling.
+> At the 1% downsample rate, fewer than 25% of estimations are correct for these problems.
+> However, as shown below, these problems are both continuous (rather than binary) with much estimation error being of small magnitude.
+
+> ![Lineplot of estimatior rates by estimation distances.](https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Dpercent-correct%2Bcol%3Deval-mode%2Bhue%3Dproblem%2Brow%3Dtest-downsample-rate%2Bviz%3Dfacetline%2Bx%3Dtraining-cases-estimation-dist%2By%3Dtrait-estimation-error%2Bext%3D.png){height=400px}
+> **Percent Estimates Correct versus Lookup Distance.**
+> For all surveyed conditions, estimation accuracy decreases when moving from trivial distance zero estimation to nontrivial distance one estimation.
+> However, in many (but not all) conditions the fraction of correct estimations appears to plateau past lookup distance 2.
+> The bouncing balls and gcd problems have the highest estimation errors at long estimation distance.
+> Interestingly, estimation error appears to spike earlier for these problems under 1% downsampling than under 10% downsampling --- particularly, under naive downsampling.
+> Other problems appear to show similar relationships between estimation error and lookup distance for both downsampling rates.
+>
+> Shaded intervals are bootstrapped 95% confidence intervals.
+> This visualization excludes failed estimations.
+
+## Distribution of Trait Estimation Error Magnidue
+
+When trait estimation error occurs, how large is it?
+Note that some problems have binary traits, so the magnitude of error is limited to 0 or 1.
+Here, estimation error is calculated as a fraction of the true trait value.
+
+> ![Strip plot of estimation error magnitudes.](https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Derror-magnitude%2Bhue%3Dproblem%2Bviz%3Dvsplot%2Bx%3Dproblem%2By%3Dtrait-estimation-error%2Bext%3D.png){height=400px}
+> **Distribution of Estimation Error.**
+> Estimation error is generally unimodal, with bouncing balls having the tightest clustering of error near 0.0.
+> For discrete traits, all estimation error is either -1 or 1.
+> Note that this visualization excludes correct estimations (error magnitude exactly 0.0) and failed estimations.
+
+> ![Lineplot of estimation error rates.](https://raw.githubusercontent.com/amlalejini/GECCO-2024-phylogeny-informed-subsampling/f9f16c497747921992fb054cdfaaaa0073832840/experiments/2023-12-30-psynth/analysis/teeplots/a%3Derror-magnitude%2Bcol%3Deval-mode%2Bhue%3Dproblem%2Brow%3Dtest-downsample-rate%2Bviz%3Dfacetline%2Bx%3Dtraining-cases-estimation-dist%2By%3Dtrait-estimation-error%2Bext%3D.png){height=400px}
+> **Trait Estimation Error versus Lookup Distance.**
+> When estimation error occurs, its magnitude is not obviously related to trait estimation distance.
+> Note that binary traits estimation errors are all of magnitude 1.0.
+>
+> Shaded intervals are bootstrapped 95% confidence intervals.
+> This visualization excludes failed estimations.
